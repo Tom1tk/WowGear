@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WowGearBis — Gear vs Best-in-Slot</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>WowGearBis</h1>
+    <p class="tagline">Compare your gear against the Icy Veins Best-in-Slot list and get a plan.</p>
+  </header>
+
+  <main>
+    <form id="analyze-form" autocomplete="off">
+      <div class="field">
+        <label for="region">Region</label>
+        <select id="region" name="region">
+          <option value="eu" selected>EU</option>
+          <option value="us">US</option>
+          <option value="kr">KR</option>
+          <option value="tw">TW</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="realm">Realm</label>
+        <input id="realm" name="realm" type="text" placeholder="draenor" value="draenor" required>
+      </div>
+      <div class="field">
+        <label for="character">Character</label>
+        <input id="character" name="character" type="text" placeholder="Greyball" value="Greyball" required>
+      </div>
+      <div class="field field-spec">
+        <label for="spec">Specialization</label>
+        <select id="spec" name="spec">
+          <option value="">Auto-detect</option>
+        </select>
+      </div>
+      <button type="submit" id="analyze-btn">Analyze gear</button>
+    </form>
+
+    <div id="status" class="status" hidden></div>
+
+    <section id="results" hidden>
+      <div id="character-card" class="card"></div>
+
+      <h2>Your to-do list</h2>
+      <ol id="action-list" class="action-list"></ol>
+
+      <h2>Gear comparison</h2>
+      <div class="table-wrap">
+        <table id="comparison-table">
+          <thead>
+            <tr>
+              <th>Slot</th>
+              <th>Equipped</th>
+              <th>ilvl</th>
+              <th>BiS</th>
+              <th>ilvl</th>
+              <th>Δ</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h2>Icy Veins farm advice</h2>
+      <div id="farm-tips"></div>
+
+      <p class="source-link" id="source-link"></p>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
