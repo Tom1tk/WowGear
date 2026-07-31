@@ -328,6 +328,155 @@ def test_catchup_action_has_no_link_segments():
     )
 
 
+# ── Catch-up roadmap by average item level ─────────────────────────────
+
+def test_catchup_fresh_90_roadmap_starts_with_showdown_zones():
+    """Freshly-90 / low-ilvl users get manageable steps, not Mythic raid."""
+    action = catchup_action(avg_ilvl=245, bis_max_ilvl=289)
+    assert "Val" in action.detail and "Naigtal" in action.detail
+    assert "field accolades" in action.detail
+    assert "Maren Silverwing" in action.detail
+    assert "Champion" in action.detail
+    assert "World Quests" in action.detail
+    assert "Mythic raid" not in action.detail
+    # The roadmap must rank high for fresh players, not be truncated.
+    assert action.urgency == pytest.approx((289 - 245) * 1.0)
+
+
+def test_catchup_champion_band_mentions_raid_keys_and_showdowns():
+    action = catchup_action(avg_ilvl=258, bis_max_ilvl=289)
+    assert "Normal raid" in action.detail
+    assert "+2-6" in action.detail
+    assert "Val and Naigtal" in action.detail
+    assert "Maren Silverwing" in action.detail
+    assert "World Quests" not in action.detail
+
+
+def test_catchup_hero_band_mentions_keys_heroic_raid_and_heroic_world_tier():
+    action = catchup_action(avg_ilvl=268, bis_max_ilvl=289)
+    assert "+7" in action.detail
+    assert "Heroic raid" in action.detail
+    assert "Heroic World Tier" in action.detail
+    assert "Knocking Off the Top" in action.detail
+    assert "Dawncrests" in action.detail
+
+
+def test_catchup_myth_band_mentions_mythic_raid_and_vault():
+    action = catchup_action(avg_ilvl=285, bis_max_ilvl=289)
+    assert "Mythic raid" in action.detail
+    assert "+10" in action.detail
+    assert "Knocking Off the Top" in action.detail
+    assert "Dawncrests" in action.detail
+    assert "Great Vault" in action.detail
+
+
+def test_catchup_roadmap_is_staged_for_low_ilvl():
+    """Low ilvl gets the full ladder; near-BiS gets only the final stretch."""
+    fresh = catchup_action(avg_ilvl=240, bis_max_ilvl=289)
+    top = catchup_action(avg_ilvl=287, bis_max_ilvl=289)
+    assert "220" in fresh.detail  # Adventurer/Veteran ilvls listed
+    assert "Adventurer/Veteran" in fresh.detail
+    assert "220" not in top.detail
+    assert top.urgency == pytest.approx(2 * 0.25)
+
+
+# ── Item-level-aware per-slot advice ───────────────────────────────────
+
+def test_low_ilvl_replace_detail_suggests_showdown_path():
+    """A 250-ilvl player with a far-behind slot is told to fill it with
+    Champion gear from the Showdown zones instead of jumping into
+    Mythic-track content."""
+    equipped_items = fill_matching(
+        {"waist": equipped("waist", 9, "Twisted Twilight Sash", 263)}
+    )
+    _, actions = analyze_gear(equipped_items, BIS_ITEMS + [WAIST_BIS], BIS_ILVL,
+                              avg_ilvl=250)
+    action = next(a for a in actions if a.slot == "waist")
+    assert "Val and Naigtal" in action.detail
+    assert "Champion" in action.detail
+    assert "Maren Silverwing" in action.detail
+
+
+def test_small_gap_slot_gets_no_access_note():
+    """Slots only a few ilvls behind don't repeat the Showdown note."""
+    equipped_items = fill_matching(
+        {"waist": equipped("waist", 9, "Twisted Twilight Sash", 270)}
+    )
+    _, actions = analyze_gear(equipped_items, BIS_ITEMS + [WAIST_BIS], BIS_ILVL,
+                              avg_ilvl=250)
+    action = next(a for a in actions if a.slot == "waist")
+    assert "Naigtal" not in action.detail
+
+
+def test_fill_empty_slot_gets_access_note_for_low_ilvl():
+    equipped_items = fill_matching({"waist": None})
+    _, actions = analyze_gear(equipped_items, BIS_ITEMS + [WAIST_BIS], BIS_ILVL,
+                              avg_ilvl=250)
+    action = next(a for a in actions if a.slot == "waist")
+    assert "Val and Naigtal" in action.detail
+
+
+def test_high_ilvl_replace_detail_has_no_access_note():
+    equipped_items = fill_matching(
+        {"waist": equipped("waist", 9, "Twisted Twilight Sash", 263)}
+    )
+    _, actions = analyze_gear(equipped_items, BIS_ITEMS + [WAIST_BIS], BIS_ILVL,
+                              avg_ilvl=280)
+    action = next(a for a in actions if a.slot == "waist")
+    assert "Naigtal" not in action.detail
+    assert "Champion" not in action.detail
+
+
+def test_mid_ilvl_hero_target_detail_suggests_hero_sources():
+    """A Hero-track BiS for a sub-Hero player names the +7/Heroic path."""
+    item = bis(
+        "hands", 777, "Heroic Gloves", drop="Dropped by Rotmire",
+        links=["//www.icy-veins.com/wow/rotmire-raid-guide"],
+        link_texts=["Rotmire"], bonus=[13654],
+    )
+    item.track = "Heroic Raid"
+    item.ilvl = 268
+    equipped_items = fill_matching(
+        {"hands": equipped("hands", 8, "Old Gloves", 240)}
+    )
+    _, actions = analyze_gear(equipped_items, BIS_ITEMS + [item], BIS_ILVL,
+                              avg_ilvl=250)
+    action = next(a for a in actions if a.slot == "hands")
+    assert "+7 keystones" in action.detail
+    assert "Heroic raid" in action.detail
+    assert "Naigtal" not in action.detail
+
+
+def test_dungeon_detail_lists_key_tracks():
+    """Dungeon drops: +2-6 Champion, +7 Hero, +10 Great Vault Myth."""
+    equipped_items = fill_matching(
+        {"legs": equipped("legs", 501, "Old Legs", 260)}
+    )
+    _, actions = analyze_gear(equipped_items, BIS_ITEMS, BIS_ILVL)
+    action = next(a for a in actions if a.slot == "legs")
+    assert "Champion-track from +2-6" in action.detail
+    assert "Hero-track from +7" in action.detail
+    assert "+10 Great Vault" in action.detail
+
+
+def test_raid_boss_with_mythic_plus_track_omits_difficulty():
+    """A raid boss tagged with the M+ bonus track has no bogus difficulty."""
+    item = bis(
+        "neck", 268291, "Rotmire's Sporeheart", drop="Rotmire",
+        links=["//www.icy-veins.com/wow/rotmire-raid-guide"],
+        link_texts=["Rotmire"], bonus=[12806],
+    )
+    item.track = "Mythic+"
+    other_items = [b for b in BIS_ITEMS if b.slot != "neck"] + [item]
+    equipped_items = fill_matching(
+        {"neck": equipped("neck", 8, "Old Neck", 263)}
+    )
+    _, actions = analyze_gear(equipped_items, other_items, BIS_ILVL)
+    action = next(a for a in actions if a.slot == "neck")
+    assert "in the current raid to loot" in action.detail
+    assert "difficulty" not in action.detail
+
+
 # ── Upgrade guidance ───────────────────────────────────────────────────
 
 def upgrade_action(item: BisItem) -> Action:
@@ -350,7 +499,7 @@ def test_upgrade_mythic_plus_guidance_is_concrete():
     action = upgrade_action(item)
     assert action.category == "upgrade"
     assert "Mythic+ keystones" in action.detail
-    assert "+6" in action.detail and "+10" in action.detail
+    assert "+2-6" in action.detail and "+7" in action.detail and "+10" in action.detail
     assert "Great Vault" in action.detail
     assert "Dawncrests" in action.detail
     assert "Cuzolth" in action.detail

@@ -127,7 +127,10 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResult:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     bis_max_ilvl = page_max_ilvl or settings.bis_max_ilvl
-    comparisons, actions = analyze_gear(equipped, bis_items, bis_max_ilvl)
+    comparisons, actions = analyze_gear(
+        equipped, bis_items, bis_max_ilvl,
+        avg_ilvl=summary.average_item_level,
+    )
 
     catchup = catchup_action(summary.average_item_level, bis_max_ilvl)
     if catchup:

@@ -13,7 +13,6 @@ SLOT_WEIGHTS = {
     "head": 1.1,
 }
 EMPTY_BASE_URGENCY = 30.0
-CATCHUP_FACTOR = 0.25
 UPGRADE_SAME_ITEM_FACTOR = 0.8
 
 
@@ -21,9 +20,14 @@ def analyze_gear(
     equipped: dict[str, EquippedItem],
     bis_items: list[BisItem],
     bis_max_ilvl: int,
+    avg_ilvl: int | None = None,
 ) -> tuple[list[SlotComparison], list[Action]]:
     """Compare equipped gear against BiS items; return per-slot comparisons and
-    unsorted/rankless actions (rank/limit applied by the caller)."""
+    unsorted/rankless actions (rank/limit applied by the caller).
+
+    `avg_ilvl` personalises the drop advice: players far below the track
+    their BiS target lives on get a manageable stepping-stone note (e.g.
+    Showdown-zone Champion gear) instead of a straight Mythic-track order."""
     bis_by_slot: dict[str, BisItem] = {}
     for bis in bis_items:
         bis_by_slot.setdefault(bis.slot, bis)
@@ -74,7 +78,7 @@ def analyze_gear(
                 _item_seg(bis),
                 _seg(f" ({bis_ilvl})"),
             ]
-            detail_segments = _drop_segments(bis, bis_ilvl)
+            detail_segments = _drop_segments(bis, bis_ilvl, avg_ilvl, gap)
             actions.append(
                 Action(
                     slot=slot, category="gear",
@@ -142,7 +146,7 @@ def analyze_gear(
                 _item_seg(bis),
                 _seg(f" ({bis_ilvl})"),
             ]
-            detail_segments = _drop_segments(bis, bis_ilvl)
+            detail_segments = _drop_segments(bis, bis_ilvl, avg_ilvl, gap)
             actions.append(
                 Action(
                     slot=slot, category="gear",
@@ -162,54 +166,47 @@ def analyze_gear(
 def catchup_action(avg_ilvl: int | None, bis_max_ilvl: int) -> Action | None:
     """Generic ilvl catch-up action when the character lags the BiS ceiling.
 
-    Advice is tiered by the size of the deficit: within 1 ilvl of the ceiling
-    there is nothing worth doing, so no action is emitted (telling a 288
-    player to farm Heroic dungeons for one point is bad advice)."""
+    Advice is a roadmap tiered by the player's average item level, so a
+    freshly-90 character gets the manageable open-world path (Showdown
+    zones, field accolades, Heroic dungeons) before group content, while a
+    near-BiS player gets only the final Myth-track stretch. Within 1 ilvl
+    of the ceiling there is nothing worth doing, so no action is emitted
+    (telling a 288 player to farm Heroic dungeons for one point is bad
+    advice)."""
     if avg_ilvl is None or bis_max_ilvl <= 0 or avg_ilvl >= bis_max_ilvl:
         return None
     deficit = bis_max_ilvl - avg_ilvl
     if deficit < 2:
         return None
 
-    if deficit <= 4:
-        detail = (
-            f"Your average item level is {avg_ilvl}; the BiS list targets {bis_max_ilvl}. "
-            "You're nearly there — pick up Hero-track pieces from Mythic+ keys and the "
-            "Great Vault, then spend Dawncrests at the upgrade vendor (Cuzolth in "
-            "Silvermoon City) to push your best items up their track. Ascendant Voidcores "
-            "can add bonus ranks to Hero/Myth-track weapons and trinkets."
-        )
-    elif deficit <= 9:
-        detail = (
-            f"Your average item level is {avg_ilvl}; the BiS list targets {bis_max_ilvl}. "
-            "Run Mythic+ keystones (Hero-track drops from +6 keys, Myth-track from +10) "
-            "and Heroic raid, and open the Great Vault every week. Upgrade your keepers "
-            "with Dawncrests at Cuzolth in Silvermoon City, and use Nebulous Voidcores "
-            "(2 per week) for extra Hero/Myth-track rolls."
-        )
-    else:
-        detail = (
-            f"Your average item level is {avg_ilvl}; the BiS list targets {bis_max_ilvl}. "
-            "Start with Delves and Heroic dungeons (Veteran/Champion-track gear), then move "
-            "to Mythic+ keystones for Hero-track drops and the Great Vault each week. "
-            "Dawncrests upgrade gear along its track at Cuzolth in Silvermoon City."
-        )
+    detail, factor = _catchup_detail(avg_ilvl, bis_max_ilvl)
     return Action(
         category="catchup",
         title=f"Close the item level gap ({avg_ilvl} -> {bis_max_ilvl})",
         detail=detail,
-        urgency=deficit * CATCHUP_FACTOR,
+        urgency=deficit * factor,
         target_ilvl=bis_max_ilvl,
         title_segments=[_seg(f"Close the item level gap ({avg_ilvl} -> {bis_max_ilvl})")],
         detail_segments=[_seg(detail)],
     )
 
 
-def _drop_segments(bis: BisItem, bis_ilvl: int) -> list[TextSegment]:
+def _catchup_detail(avg_ilvl: int, bis_max_ilvl: int) -> tuple[str, float]:
+    for threshold, factor, template in CATCHUP_BANDS:
+        if avg_ilvl < threshold:
+            return template.format(avg=avg_ilvl, max=bis_max_ilvl), factor
+    return CATCHUP_MYTH_COPY.format(avg=avg_ilvl, max=bis_max_ilvl), CATCHUP_MYTH_FACTOR
+
+
+def _drop_segments(
+    bis: BisItem, bis_ilvl: int, avg_ilvl: int | None = None, gap: int = 0
+) -> list[TextSegment]:
     """Drop advice as linked text; concatenating the segments yields exactly
     the plain `detail` string. Item names link to Wowhead; bosses, dungeons,
     the Catalyst and professions link to their Icy Veins guides (from the
-    parsed BiS page, so a new season's sources flow through automatically)."""
+    parsed BiS page, so a new season's sources flow through automatically).
+    When the player's average ilvl is below the target track, an access note
+    names the stepping-stone path."""
     text = bis.drop or ""
     if not text:
         return [
@@ -219,38 +216,65 @@ def _drop_segments(bis: BisItem, bis_ilvl: int) -> list[TextSegment]:
 
     dungeon = _drop_link(bis, r"([\w-]+)-dungeon-guide")
     if dungeon:
-        return [
+        segments = [
             _seg("Farm "), _seg(dungeon[0], dungeon[1]),
-            _seg(" on Mythic+ (Hero-track drops) until "),
+            _seg(" on Mythic+ keys — Champion-track from +2-6, Hero-track from +7, "
+                 "Myth-track from the +10 Great Vault — until "),
             _item_seg(bis), _seg(f" ({bis_ilvl}) drops."),
         ]
-    boss = _drop_link(bis, r"([\w-]+)-raid-guide")
-    if boss:
-        return [
-            _seg("Kill "), _seg(boss[0], boss[1]),
-            _seg(f" in the current raid on {_difficulty_phrase(bis.track)} to loot "),
-            _item_seg(bis), _seg(f" ({bis_ilvl})."),
-        ]
-    catalyst = _drop_link(bis, r"catalyst-guide")
-    if catalyst:
-        return [
-            _seg("Convert a tier token at the Catalyst (see the "),
-            _seg("Catalyst guide", catalyst[1]),
-            _seg(") — you need "),
-            _item_seg(bis), _seg(f" ({bis_ilvl})."),
-        ]
-    profession = _drop_link(bis, r"professions-([\w-]+)")
-    if profession:
-        return [
-            _seg("Craft "), _item_seg(bis),
-            _seg(f" ({bis_ilvl}) with "),
-            _seg(profession[0], profession[1]),
-            _seg(" — or buy it on the Auction House."),
-        ]
-    return [
-        _seg("Acquire "), _item_seg(bis),
-        _seg(f" ({bis_ilvl}) — {text}."),
-    ]
+    else:
+        boss = _drop_link(bis, r"([\w-]+)-raid-guide")
+        if boss:
+            phrase = _difficulty_phrase(bis.track)
+            difficulty = f" on {phrase}" if phrase else ""
+            segments = [
+                _seg("Kill "), _seg(boss[0], boss[1]),
+                _seg(f" in the current raid{difficulty} to loot "),
+                _item_seg(bis), _seg(f" ({bis_ilvl})."),
+            ]
+        else:
+            catalyst = _drop_link(bis, r"catalyst-guide")
+            if catalyst:
+                segments = [
+                    _seg("Convert a tier token at the Catalyst (see the "),
+                    _seg("Catalyst guide", catalyst[1]),
+                    _seg(") — you need "),
+                    _item_seg(bis), _seg(f" ({bis_ilvl})."),
+                ]
+            else:
+                profession = _drop_link(bis, r"professions-([\w-]+)")
+                if profession:
+                    segments = [
+                        _seg("Craft "), _item_seg(bis),
+                        _seg(f" ({bis_ilvl}) with "),
+                        _seg(profession[0], profession[1]),
+                        _seg(" — or buy it on the Auction House."),
+                    ]
+                else:
+                    segments = [
+                        _seg("Acquire "), _item_seg(bis),
+                        _seg(f" ({bis_ilvl}) — {text}."),
+                    ]
+    note = _access_note(bis, bis_ilvl, avg_ilvl, gap)
+    if note:
+        segments.append(_seg(note))
+    return segments
+
+
+def _access_note(
+    bis: BisItem, bis_ilvl: int, avg_ilvl: int | None, gap: int
+) -> str:
+    """Stepping-stone note for players below the track their target sits on,
+    only when the slot itself is far behind (gap >= ACCESS_GAP_THRESHOLD):
+    Myth-track targets point at the Showdown-zone Champion path; Hero-track
+    targets name +7/Heroic sources."""
+    if not avg_ilvl or avg_ilvl >= 272 or gap < ACCESS_GAP_THRESHOLD:
+        return ""
+    if bis_ilvl >= 272 or bis.track in ("Mythic Raid", "Mythic+"):
+        return MYTH_GAP_NOTE
+    if avg_ilvl < 259 and (bis_ilvl >= 259 or bis.track == "Heroic Raid"):
+        return HERO_GAP_NOTE.format(avg=avg_ilvl)
+    return ""
 
 
 def _drop_link(bis: BisItem, pattern: str) -> tuple[str, str] | None:
@@ -293,12 +317,13 @@ def _plain(segments: list[TextSegment]) -> str:
     return "".join(s.text for s in segments)
 
 
-def _difficulty_phrase(track: str | None) -> str:
+def _difficulty_phrase(track: str | None) -> str | None:
+    """Difficulty phrase for raid drops. The M+ track says nothing about raid
+    difficulty, so a boss tagged with a Mythic+ bonus id gets no phrase."""
     return {
         "Mythic Raid": "Mythic difficulty",
         "Heroic Raid": "Heroic difficulty",
-        "Mythic+": "the Mythic+ track",
-    }.get(track, "the current difficulty")
+    }.get(track) if track else None
 
 
 def _title(slug: str) -> str:
@@ -316,10 +341,11 @@ def _title(slug: str) -> str:
 UPGRADE_GUIDANCE = {
     "Mythic+": (
         "You already have the BiS item. Run Mythic+ keystones: the same item drops "
-        "on the Hero track from +6 keys and on the Myth track from +10, and the "
-        "weekly Great Vault's Mythic slot can roll it too. If your copy is already "
-        "on the Myth track, spend Dawncrests at Cuzolth in Silvermoon City to "
-        "upgrade it to {bis_ilvl}; crests can't lift a lower track across tiers."
+        "on the Champion track from +2-6 keys, on the Hero track from +7 keys, and "
+        "the Myth track comes from the weekly Great Vault's Mythic slot on a +10 key. "
+        "If your copy is already on the Myth track, spend Dawncrests at Cuzolth in "
+        "Silvermoon City to upgrade it to {bis_ilvl}; crests can't lift a lower "
+        "track across tiers."
     ),
     "Mythic Raid": (
         "You already have the BiS item. Kill bosses in the current raid on Mythic "
@@ -333,13 +359,13 @@ UPGRADE_GUIDANCE = {
         "difficulty — the item drops there at up to {bis_ilvl} — and the weekly "
         "Great Vault's Heroic slot can roll it too. If your copy is already "
         "Hero-track, spend Dawncrests at Cuzolth in Silvermoon City to upgrade it "
-        "to {bis_ilvl}; a lower-track copy needs a Heroic-difficulty or +6 keystone drop."
+        "to {bis_ilvl}; a lower-track copy needs a Heroic-difficulty or +7 keystone drop."
     ),
 }
 
 UNKNOWN_TRACK_GUIDANCE = (
     "You already have the BiS item. Push Mythic or Hero content: Mythic difficulty "
-    "in the current raid and Mythic+ keys at +10 (Hero track from +6) drop "
+    "in the current raid and Mythic+ keys at +10 (Hero track from +7) drop "
     "higher-item-level copies, and the weekly Great Vault can roll one too. If your "
     "copy is on the right track, spend Dawncrests at Cuzolth in Silvermoon City to "
     "upgrade it to {bis_ilvl}."
@@ -349,7 +375,7 @@ CRAFTED_UPGRADE_GUIDANCE = (
     "You already have the BiS item. Crafted gear reaches {bis_ilvl} by re-crafting "
     "at a higher tier with a crafter, or by spending Dawncrests at Cuzolth in "
     "Silvermoon City to upgrade a Myth-track crafted copy — Myth-track crests come "
-    "from +10 keystones and Mythic raid."
+    "from the +10 Great Vault and Mythic raid."
 )
 
 CATALYST_UPGRADE_GUIDANCE = (
@@ -359,6 +385,69 @@ CATALYST_UPGRADE_GUIDANCE = (
     "Myth-track, spend Dawncrests at Cuzolth in Silvermoon City to upgrade it to "
     "{bis_ilvl}."
 )
+
+# Season config: catch-up roadmap per average item level band (Midnight S1
+# track ladder: Adventurer 220-237, Veteran 233-250, Champion 246-263,
+# Hero 259-276, Myth 272-289). Low-ilvl players get the manageable
+# open-world path (Val/Naigtal Showdown zones + field accolades) before
+# group content; near-BiS players get only the final stretch. The factor
+# scales the catch-up urgency so the roadmap ranks high for fresh players.
+CATCHUP_BANDS = [
+    (254, 1.0, (
+        "Your average item level is {avg}; the BiS list targets {max}. Start with "
+        "World Quests in Quel'Thalas, Heroic dungeons and Delves for "
+        "Adventurer/Veteran gear (220-250). Next, work the Val and Naigtal Showdown "
+        "zones on Normal World Tier (portal behind the Field Accolade quartermasters "
+        "in Silvermoon City): rares drop Champion gear (246-263) once a day, the "
+        "weekly world bosses Imperator Pertinax and Nexus-Captain Leth'ir guarantee a "
+        "Champion drop, and field accolades buy Champion gear for any slot from "
+        "Maren Silverwing in Silvermoon. From there, Normal raid and Mythic+ keys "
+        "+2-6 keep you on the Champion track until you're ready for +7 keystones (Hero)."
+    )),
+    (264, 0.75, (
+        "Your average item level is {avg}; the BiS list targets {max}. Max out the "
+        "Champion track (246-263): Normal raid once a week, Mythic+ keys +2-6, "
+        "Bountiful Delves tier 7+ with Restored Coffer Keys, and Nightmare Prey "
+        "Hunts. Field accolades from the Val and Naigtal Showdown zones buy Champion "
+        "gear for any slot (Maren Silverwing in Silvermoon). At ~263, switch to +7 "
+        "keystones and Heroic raid for Hero-track gear (259-276)."
+    )),
+    (277, 0.5, (
+        "Your average item level is {avg}; the BiS list targets {max}. Fill out the "
+        "Hero track (259-276): Mythic+ keys +7 and higher, Heroic raid once a week, "
+        "and Delve Hidden Troves (Trovehunter's Bounty). In the Showdown zones, "
+        "Heroic World Tier (recommended ~274) drops Hero gear from the world bosses "
+        "and yields far more field accolades for Hero tokens. Myth-track (272-289) "
+        "comes from Mythic raid, the Great Vault on a +10 key, and the 'Knocking Off "
+        "the Top' quest. Spend Dawncrests at Cuzolth in Silvermoon City to upgrade "
+        "gear along its track."
+    )),
+]
+CATCHUP_MYTH_FACTOR = 0.25
+CATCHUP_MYTH_COPY = (
+    "Your average item level is {avg}; the BiS list targets {max}. Close out the "
+    "last stretch: Mythic raid once a week, the Great Vault on a +10 key, and the "
+    "Showdown quest 'Knocking Off the Top' (Heroic World Tier) for Myth "
+    "cloak/belt/bracers. Crafted gear reaches Myth with 80 Myth Dawncrests. Spend "
+    "Dawncrests at Cuzolth in Silvermoon City to push pieces to the top of their "
+    "track, and use Ascendant Voidcores on fully-upgraded weapons and trinkets."
+)
+
+# Per-slot note for players below the track their BiS target lives on,
+# only shown when the slot itself is far behind (large ilvl gap).
+MYTH_GAP_NOTE = (
+    " You're not geared for Myth-track yet — for now, fill this slot with "
+    "Champion gear from the Val and Naigtal Showdown zones (rares, world bosses, "
+    "or field accolades at Maren Silverwing in Silvermoon)."
+)
+
+HERO_GAP_NOTE = (
+    " At {avg} ilvl the Hero-track version comes from +7 keystones or Heroic raid "
+    "— or buy it with field accolades from the Showdown zones' Heroic World Tier "
+    "(recommended ~274)."
+)
+
+ACCESS_GAP_THRESHOLD = 25
 
 
 def _upgrade_guidance(bis: BisItem, bis_ilvl: int) -> str:
