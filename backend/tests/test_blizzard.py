@@ -204,6 +204,59 @@ def test_mythic_rating_failure_is_non_fatal():
     assert summary.mythic_plus_rating is None
 
 
+def test_null_mythic_rating_is_non_fatal():
+    """The API returns `current_mythic_rating: null` for characters who have
+    never completed a keystone — must not crash (regression: Starbladee)."""
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.host == "oauth.battle.net":
+            return httpx.Response(200, json=TOKEN_RESPONSE)
+        if "mythic-keystone-profile" in str(request.url):
+            return httpx.Response(200, json={"current_mythic_rating": None})
+        return httpx.Response(200, json=profile_response())
+
+    client = make_client(handler)
+    summary = run(client.character_summary("eu", "draenor", "greyball"))
+    assert summary.mythic_plus_rating is None
+    assert summary.name == "Greyball"
+
+
+def test_null_equipment_fields_do_not_crash():
+    """Some items report null level/slot/quality — the slot must still be
+    parsed with fallbacks instead of raising (regression: Starbladee)."""
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.host == "oauth.battle.net":
+            return httpx.Response(200, json=TOKEN_RESPONSE)
+        if "mythic-keystone-profile" in str(request.url):
+            return httpx.Response(200, json={"current_mythic_rating": None})
+        if "character-media" in str(request.url):
+            return httpx.Response(200, json={})
+        if "media/item" in str(request.url):
+            return httpx.Response(200, json={"assets": []})
+        return httpx.Response(
+            200,
+            json={
+                "equipped_items": [
+                    {
+                        "item": {"id": 1, "name": "Weird Helm"},
+                        "slot": {"type": "HEAD", "name": "Head"},
+                        "level": None,
+                        "quality": None,
+                    },
+                    {
+                        "item": {"id": 2, "name": "Mystery Trinket"},
+                        "slot": None,
+                        "level": {"value": 250, "display_string": "250"},
+                    },
+                ]
+            },
+        )
+
+    client = make_client(handler)
+    equipped = run(client.equipment("eu", "draenor", "greyball"))
+    assert equipped["head"].ilvl == 0
+    assert equipped["head"].quality is None
+
+
 def test_unexpected_error_is_wrapped():
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.host == "oauth.battle.net":

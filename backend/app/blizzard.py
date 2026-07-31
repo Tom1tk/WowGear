@@ -200,7 +200,7 @@ class BlizzardClient:
                 region, f"/profile/wow/character/{realm}/{character}/mythic-keystone-profile",
                 namespace=f"profile-{region}",
             )
-            raw_rating = mplus.get("current_mythic_rating", {}).get("rating")
+            raw_rating = (mplus.get("current_mythic_rating") or {}).get("rating")
             if raw_rating is not None:
                 rating = int(round(raw_rating))
         except (BlizzardError, httpx.HTTPError, TypeError, ValueError):
@@ -217,11 +217,11 @@ class BlizzardClient:
             avatar_url = render_url = None
         return CharacterSummary(
             name=data.get("name") or character,
-            realm=data.get("realm", {}).get("slug") or realm,
+            realm=(data.get("realm") or {}).get("slug") or realm,
             region=region,
-            faction=data.get("faction", {}).get("name"),
-            race=data.get("race", {}).get("name"),
-            class_name=data.get("character_class", {}).get("name"),
+            faction=(data.get("faction") or {}).get("name"),
+            race=(data.get("race") or {}).get("name"),
+            class_name=(data.get("character_class") or {}).get("name"),
             spec=spec,
             level=data.get("level"),
             average_item_level=data.get("average_item_level"),
@@ -238,7 +238,7 @@ class BlizzardClient:
         )
         equipped: dict[str, EquippedItem] = {}
         for item in data.get("equipped_items", []):
-            slot_type = item.get("slot", {}).get("type", "")
+            slot_type = (item.get("slot") or {}).get("type", "")
             slot = SLOT_MAP.get(slot_type)
             if not slot:
                 continue
@@ -246,13 +246,13 @@ class BlizzardClient:
             enchantments = item.get("enchantments") or []
             if enchantments:
                 enchant = enchantments[0].get("display_string")
-            details = item.get("item", {})
+            details = item.get("item") or {}
             equipped[slot] = EquippedItem(
                 slot=slot,
                 item_id=details.get("id", 0),
                 name=item.get("name") or details.get("name", "Unknown"),
-                ilvl=item.get("level", {}).get("value", 0),
-                quality=item.get("quality", {}).get("name"),
+                ilvl=(item.get("level") or {}).get("value", 0),
+                quality=(item.get("quality") or {}).get("name"),
                 enchant=enchant,
                 inventory_type=(item.get("inventory_type") or {}).get("type"),
             )

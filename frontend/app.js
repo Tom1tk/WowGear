@@ -438,7 +438,13 @@ async function analyze(event) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const data = await resp.json();
+    let data = {};
+    const body = await resp.text();
+    try {
+      data = JSON.parse(body);
+    } catch {
+      data = {};
+    }
     if (!resp.ok) {
       throw new Error(data.detail || `Request failed (HTTP ${resp.status})`);
     }
