@@ -290,6 +290,25 @@ function positionTooltip(tooltip, x, y) {
   }
 }
 
+function appendSegments(container, segments, fallbackText) {
+  if (!segments || segments.length === 0) {
+    container.textContent = fallbackText;
+    return;
+  }
+  for (const segment of segments) {
+    if (segment.url) {
+      const a = document.createElement("a");
+      a.href = segment.url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = segment.text;
+      container.appendChild(a);
+    } else {
+      container.appendChild(document.createTextNode(segment.text));
+    }
+  }
+}
+
 function renderActions(actions) {
   const list = document.getElementById("action-list");
   list.innerHTML = "";
@@ -308,10 +327,10 @@ function renderActions(actions) {
     badge.textContent = CATEGORY_LABELS[action.category] ?? action.category;
     const title = document.createElement("div");
     title.className = "action-title";
-    title.textContent = action.title;
+    appendSegments(title, action.title_segments, action.title);
     const detail = document.createElement("div");
     detail.className = "action-detail";
-    detail.textContent = action.detail;
+    appendSegments(detail, action.detail_segments, action.detail);
     li.append(badge, title, detail);
     list.appendChild(li);
   }

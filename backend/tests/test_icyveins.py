@@ -56,6 +56,15 @@ def test_track_extracted_from_bonus_ids(parsed):
     assert by_slot["hands"].track == "Mythic+"  # bonus 12806
 
 
+def test_bonus_ids_stored_on_item():
+    items, _, _ = parse_bis_page(
+        (FIXTURE.parent / "brewmaster_bis.html").read_text(encoding="utf-8")
+    )
+    by_slot = {item.slot: item for item in items}
+    assert by_slot["waist"].bonus == [13786]
+    assert by_slot["neck"].bonus == [13786]
+
+
 def test_bonus_string_with_empty_segments_does_not_crash():
     html = (
         '<div id="bis_0_0">'

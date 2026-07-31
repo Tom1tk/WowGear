@@ -2,7 +2,7 @@
 
 import re
 
-from .models import Action, BisItem, EquippedItem, SLOT_LABELS, SlotComparison
+from .models import Action, BisItem, EquippedItem, SLOT_LABELS, SlotComparison, TextSegment
 
 SLOT_WEIGHTS = {
     "main_hand": 1.5,
@@ -69,13 +69,21 @@ def analyze_gear(
                     status="empty", ilvl_gap=gap,
                 )
             )
+            title_segments = [
+                _seg(f"Fill empty {SLOT_LABELS[slot].lower()}: get "),
+                _item_seg(bis),
+                _seg(f" ({bis_ilvl})"),
+            ]
+            detail_segments = _drop_segments(bis, bis_ilvl)
             actions.append(
                 Action(
                     slot=slot, category="gear",
-                    title=f"Fill empty {SLOT_LABELS[slot].lower()}: get {bis.name} ({bis_ilvl})",
-                    detail=_drop_detail(bis, bis_ilvl),
+                    title=_plain(title_segments),
+                    detail=_plain(detail_segments),
                     urgency=EMPTY_BASE_URGENCY + gap * SLOT_WEIGHTS.get(slot, 1.0),
                     target_item=bis.name, target_ilvl=bis_ilvl,
+                    title_segments=title_segments,
+                    detail_segments=detail_segments,
                 )
             )
         elif current.item_id == bis.item_id:
@@ -87,16 +95,24 @@ def analyze_gear(
                         bis=bis, status="upgrade", ilvl_gap=gap,
                     )
                 )
+                title_segments = [
+                    _seg("Upgrade your "),
+                    _item_seg(bis),
+                    _seg(f" ({current.ilvl} -> {bis_ilvl})"),
+                ]
+                detail = (
+                    f"You already have the BiS item. Push {_track_hint(bis, bis_ilvl)} "
+                    "to get a higher-item-level drop of it."
+                )
                 actions.append(
                     Action(
                         slot=slot, category="upgrade",
-                        title=f"Upgrade your {bis.name} ({current.ilvl} -> {bis_ilvl})",
-                        detail=(
-                            f"You already have the BiS item. Push {_track_hint(bis, bis_ilvl)} "
-                            "to get a higher-item-level drop of it."
-                        ),
+                        title=_plain(title_segments),
+                        detail=detail,
                         urgency=gap * UPGRADE_SAME_ITEM_FACTOR * SLOT_WEIGHTS.get(slot, 1.0),
                         target_item=bis.name, target_ilvl=bis_ilvl,
+                        title_segments=title_segments,
+                        detail_segments=[_seg(detail)],
                     )
                 )
             else:
@@ -122,16 +138,23 @@ def analyze_gear(
                     bis=bis, status="upgrade", ilvl_gap=gap,
                 )
             )
+            title_segments = [
+                _seg(f"Replace {SLOT_LABELS[slot].lower()}: "),
+                _item_seg_id(current.item_id, current.name),
+                _seg(f" ({current.ilvl}) -> "),
+                _item_seg(bis),
+                _seg(f" ({bis_ilvl})"),
+            ]
+            detail_segments = _drop_segments(bis, bis_ilvl)
             actions.append(
                 Action(
                     slot=slot, category="gear",
-                    title=(
-                        f"Replace {SLOT_LABELS[slot].lower()}: {current.name} ({current.ilvl}) "
-                        f"-> {bis.name} ({bis_ilvl})"
-                    ),
-                    detail=_drop_detail(bis, bis_ilvl),
+                    title=_plain(title_segments),
+                    detail=_plain(detail_segments),
                     urgency=gap * SLOT_WEIGHTS.get(slot, 1.0),
                     target_item=bis.name, target_ilvl=bis_ilvl,
+                    title_segments=title_segments,
+                    detail_segments=detail_segments,
                 )
             )
 
@@ -180,55 +203,97 @@ def catchup_action(avg_ilvl: int | None, bis_max_ilvl: int) -> Action | None:
         detail=detail,
         urgency=deficit * CATCHUP_FACTOR,
         target_ilvl=bis_max_ilvl,
+        title_segments=[_seg(f"Close the item level gap ({avg_ilvl} -> {bis_max_ilvl})")],
+        detail_segments=[_seg(detail)],
     )
 
 
-def _drop_detail(bis: BisItem, bis_ilvl: int) -> str:
+def _drop_segments(bis: BisItem, bis_ilvl: int) -> list[TextSegment]:
+    """Drop advice as linked text; concatenating the segments yields exactly
+    the plain `detail` string. Item names link to Wowhead; bosses, dungeons,
+    the Catalyst and professions link to their Icy Veins guides (from the
+    parsed BiS page, so a new season's sources flow through automatically)."""
     text = bis.drop or ""
     if not text:
-        return f"Acquire {bis.name} ({bis_ilvl}) — check the Icy Veins guide for the drop source."
+        return [
+            _seg("Acquire "), _item_seg(bis),
+            _seg(f" ({bis_ilvl}) — check the Icy Veins guide for the drop source."),
+        ]
 
-    dungeon = _match_link(bis.drop_links, r"([\w-]+)-dungeon-guide")
+    dungeon = _drop_link(bis, r"([\w-]+)-dungeon-guide")
     if dungeon:
-        return (
-            f"Farm {_link_text(bis, dungeon)} on Mythic+ (Hero-track drops) until "
-            f"{bis.name} ({bis_ilvl}) drops."
-        )
-    boss = _match_link(bis.drop_links, r"([\w-]+)-raid-guide")
+        return [
+            _seg("Farm "), _seg(dungeon[0], dungeon[1]),
+            _seg(" on Mythic+ (Hero-track drops) until "),
+            _item_seg(bis), _seg(f" ({bis_ilvl}) drops."),
+        ]
+    boss = _drop_link(bis, r"([\w-]+)-raid-guide")
     if boss:
-        return (
-            f"Kill {_link_text(bis, boss)} in the current raid on "
-            f"{_difficulty_phrase(bis.track)} to loot {bis.name} ({bis_ilvl})."
-        )
-    if _match_link(bis.drop_links, r"catalyst-guide"):
-        return (
-            f"Convert a tier token at the Catalyst (see the Catalyst guide) — "
-            f"you need {bis.name} ({bis_ilvl})."
-        )
-    profession = _match_link(bis.drop_links, r"professions-([\w-]+)")
+        return [
+            _seg("Kill "), _seg(boss[0], boss[1]),
+            _seg(f" in the current raid on {_difficulty_phrase(bis.track)} to loot "),
+            _item_seg(bis), _seg(f" ({bis_ilvl})."),
+        ]
+    catalyst = _drop_link(bis, r"catalyst-guide")
+    if catalyst:
+        return [
+            _seg("Convert a tier token at the Catalyst (see the "),
+            _seg("Catalyst guide", catalyst[1]),
+            _seg(") — you need "),
+            _item_seg(bis), _seg(f" ({bis_ilvl})."),
+        ]
+    profession = _drop_link(bis, r"professions-([\w-]+)")
     if profession:
-        return (
-            f"Craft {bis.name} ({bis_ilvl}) with {_title(profession)} — "
-            "or buy it on the Auction House."
-        )
-    return f"Acquire {bis.name} ({bis_ilvl}) — {text}."
+        return [
+            _seg("Craft "), _item_seg(bis),
+            _seg(f" ({bis_ilvl}) with "),
+            _seg(profession[0], profession[1]),
+            _seg(" — or buy it on the Auction House."),
+        ]
+    return [
+        _seg("Acquire "), _item_seg(bis),
+        _seg(f" ({bis_ilvl}) — {text}."),
+    ]
 
 
-def _match_link(links: list[str], pattern: str) -> str | None:
-    for link in links:
+def _drop_link(bis: BisItem, pattern: str) -> tuple[str, str] | None:
+    """First drop link matching `pattern`: its link text (page text when
+    present, else the slug title-cased) and href. The making-gold link on
+    crafted items is a money guide, not a profession — skip it."""
+    for index, link in enumerate(bis.drop_links):
         match = re.search(pattern, link)
-        if match:
-            return match.group(1)
+        if not match:
+            continue
+        slug = match.group(1) if match.re.groups else match.group(0)
+        if slug == "making-gold":
+            continue
+        text = bis.drop_link_texts[index] if index < len(bis.drop_link_texts) else ""
+        return (text or _title(slug)), link
     return None
 
 
-def _link_text(bis: BisItem, slug: str) -> str:
-    """Prefer the page's own link text (keeps punctuation like Belo'ren),
-    falling back to the slug title-cased."""
-    for link, text in zip(bis.drop_links, bis.drop_link_texts):
-        if slug in link and text:
-            return text
-    return _title(slug)
+def _item_seg(bis: BisItem) -> TextSegment:
+    return _seg(bis.name, _wowhead_url(bis.item_id, bis.name, bis.bonus))
+
+
+def _item_seg_id(item_id: int, name: str) -> TextSegment:
+    return _seg(name, _wowhead_url(item_id, name))
+
+
+def _wowhead_url(item_id: int, name: str, bonus: list[int] | None = None) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+    url = f"https://www.wowhead.com/item={item_id}/{slug}"
+    if bonus:
+        url += "?bonus=" + ":".join(str(b) for b in bonus)
+    return url
+
+
+def _seg(text: str, url: str | None = None) -> TextSegment:
+    return TextSegment(text=text, url=url)
+
+
+def _plain(segments: list[TextSegment]) -> str:
+    return "".join(s.text for s in segments)
 
 
 def _difficulty_phrase(track: str | None) -> str:

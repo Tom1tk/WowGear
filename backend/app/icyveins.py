@@ -20,6 +20,9 @@ SLOT_ALIASES = {
 
 POSITIONAL_SLOTS = {"Ring": "ring", "Trinket": "trinket"}
 
+# Season config: map WoW bonus ids to track labels. A new season can add
+# new track bonus ids here; everything else (items, bosses, dungeons, guide
+# links) is parsed from the current Icy Veins BiS page automatically.
 BONUS_TRACKS = {
     13786: "Mythic Raid",
     12806: "Mythic+",
@@ -109,6 +112,7 @@ def parse_bis_page(html: str) -> tuple[list[BisItem], int, list[FarmTip]]:
                 drop=drop,
                 drop_links=drop_links,
                 drop_link_texts=drop_link_texts,
+                bonus=bonus,
                 enchant=enchant,
                 gems=gems,
             )

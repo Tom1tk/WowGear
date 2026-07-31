@@ -648,6 +648,19 @@ h2 {
 .action-title { font-weight: 600; font-size: 14px; }
 .action-detail { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
 
+.action-title a, .action-detail a {
+  color: var(--gold);
+  text-decoration: underline;
+  text-decoration-color: rgba(217, 164, 65, 0.35);
+  text-underline-offset: 2px;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.action-title a:hover, .action-detail a:hover {
+  color: var(--gold-bright);
+  text-decoration-color: currentColor;
+}
+
 /* ── Comparison table ───────────────────────────────────────────────── */
 
 .table-wrap {

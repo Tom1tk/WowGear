@@ -46,6 +46,12 @@ class CharacterSummary(BaseModel):
     render_url: str | None = None
 
 
+class TextSegment(BaseModel):
+    """One piece of rendered text, optionally a hyperlink (href)."""
+    text: str
+    url: str | None = None
+
+
 class BisItem(BaseModel):
     slot: str
     item_id: int
@@ -55,6 +61,8 @@ class BisItem(BaseModel):
     drop: str = ""
     drop_links: list[str] = Field(default_factory=list)
     drop_link_texts: list[str] = Field(default_factory=list)
+    # WoW bonus ids from the page's data-wowhead attribute, e.g. [13786].
+    bonus: list[int] = Field(default_factory=list)
     enchant: str | None = None
     gems: list[str] = Field(default_factory=list)
 
@@ -77,6 +85,10 @@ class Action(BaseModel):
     urgency: float
     target_item: str | None = None
     target_ilvl: int | None = None
+    # Linked rendering: concatenating segment texts yields exactly
+    # `title` / `detail`; a non-null url makes that segment a hyperlink.
+    title_segments: list[TextSegment] = Field(default_factory=list)
+    detail_segments: list[TextSegment] = Field(default_factory=list)
 
 
 class FarmTip(BaseModel):
