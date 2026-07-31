@@ -32,6 +32,10 @@ await page.click("#analyze-btn");
 // --- while the request is in flight ---
 await page.waitForSelector("#skeletons:not([hidden])", { timeout: 10000 });
 chk("skeletons visible during fetch", true);
+chk("skeleton display:grid while loading",
+  await page.evaluate(() => getComputedStyle(document.getElementById("skeletons")).display) === "grid");
+chk("real layout hidden during fetch",
+  await page.evaluate(() => getComputedStyle(document.getElementById("results-layout")).display === "none"));
 chk("top bar active during fetch",
   await page.evaluate(() => document.getElementById("top-bar").classList.contains("active")));
 chk("top bar width advanced",
@@ -41,8 +45,10 @@ await page.waitForSelector("#results:not([hidden]) #character-card h2", { timeou
 await page.waitForLoadState("networkidle");
 
 // --- after load ---
-chk("skeletons hidden after fetch",
-  await page.evaluate(() => document.getElementById("skeletons").hidden));
+chk("skeletons gone after fetch (display:none)",
+  await page.evaluate(() => getComputedStyle(document.getElementById("skeletons")).display === "none"));
+chk("real layout visible after fetch",
+  await page.evaluate(() => getComputedStyle(document.getElementById("results-layout")).display === "grid"));
 chk("top bar inactive after fetch",
   await page.evaluate(() => !document.getElementById("top-bar").classList.contains("active")));
 

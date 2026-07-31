@@ -382,7 +382,9 @@ async function analyze(event) {
   setLoading(true);
   resultsEl.hidden = false;
   const skeletons = document.getElementById("skeletons");
+  const resultsLayout = document.getElementById("results-layout");
   skeletons.hidden = false;
+  resultsLayout.hidden = true;
   const button = document.getElementById("analyze-btn");
   button.disabled = true;
 
@@ -404,6 +406,7 @@ async function analyze(event) {
       throw new Error(data.detail || `Request failed (HTTP ${resp.status})`);
     }
     skeletons.hidden = true;
+    resultsLayout.hidden = false;
     renderCharacter(data.character);
     renderEquipment(data.comparisons, data.bis_max_ilvl, data.character.render_url, data.character.avatar_url);
     renderActions(data.actions);
