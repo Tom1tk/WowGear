@@ -15,6 +15,6 @@ def test_all_slugs_follow_the_bi_s_pattern():
         class_segment = class_name.lower().replace(" ", "-")
         for spec in class_data["specs"]:
             assert spec["slug"].endswith("-gear-best-in-slot"), spec["slug"]
-            assert class_segment in spec["slug"].split("-"), (
+            assert class_segment in spec["slug"], (
                 f"{spec['slug']} does not contain its class {class_segment}"
             )
