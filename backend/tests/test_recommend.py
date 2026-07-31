@@ -15,8 +15,12 @@ def bis(slot: str, item_id: int, name: str, drop: str = "", links=None) -> BisIt
     )
 
 
-def equipped(slot: str, item_id: int, name: str, ilvl: int) -> EquippedItem:
-    return EquippedItem(slot=slot, item_id=item_id, name=name, ilvl=ilvl)
+def equipped(slot: str, item_id: int, name: str, ilvl: int,
+             inventory_type: str | None = None) -> EquippedItem:
+    return EquippedItem(
+        slot=slot, item_id=item_id, name=name, ilvl=ilvl,
+        inventory_type=inventory_type,
+    )
 
 
 BIS_ITEMS = [
@@ -108,3 +112,41 @@ def test_catchup_action_only_when_below_max():
     assert action.urgency == pytest.approx(12 * 0.25)
     assert catchup_action(avg_ilvl=289, bis_max_ilvl=289) is None
     assert catchup_action(avg_ilvl=None, bis_max_ilvl=289) is None
+
+
+def test_catchup_action_skipped_within_one_ilvl():
+    assert catchup_action(avg_ilvl=288, bis_max_ilvl=289) is None
+
+
+def test_catchup_action_mentions_current_systems():
+    action = catchup_action(avg_ilvl=277, bis_max_ilvl=289)
+    assert "Dawncrests" in action.detail
+    assert "Great Vault" in action.detail
+
+
+def test_two_handed_main_hand_suppresses_off_hand_advice():
+    bis_items = BIS_ITEMS + [
+        bis("off_hand", 800, "BiS Off Hand"),
+    ]
+    equipped_items = fill_matching({})
+    equipped_items["main_hand"] = equipped(
+        "main_hand", 701, "Old Staff", 280, inventory_type="TWOHWEAPON"
+    )
+    comparisons, actions = analyze_gear(equipped_items, bis_items, BIS_ILVL)
+    off_hand = next(c for c in comparisons if c.slot == "off_hand")
+    assert off_hand.status == "no_bis"
+    assert not any(a.slot == "off_hand" for a in actions)
+
+
+def test_one_handed_main_hand_keeps_off_hand_advice():
+    bis_items = BIS_ITEMS + [
+        bis("off_hand", 800, "BiS Off Hand"),
+    ]
+    equipped_items = fill_matching({})
+    equipped_items["main_hand"] = equipped(
+        "main_hand", 701, "Old Sword", 280, inventory_type="WEAPON"
+    )
+    comparisons, actions = analyze_gear(equipped_items, bis_items, BIS_ILVL)
+    off_hand = next(c for c in comparisons if c.slot == "off_hand")
+    assert off_hand.status == "empty"
+    assert any(a.slot == "off_hand" for a in actions)

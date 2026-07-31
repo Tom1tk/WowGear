@@ -31,7 +31,23 @@ def analyze_gear(
     comparisons: list[SlotComparison] = []
     actions: list[Action] = []
 
+    # A two-handed main hand weapon means the off-hand slot cannot be filled
+    # (e.g. a Brewmaster with a staff); never recommend one in that case.
+    main_hand = equipped.get("main_hand")
+    main_is_two_handed = bool(
+        main_hand
+        and main_hand.inventory_type in ("TWOHWEAPON", "TWO_HANDED", "TWO-HANDED")
+    )
+
     for slot in SLOT_LABELS:
+        if slot == "off_hand" and main_is_two_handed:
+            comparisons.append(
+                SlotComparison(
+                    slot=slot, slot_label=SLOT_LABELS[slot], equipped=equipped.get(slot),
+                    bis=None, status="no_bis", ilvl_gap=None,
+                )
+            )
+            continue
         bis = bis_by_slot.get(slot)
         current = equipped.get(slot)
         if bis is None:
@@ -124,18 +140,44 @@ def analyze_gear(
 
 
 def catchup_action(avg_ilvl: int | None, bis_max_ilvl: int) -> Action | None:
-    """Generic ilvl catch-up action when the character lags the BiS ceiling."""
+    """Generic ilvl catch-up action when the character lags the BiS ceiling.
+
+    Advice is tiered by the size of the deficit: within 1 ilvl of the ceiling
+    there is nothing worth doing, so no action is emitted (telling a 288
+    player to farm Heroic dungeons for one point is bad advice)."""
     if avg_ilvl is None or bis_max_ilvl <= 0 or avg_ilvl >= bis_max_ilvl:
         return None
     deficit = bis_max_ilvl - avg_ilvl
+    if deficit < 2:
+        return None
+
+    if deficit <= 4:
+        detail = (
+            f"Your average item level is {avg_ilvl}; the BiS list targets {bis_max_ilvl}. "
+            "You're nearly there — pick up Hero-track pieces from Mythic+ keys and the "
+            "Great Vault, then spend Dawncrests at the upgrade vendor (Cuzolth in "
+            "Silvermoon City) to push your best items up their track. Ascendant Voidcores "
+            "can add bonus ranks to Hero/Myth-track weapons and trinkets."
+        )
+    elif deficit <= 9:
+        detail = (
+            f"Your average item level is {avg_ilvl}; the BiS list targets {bis_max_ilvl}. "
+            "Run Mythic+ keystones (Hero-track drops from +6 keys, Myth-track from +10) "
+            "and Heroic raid, and open the Great Vault every week. Upgrade your keepers "
+            "with Dawncrests at Cuzolth in Silvermoon City, and use Nebulous Voidcores "
+            "(2 per week) for extra Hero/Myth-track rolls."
+        )
+    else:
+        detail = (
+            f"Your average item level is {avg_ilvl}; the BiS list targets {bis_max_ilvl}. "
+            "Start with Delves and Heroic dungeons (Veteran/Champion-track gear), then move "
+            "to Mythic+ keystones for Hero-track drops and the Great Vault each week. "
+            "Dawncrests upgrade gear along its track at Cuzolth in Silvermoon City."
+        )
     return Action(
         category="catchup",
-        title=f"Catch up your average item level ({avg_ilvl} -> {bis_max_ilvl})",
-        detail=(
-            f"Your average item level is {avg_ilvl}; the BiS list targets {bis_max_ilvl}. "
-            "Run Heroic dungeons (Champion-track gear) and Mythic+ keystones (Hero-track gear) "
-            "for upgrades, and open the Great Vault every week."
-        ),
+        title=f"Close the item level gap ({avg_ilvl} -> {bis_max_ilvl})",
+        detail=detail,
         urgency=deficit * CATCHUP_FACTOR,
         target_ilvl=bis_max_ilvl,
     )

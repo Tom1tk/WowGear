@@ -254,6 +254,7 @@ class BlizzardClient:
                 ilvl=item.get("level", {}).get("value", 0),
                 quality=item.get("quality", {}).get("name"),
                 enchant=enchant,
+                inventory_type=(item.get("inventory_type") or {}).get("type"),
             )
 
         async with self._make_client() as client:

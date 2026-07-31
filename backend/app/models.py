@@ -25,6 +25,9 @@ class EquippedItem(BaseModel):
     quality: str | None = None
     enchant: str | None = None
     icon_url: str | None = None
+    # Blizzard inventory type, e.g. "WEAPON", "TWOHWEAPON", "SHIELD" — used to
+    # suppress off-hand advice when the main hand is two-handed.
+    inventory_type: str | None = None
 
 
 class CharacterSummary(BaseModel):
