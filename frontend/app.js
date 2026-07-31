@@ -2,6 +2,10 @@ const form = document.getElementById("analyze-form");
 const statusEl = document.getElementById("status");
 const resultsEl = document.getElementById("results");
 const specSelect = document.getElementById("spec");
+const realmSelect = document.getElementById("realm");
+const regionSelect = document.getElementById("region");
+
+const REALM_STORAGE_KEY = "wowgear:realm";
 
 const CATEGORY_LABELS = {
   gear: "Gear",
@@ -428,5 +432,51 @@ async function analyze(event) {
   }
 }
 
+async function loadRealms(region, preferredSlug) {
+  let loaded = false;
+  try {
+    const resp = await fetch(`/api/realms?region=${encodeURIComponent(region)}`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    realmSelect.innerHTML = "";
+    for (const realm of data.realms) {
+      const option = document.createElement("option");
+      option.value = realm.slug;
+      option.textContent = realm.name;
+      realmSelect.appendChild(option);
+    }
+    loaded = true;
+  } catch {
+    // Keep whatever list we have; if empty, show a placeholder option.
+    if (realmSelect.options.length === 0) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "— select realm —";
+      realmSelect.appendChild(option);
+    }
+  }
+  const stored = preferredSlug || localStorage.getItem(REALM_STORAGE_KEY) || "draenor";
+  let match = [...realmSelect.options].find((option) => option.value === stored);
+  if (!match && stored) {
+    const option = document.createElement("option");
+    option.value = stored;
+    option.textContent = stored;
+    realmSelect.appendChild(option);
+    match = option;
+  }
+  realmSelect.value = match ? match.value : (realmSelect.options[0]?.value ?? "");
+  return loaded;
+}
+
+regionSelect.addEventListener("change", () => {
+  const region = regionSelect.value;
+  loadRealms(region, localStorage.getItem(REALM_STORAGE_KEY) || "");
+});
+
+realmSelect.addEventListener("change", () => {
+  localStorage.setItem(REALM_STORAGE_KEY, realmSelect.value);
+});
+
 form.addEventListener("submit", analyze);
 loadSpecs();
+loadRealms("eu");

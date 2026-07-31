@@ -52,6 +52,24 @@ async def specs() -> dict:
     return SPECS_BY_CLASS
 
 
+@app.get("/api/realms")
+async def realms(region: str = "eu") -> dict:
+    region = (region or settings.default_region).strip().lower()
+    try:
+        data = await blizzard._get(region, "/data/wow/realm/index", namespace=f"dynamic-{region}")
+    except BlizzardError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    realm_list = sorted(
+        (
+            {"slug": realm["slug"], "name": realm["name"]}
+            for realm in data.get("realms", [])
+            if realm.get("slug")
+        ),
+        key=lambda realm: realm["name"].lower(),
+    )
+    return {"region": region, "realms": realm_list}
+
+
 @app.post("/api/analyze")
 async def analyze(request: AnalyzeRequest) -> AnalyzeResult:
     region = (request.region or settings.default_region).strip().lower()

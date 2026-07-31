@@ -25,7 +25,16 @@ await page.route("**/api/analyze", async (route) => {
 });
 
 await page.goto(BASE);
-await page.fill("#realm", "draenor");
+await page.waitForSelector('#realm option[value="draenor"]', { state: "attached", timeout: 30000 });
+chk("realm dropdown populated", await page.locator("#realm option").count() > 50);
+
+// realm choice persists via localStorage across reloads
+await page.selectOption("#realm", "silvermoon");
+await page.reload();
+await page.waitForSelector('#realm option[value="silvermoon"]', { state: "attached", timeout: 30000 });
+chk("stored realm restored after reload",
+  await page.evaluate(() => document.getElementById("realm").value) === "silvermoon");
+await page.selectOption("#realm", "draenor");
 await page.fill("#character", "Greyball");
 await page.click("#analyze-btn");
 
