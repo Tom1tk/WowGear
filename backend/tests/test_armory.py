@@ -28,6 +28,12 @@ def test_parse_character_summary():
     assert summary.average_item_level == 277
     assert summary.achievement_points == 2280
     assert summary.mythic_plus_rating == 2292
+    assert summary.avatar_url == (
+        "https://render.worldofwarcraft.com/eu/character/draenor/200/189385160-avatar.jpg"
+    )
+    assert summary.render_url == (
+        "https://render.worldofwarcraft.com/eu/character/draenor/200/189385160-main-raw.png"
+    )
 
 
 def test_parse_all_gear_slots():

@@ -24,6 +24,7 @@ class EquippedItem(BaseModel):
     ilvl: int
     quality: str | None = None
     enchant: str | None = None
+    icon_url: str | None = None
 
 
 class CharacterSummary(BaseModel):
@@ -38,6 +39,8 @@ class CharacterSummary(BaseModel):
     average_item_level: int | None = None
     achievement_points: int | None = None
     mythic_plus_rating: int | None = None
+    avatar_url: str | None = None
+    render_url: str | None = None
 
 
 class BisItem(BaseModel):

@@ -13,9 +13,17 @@ from app.blizzard import (
     BlizzardError,
     CharacterNotFoundError,
     RateLimitedError,
+    _ITEM_MEDIA_CACHE,
 )
 
 TOKEN_RESPONSE = {"access_token": "test-token", "token_type": "bearer", "expires_in": 86400}
+
+
+@pytest.fixture(autouse=True)
+def clear_item_media_cache():
+    _ITEM_MEDIA_CACHE.clear()
+    yield
+    _ITEM_MEDIA_CACHE.clear()
 
 
 def profile_response() -> dict:
@@ -54,13 +62,15 @@ def run(coro):
     return asyncio.run(coro)
 
 
-def test_token_cached_between_requests():
+def test_token_fetched_per_request_batch_with_bearer_header():
     token_calls = {"count": 0}
+    seen_auth_headers = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.host == "oauth.battle.net":
             token_calls["count"] += 1
             return httpx.Response(200, json=TOKEN_RESPONSE)
+        seen_auth_headers.append(request.headers.get("authorization", ""))
         return httpx.Response(200, json=profile_response())
 
     client = make_client(handler)
@@ -69,8 +79,10 @@ def test_token_cached_between_requests():
     assert summary.class_name == "Monk"
     assert summary.spec == "Brewmaster"
     assert summary.average_item_level == 277
+    assert all("Bearer test-token" in h for h in seen_auth_headers)
+    assert "access_token" not in str(seen_auth_headers)
     run(client.character_summary("eu", "draenor", "greyball"))
-    assert token_calls["count"] == 1
+    assert token_calls["count"] > 1  # tokens are intentionally not reused
 
 
 def test_equipment_slot_mapping():
@@ -84,6 +96,49 @@ def test_equipment_slot_mapping():
     assert equipped["head"].item_id == 250015
     assert equipped["head"].ilvl == 276
     assert equipped["head"].quality == "Epic"
+
+
+def test_equipment_fetches_item_icons():
+    media_response = {
+        "assets": [
+            {"key": "icon", "value": "https://render.worldofwarcraft.com/eu/icons/56/icon.jpg"}
+        ]
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.host == "oauth.battle.net":
+            return httpx.Response(200, json=TOKEN_RESPONSE)
+        if "media/item" in str(request.url):
+            return httpx.Response(200, json=media_response)
+        return httpx.Response(200, json=equipment_response())
+
+    client = make_client(handler)
+    equipped = run(client.equipment("eu", "draenor", "greyball"))
+    assert equipped["head"].icon_url == "https://render.worldofwarcraft.com/eu/icons/56/icon.jpg"
+
+
+def test_character_media_parsed():
+    media_response = {
+        "assets": [
+            {"key": "avatar", "value": "https://render.worldofwarcraft.com/eu/avatar.jpg"},
+            {"key": "main-raw", "value": "https://render.worldofwarcraft.com/eu/main-raw.png"},
+        ]
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.host == "oauth.battle.net":
+            return httpx.Response(200, json=TOKEN_RESPONSE)
+        if "character-media" in str(request.url):
+            return httpx.Response(200, json=media_response)
+        if "mythic-keystone-profile" in str(request.url):
+            return httpx.Response(200, json={"current_mythic_rating": {"rating": 2291.769}})
+        return httpx.Response(200, json=profile_response())
+
+    client = make_client(handler)
+    summary = run(client.character_summary("eu", "draenor", "greyball"))
+    assert summary.avatar_url == "https://render.worldofwarcraft.com/eu/avatar.jpg"
+    assert summary.render_url == "https://render.worldofwarcraft.com/eu/main-raw.png"
+    assert summary.mythic_plus_rating == 2292
 
 
 def test_character_not_found():

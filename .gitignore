@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .DS_Store
+backend/app/item_icon_cache.json

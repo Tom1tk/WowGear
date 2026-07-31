@@ -88,6 +88,12 @@ def parse_armory_page(html: str, region: str) -> tuple[CharacterSummary, dict[st
         )
 
     spec = character.get("spec")
+    avatar = character.get("avatar")
+    if isinstance(avatar, dict):
+        avatar = avatar.get("url")
+    render_raw = character.get("renderRaw")
+    if isinstance(render_raw, dict):
+        render_raw = render_raw.get("url")
     summary = CharacterSummary(
         name=character.get("name") or "?",
         realm=(character.get("realm") or {}).get("slug") or "?",
@@ -100,6 +106,8 @@ def parse_armory_page(html: str, region: str) -> tuple[CharacterSummary, dict[st
         average_item_level=character.get("averageItemLevel"),
         achievement_points=character.get("achievement"),
         mythic_plus_rating=(character.get("dungeonRating") or {}).get("rating"),
+        avatar_url=avatar,
+        render_url=render_raw,
     )
     return summary, equipped
 

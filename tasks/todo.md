@@ -131,3 +131,13 @@ layer. Also fixed: equipment item names live at the top level of each equipped
 item (not under `item.name`), and mythic+ rating is a float (rounded to int).
 Doc requirements confirmed via portal JSON API: account needs Battle.net
 Authenticator (2FA) + accepted Developer API ToU before requests.
+
+## Review (2026-07-31)
+- Fixed the final 403 bug: profile endpoints were called with `namespace=None`,
+  and Blizzard now rejects nameless profile requests with
+  `403 BLZWEBAPI00000403 Forbidden`. Passed `namespace=profile-{region}` for
+  character/mythic+/media/equipment calls. Verified live: `/api/analyze` →
+  `source: blizzard`, avatar+render URLs, 16/16 icons, all 29 tests pass.
+- All prior "throttling / token flagged / 403 burst" conclusions were this same
+  missing-namespace bug misdiagnosed. Comments in blizzard.py corrected.
+- Server restarted with fix; lessons recorded in tasks/lessons.md.

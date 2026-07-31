@@ -8,8 +8,7 @@
 </head>
 <body>
   <header>
-    <h1>WowGearBis</h1>
-    <p class="tagline">Compare your gear against the Icy Veins Best-in-Slot list and get a plan.</p>
+    <h1>WowGearBis <span class="tagline">Gear vs Best-in-Slot</span></h1>
   </header>
 
   <main>
@@ -43,12 +42,20 @@
     <div id="status" class="status" hidden></div>
 
     <section id="results" hidden>
-      <div id="character-card" class="card"></div>
+      <div class="layout">
+        <div id="character-card" class="card char-card"></div>
+        <section class="card todo-panel">
+          <h2>Your to-do list</h2>
+          <ol id="action-list" class="action-list"></ol>
+        </section>
+      </div>
 
-      <h2>Your to-do list</h2>
-      <ol id="action-list" class="action-list"></ol>
+      <div id="tooltip" class="tooltip" hidden></div>
 
-      <h2>Gear comparison</h2>
+      <div class="section-head">
+        <h2>Gear comparison</h2>
+        <button type="button" id="sort-toggle">Biggest Δ first</button>
+      </div>
       <div class="table-wrap">
         <table id="comparison-table">
           <thead>

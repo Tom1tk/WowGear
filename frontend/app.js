@@ -47,6 +47,39 @@ function slotDeltaClass(gap) {
   return "bad";
 }
 
+const QUALITY_COLORS = {
+  Poor: "#9d9d9d",
+  Common: "#ffffff",
+  Uncommon: "#1eff00",
+  Rare: "#0070dd",
+  Epic: "#a335ee",
+  Legendary: "#ff8000",
+  Artifact: "#e6cc80",
+  Heirloom: "#00ccff",
+};
+
+function qualityColor(quality) {
+  return QUALITY_COLORS[quality] ?? "#ffffff";
+}
+
+const SLOT_SHORT = {
+  head: "HEAD", neck: "NECK", shoulders: "SHOULD", back: "BACK",
+  chest: "CHEST", wrist: "WRIST", hands: "HANDS", waist: "WAIST",
+  legs: "LEGS", feet: "FEET", ring_1: "RING 1", ring_2: "RING 2",
+  trinket_1: "TRINKET 1", trinket_2: "TRINKET 2",
+  main_hand: "MAIN HAND", off_hand: "OFF HAND",
+};
+
+// Paperdoll layout mirrors the retail character frame (verified against the
+// game's PaperDollFrame.xml): left column head→wrist, right column
+// hands→waist→legs→feet→rings→trinkets, weapons on a bottom row beneath the
+// character render. Shirt/tabard slots are omitted (no data for them).
+const PAPERDOLL_COLUMNS = {
+  left: ["head", "neck", "shoulders", "back", "chest", "wrist"],
+  right: ["hands", "waist", "legs", "feet", "ring_1", "ring_2", "trinket_1", "trinket_2"],
+  bottom: ["main_hand", "off_hand"],
+};
+
 function renderCharacter(summary) {
   const parts = [
     summary.name,
@@ -67,10 +100,142 @@ function renderCharacter(summary) {
 
   const card = document.getElementById("character-card");
   card.innerHTML = `
-    <h2>${parts.join(" ")}</h2>
-    <p class="sub">${sub}</p>
-    <p class="stats">${stats}</p>
+    <div class="char-info">
+      <h2>${parts.join(" ")}</h2>
+      <p class="sub">${sub}</p>
+      <p class="stats">${stats}</p>
+    </div>
+    <div class="equipment" id="equipment-grid"></div>
   `;
+}
+
+function makeItemCell(slot, bySlot, bisMaxIlvl) {
+  const comparison = bySlot.get(slot);
+  const equipped = comparison?.equipped;
+  const bis = comparison?.bis;
+  const cell = document.createElement("div");
+  cell.className = "item-cell";
+  if (equipped) {
+    if (comparison.status === "upgrade" || comparison.status === "empty") {
+      cell.classList.add("needs-upgrade");
+    } else if (comparison.status === "match") {
+      cell.classList.add("matched");
+    }
+    cell.dataset.slot = slot;
+    cell.dataset.slotLabel = comparison.slot_label;
+    cell.dataset.itemName = equipped.name;
+    cell.dataset.itemIlvl = equipped.ilvl;
+    cell.dataset.itemQuality = equipped.quality ?? "";
+    cell.dataset.enchant = equipped.enchant ?? "";
+    cell.dataset.bisName = bis ? bis.name : "";
+    cell.dataset.bisIlvl = bis ? (bis.ilvl || bisMaxIlvl) : "";
+    cell.dataset.status = comparison.status;
+
+    const icon = document.createElement("img");
+    icon.className = "item-icon";
+    icon.src = equipped.icon_url || "";
+    icon.alt = equipped.name;
+    if (!equipped.icon_url) {
+      icon.classList.add("icon-fallback");
+      icon.alt = SLOT_SHORT[slot] ?? slot;
+      icon.src = "";
+    }
+    cell.appendChild(icon);
+
+    if (comparison.status === "upgrade" || comparison.status === "empty") {
+      const marker = document.createElement("span");
+      marker.className = "upgrade-marker";
+      marker.textContent = "▲";
+      cell.appendChild(marker);
+    }
+    const ilvlBadge = document.createElement("span");
+    ilvlBadge.className = "ilvl-badge";
+    ilvlBadge.textContent = equipped.ilvl;
+    cell.appendChild(ilvlBadge);
+  } else {
+    cell.classList.add("empty-slot");
+    cell.textContent = SLOT_SHORT[slot] ?? slot;
+  }
+  return cell;
+}
+
+function renderEquipment(comparisons, bisMaxIlvl, portraitUrl) {
+  const grid = document.getElementById("equipment-grid");
+  grid.innerHTML = "";
+  const bySlot = new Map(comparisons.map((c) => [c.slot, c]));
+  const tooltip = document.getElementById("tooltip");
+
+  const portrait = document.createElement("div");
+  portrait.className = "pd-portrait";
+  if (portraitUrl) {
+    const img = document.createElement("img");
+    img.src = portraitUrl;
+    img.alt = "";
+    portrait.appendChild(img);
+  }
+  grid.appendChild(portrait);
+
+  const leftCol = document.createElement("div");
+  leftCol.className = "pd-col pd-left";
+  const rightCol = document.createElement("div");
+  rightCol.className = "pd-col pd-right";
+  for (const slot of PAPERDOLL_COLUMNS.left) {
+    leftCol.appendChild(makeItemCell(slot, bySlot, bisMaxIlvl));
+  }
+  for (const slot of PAPERDOLL_COLUMNS.right) {
+    rightCol.appendChild(makeItemCell(slot, bySlot, bisMaxIlvl));
+  }
+  grid.append(leftCol, rightCol);
+
+  const weapons = document.createElement("div");
+  weapons.className = "pd-col pd-weapons";
+  for (const slot of PAPERDOLL_COLUMNS.bottom) {
+    weapons.appendChild(makeItemCell(slot, bySlot, bisMaxIlvl));
+  }
+  grid.appendChild(weapons);
+
+  grid.querySelectorAll(".item-cell[data-slot]").forEach((cell) => {
+    cell.addEventListener("mouseenter", (event) => {
+      const d = cell.dataset;
+      const status = {
+        match: "✓ BiS match",
+        upgrade: "▲ needs upgrade",
+        ahead: "✓ above BiS ilvl",
+        empty: "✗ empty",
+      }[d.status] ?? "";
+      let html = `
+        <div class="tt-name" style="color:${qualityColor(d.itemQuality)}">${d.itemName}</div>
+        <div class="tt-line">Item level ${d.itemIlvl}</div>
+      `;
+      if (d.enchant) html += `<div class="tt-line">${d.enchant}</div>`;
+      if (d.bisName) {
+        html += `<div class="tt-bis">BiS: ${d.bisName} (${d.bisIlvl})</div>`;
+      }
+      if (status) html += `<div class="tt-status">${status}</div>`;
+      tooltip.innerHTML = html;
+      tooltip.hidden = false;
+      positionTooltip(tooltip, event.clientX, event.clientY);
+    });
+    cell.addEventListener("mousemove", (event) => {
+      positionTooltip(tooltip, event.clientX, event.clientY);
+    });
+    cell.addEventListener("mouseleave", () => {
+      tooltip.hidden = true;
+    });
+  });
+}
+
+function positionTooltip(tooltip, x, y) {
+  const pad = 14;
+  tooltip.style.left = `${x + pad}px`;
+  tooltip.style.top = `${y + pad}px`;
+  const rect = tooltip.getBoundingClientRect();
+  if (rect.right > window.innerWidth - 8) {
+    tooltip.style.left = `${x - rect.width - pad}px`;
+  }
+  if (rect.bottom > window.innerHeight - 8) {
+    tooltip.style.top = `${y - rect.height - pad}px`;
+  }
 }
 
 function renderActions(actions) {
@@ -100,10 +265,28 @@ function renderActions(actions) {
   }
 }
 
+let comparisonSortAsc = false;
+const sortToggle = document.getElementById("sort-toggle");
+let lastComparisons = null;
+let lastBisMaxIlvl = null;
+
+function sortedComparisons(comparisons) {
+  return [...comparisons].sort((a, b) => {
+    const gapA = a.ilvl_gap ?? -1;
+    const gapB = b.ilvl_gap ?? -1;
+    return comparisonSortAsc ? gapA - gapB : gapB - gapA;
+  });
+}
+
 function renderComparison(comparisons, bisMaxIlvl) {
+  lastComparisons = comparisons;
+  lastBisMaxIlvl = bisMaxIlvl;
+  sortToggle.textContent = comparisonSortAsc
+    ? "Smallest Δ first"
+    : "Biggest Δ first";
   const tbody = document.querySelector("#comparison-table tbody");
   tbody.innerHTML = "";
-  for (const row of comparisons) {
+  for (const row of sortedComparisons(comparisons)) {
     const tr = document.createElement("tr");
     const equippedName = row.equipped ? `${row.equipped.name}` : "—";
     const equippedIlvl = row.equipped ? `${row.equipped.ilvl}` : "—";
@@ -150,6 +333,11 @@ function renderFarmTips(tips) {
   }
 }
 
+sortToggle.addEventListener("click", () => {
+  comparisonSortAsc = !comparisonSortAsc;
+  if (lastComparisons) renderComparison(lastComparisons, lastBisMaxIlvl);
+});
+
 async function analyze(event) {
   event.preventDefault();
   hideStatus();
@@ -176,6 +364,7 @@ async function analyze(event) {
       throw new Error(data.detail || `Request failed (HTTP ${resp.status})`);
     }
     renderCharacter(data.character);
+    renderEquipment(data.comparisons, data.bis_max_ilvl, data.character.render_url || data.character.avatar_url);
     renderActions(data.actions);
     renderComparison(data.comparisons, data.bis_max_ilvl);
     renderFarmTips(data.farm_tips);
