@@ -71,7 +71,13 @@ def parse_bis_page(html: str) -> tuple[list[BisItem], int, list[FarmTip]]:
         if not match:
             continue
         item_id = int(match.group(1))
-        bonus = [int(b) for b in match.group(2).split(":")] if match.group(2) else []
+        # Bonus strings can contain empty segments (e.g. "1111::2222"); only
+        # keep segments that actually parse as integers.
+        bonus = []
+        if match.group(2):
+            for segment in match.group(2).split(":"):
+                if segment.isdigit():
+                    bonus.append(int(segment))
         track = None
         for bonus_id in bonus:
             if bonus_id in BONUS_TRACKS:

@@ -56,6 +56,21 @@ def test_track_extracted_from_bonus_ids(parsed):
     assert by_slot["hands"].track == "Mythic+"  # bonus 12806
 
 
+def test_bonus_string_with_empty_segments_does_not_crash():
+    html = (
+        '<div id="bis_0_0">'
+        '<div class="bis_item">'
+        '<span class="bis_item_slot">Head</span>'
+        '<span class="q4" data-wowhead="item=12345&amp;bonus=1111::2222">BiS Helm</span>'
+        '<span class="bis_item_drop">Drops from Rotmire</span>'
+        "</div></div>"
+    )
+    items, _, _ = parse_bis_page(html)
+    assert len(items) == 1
+    assert items[0].item_id == 12345
+    assert items[0].track is None
+
+
 def test_drop_source_text(parsed):
     items, _, _ = parsed
     by_slot = {item.slot: item for item in items}
