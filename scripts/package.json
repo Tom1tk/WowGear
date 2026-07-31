@@ -1,0 +1,8 @@
+{
+  "name": "wow-gear-bis-ui-checks",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}

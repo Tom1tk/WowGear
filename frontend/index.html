@@ -11,6 +11,8 @@
     <h1>WowGearBis <span class="tagline">Gear vs Best-in-Slot</span></h1>
   </header>
 
+  <div id="top-bar" class="top-bar"></div>
+
   <main>
     <form id="analyze-form" autocomplete="off">
       <div class="field">
@@ -42,6 +44,22 @@
     <div id="status" class="status" hidden></div>
 
     <section id="results" hidden>
+      <div id="skeletons" class="layout" hidden>
+        <section class="card sk-card">
+          <div class="sk sk-title"></div>
+          <div class="sk sk-sub"></div>
+          <div class="sk sk-pd"></div>
+        </section>
+        <section class="card sk-card">
+          <div class="sk sk-title"></div>
+          <div class="sk sk-row"></div>
+          <div class="sk sk-row"></div>
+          <div class="sk sk-row"></div>
+          <div class="sk sk-row"></div>
+          <div class="sk sk-row"></div>
+        </section>
+      </div>
+
       <div class="layout">
         <div id="character-card" class="card char-card"></div>
         <section class="card todo-panel">

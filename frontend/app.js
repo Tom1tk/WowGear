@@ -20,6 +20,34 @@ function hideStatus() {
   statusEl.hidden = true;
 }
 
+// Top loading bar: fills slowly while a request is in flight, snaps to
+// 100% and fades out when it completes.
+const topBar = document.getElementById("top-bar");
+let loadingActive = false;
+let loadingResetTimer = null;
+
+function setLoading(on) {
+  if (on && !loadingActive) {
+    loadingActive = true;
+    clearTimeout(loadingResetTimer);
+    topBar.classList.add("active");
+    topBar.style.transition = "none";
+    topBar.style.width = "0%";
+    requestAnimationFrame(() => {
+      topBar.style.transition = "width 45s linear";
+      topBar.style.width = "90%";
+    });
+  } else if (!on && loadingActive) {
+    loadingActive = false;
+    topBar.style.transition = "width 0.25s ease";
+    topBar.style.width = "100%";
+    loadingResetTimer = setTimeout(() => {
+      topBar.classList.remove("active");
+      topBar.style.width = "0%";
+    }, 450);
+  }
+}
+
 async function loadSpecs() {
   try {
     const resp = await fetch("/api/specs");
@@ -159,7 +187,7 @@ function makeItemCell(slot, bySlot, bisMaxIlvl) {
   return cell;
 }
 
-function renderEquipment(comparisons, bisMaxIlvl, portraitUrl) {
+function renderEquipment(comparisons, bisMaxIlvl, renderUrl, avatarUrl) {
   const grid = document.getElementById("equipment-grid");
   grid.innerHTML = "";
   const bySlot = new Map(comparisons.map((c) => [c.slot, c]));
@@ -167,11 +195,21 @@ function renderEquipment(comparisons, bisMaxIlvl, portraitUrl) {
 
   const portrait = document.createElement("div");
   portrait.className = "pd-portrait";
-  if (portraitUrl) {
-    const img = document.createElement("img");
-    img.src = portraitUrl;
-    img.alt = "";
+  const img = document.createElement("img");
+  img.alt = "";
+  const applySource = (src) => {
+    img.src = src;
+    img.onerror = () => {
+      if (renderUrl && avatarUrl && img.src === renderUrl) {
+        applySource(avatarUrl);
+      } else {
+        img.remove();
+      }
+    };
+  };
+  if (renderUrl || avatarUrl) {
     portrait.appendChild(img);
+    applySource(renderUrl || avatarUrl);
   }
   grid.appendChild(portrait);
 
@@ -341,10 +379,12 @@ sortToggle.addEventListener("click", () => {
 async function analyze(event) {
   event.preventDefault();
   hideStatus();
-  resultsEl.hidden = true;
+  setLoading(true);
+  resultsEl.hidden = false;
+  const skeletons = document.getElementById("skeletons");
+  skeletons.hidden = false;
   const button = document.getElementById("analyze-btn");
   button.disabled = true;
-  showStatus("Fetching character + BiS data…");
 
   const payload = {
     region: document.getElementById("region").value,
@@ -363,8 +403,9 @@ async function analyze(event) {
     if (!resp.ok) {
       throw new Error(data.detail || `Request failed (HTTP ${resp.status})`);
     }
+    skeletons.hidden = true;
     renderCharacter(data.character);
-    renderEquipment(data.comparisons, data.bis_max_ilvl, data.character.render_url || data.character.avatar_url);
+    renderEquipment(data.comparisons, data.bis_max_ilvl, data.character.render_url, data.character.avatar_url);
     renderActions(data.actions);
     renderComparison(data.comparisons, data.bis_max_ilvl);
     renderFarmTips(data.farm_tips);
@@ -377,7 +418,9 @@ async function analyze(event) {
     resultsEl.hidden = false;
   } catch (err) {
     showStatus(err.message, true);
+    resultsEl.hidden = true;
   } finally {
+    setLoading(false);
     button.disabled = false;
   }
 }
