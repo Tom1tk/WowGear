@@ -11,7 +11,7 @@ SPECS_BY_CLASS: dict[str, dict] = {
     },
     "Paladin": {
         "specs": [
-            {"name": "Holy", "slug": "holy-paladin-pve-healer-gear-best-in-slot"},
+            {"name": "Holy", "slug": "holy-paladin-pve-healing-gear-best-in-slot"},
             {"name": "Protection", "slug": "protection-paladin-pve-tank-gear-best-in-slot"},
             {"name": "Retribution", "slug": "retribution-paladin-pve-dps-gear-best-in-slot"},
         ]
@@ -32,8 +32,8 @@ SPECS_BY_CLASS: dict[str, dict] = {
     },
     "Priest": {
         "specs": [
-            {"name": "Discipline", "slug": "discipline-priest-pve-healer-gear-best-in-slot"},
-            {"name": "Holy", "slug": "holy-priest-pve-healer-gear-best-in-slot"},
+            {"name": "Discipline", "slug": "discipline-priest-pve-healing-gear-best-in-slot"},
+            {"name": "Holy", "slug": "holy-priest-pve-healing-gear-best-in-slot"},
             {"name": "Shadow", "slug": "shadow-priest-pve-dps-gear-best-in-slot"},
         ]
     },
@@ -48,7 +48,7 @@ SPECS_BY_CLASS: dict[str, dict] = {
         "specs": [
             {"name": "Elemental", "slug": "elemental-shaman-pve-dps-gear-best-in-slot"},
             {"name": "Enhancement", "slug": "enhancement-shaman-pve-dps-gear-best-in-slot"},
-            {"name": "Restoration", "slug": "restoration-shaman-pve-healer-gear-best-in-slot"},
+            {"name": "Restoration", "slug": "restoration-shaman-pve-healing-gear-best-in-slot"},
         ]
     },
     "Mage": {
@@ -68,7 +68,7 @@ SPECS_BY_CLASS: dict[str, dict] = {
     "Monk": {
         "specs": [
             {"name": "Brewmaster", "slug": "brewmaster-monk-pve-tank-gear-best-in-slot"},
-            {"name": "Mistweaver", "slug": "mistweaver-monk-pve-healer-gear-best-in-slot"},
+            {"name": "Mistweaver", "slug": "mistweaver-monk-pve-healing-gear-best-in-slot"},
             {"name": "Windwalker", "slug": "windwalker-monk-pve-dps-gear-best-in-slot"},
         ]
     },
@@ -77,7 +77,7 @@ SPECS_BY_CLASS: dict[str, dict] = {
             {"name": "Balance", "slug": "balance-druid-pve-dps-gear-best-in-slot"},
             {"name": "Feral", "slug": "feral-druid-pve-dps-gear-best-in-slot"},
             {"name": "Guardian", "slug": "guardian-druid-pve-tank-gear-best-in-slot"},
-            {"name": "Restoration", "slug": "restoration-druid-pve-healer-gear-best-in-slot"},
+            {"name": "Restoration", "slug": "restoration-druid-pve-healing-gear-best-in-slot"},
         ]
     },
     "Demon Hunter": {
@@ -89,7 +89,7 @@ SPECS_BY_CLASS: dict[str, dict] = {
     "Evoker": {
         "specs": [
             {"name": "Devastation", "slug": "devastation-evoker-pve-dps-gear-best-in-slot"},
-            {"name": "Preservation", "slug": "preservation-evoker-pve-healer-gear-best-in-slot"},
+            {"name": "Preservation", "slug": "preservation-evoker-pve-healing-gear-best-in-slot"},
             {"name": "Augmentation", "slug": "augmentation-evoker-pve-dps-gear-best-in-slot"},
         ]
     },
