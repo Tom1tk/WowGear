@@ -2,8 +2,18 @@ const form = document.getElementById("analyze-form");
 const statusEl = document.getElementById("status");
 const resultsEl = document.getElementById("results");
 const specSelect = document.getElementById("spec");
-const realmSelect = document.getElementById("realm");
 const regionSelect = document.getElementById("region");
+
+// Realm combobox elements
+const comboEl = document.getElementById("realm-combo");
+const realmTrigger = document.getElementById("realm-trigger");
+const realmLabel = document.getElementById("realm-label");
+const realmPopover = document.getElementById("realm-popover");
+const realmSearch = document.getElementById("realm-search");
+const realmList = document.getElementById("realm-list");
+const realmEmpty = document.getElementById("realm-empty");
+const realmFallback = document.getElementById("realm-fallback");
+const realmInput = document.getElementById("realm");
 
 const REALM_STORAGE_KEY = "wowgear:realm";
 
@@ -382,6 +392,10 @@ sortToggle.addEventListener("click", () => {
 
 async function analyze(event) {
   event.preventDefault();
+  if (!realmInput.value) {
+    showStatus("Choose a realm first — pick one from the dropdown, or type its slug (e.g. draenor).", true);
+    return;
+  }
   hideStatus();
   setLoading(true);
   resultsEl.hidden = false;
@@ -432,49 +446,204 @@ async function analyze(event) {
   }
 }
 
-async function loadRealms(region, preferredSlug) {
-  let loaded = false;
+// ── Realm combobox ────────────────────────────────────────────────────
+// Searchable realm picker (shadcn-combobox pattern). Realms are cached in
+// localStorage per region (7-day TTL) so the field is populated instantly
+// on repeat visits instead of flashing empty while the realm index loads.
+// If the realms API is unavailable, it degrades to a free-text slug input.
+
+const REALMS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+let realmsReady = false;
+let realmItems = [];
+let filteredItems = [];
+let activeIndex = -1;
+let fallbackMode = false;
+
+function realmCacheKey(region) {
+  return `wowgear:realms:${region}`;
+}
+
+function readRealmCache(region) {
+  try {
+    const raw = localStorage.getItem(realmCacheKey(region));
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (Array.isArray(cached.realms) && Date.now() - cached.ts < REALMS_TTL_MS) {
+      return cached.realms;
+    }
+  } catch {
+    // corrupt cache — ignore
+  }
+  return null;
+}
+
+function writeRealmCache(region, realms) {
+  try {
+    localStorage.setItem(realmCacheKey(region), JSON.stringify({ ts: Date.now(), realms }));
+  } catch {
+    // storage full/unavailable — cache is best-effort
+  }
+}
+
+function selectRealm(slug, name) {
+  realmInput.value = slug;
+  realmLabel.textContent = name || slug;
+  localStorage.setItem(REALM_STORAGE_KEY, slug);
+}
+
+function setRealms(realms) {
+  realmItems = realms;
+  realmsReady = true;
+  realmTrigger.disabled = false;
+  if (realmInput.value) {
+    const current = realmItems.find((r) => r.slug === realmInput.value);
+    realmLabel.textContent = current ? current.name : realmInput.value;
+    return;
+  }
+  const preferred = localStorage.getItem(REALM_STORAGE_KEY) || "draenor";
+  const match = realmItems.find((r) => r.slug === preferred);
+  selectRealm(preferred, match ? match.name : preferred);
+}
+
+function renderRealmOptions(items) {
+  realmList.innerHTML = "";
+  filteredItems = items;
+  activeIndex = -1;
+  realmEmpty.hidden = items.length > 0;
+  const selected = realmInput.value;
+  for (const realm of items) {
+    const li = document.createElement("li");
+    li.className = "combo-option" + (realm.slug === selected ? " selected" : "");
+    li.setAttribute("role", "option");
+    li.setAttribute("aria-selected", realm.slug === selected ? "true" : "false");
+    li.dataset.slug = realm.slug;
+    const name = document.createElement("span");
+    name.textContent = realm.name;
+    li.appendChild(name);
+    if (realm.slug === selected) {
+      const check = document.createElement("span");
+      check.className = "combo-check";
+      check.textContent = "✓";
+      li.appendChild(check);
+    }
+    li.addEventListener("mousedown", (event) => {
+      event.preventDefault(); // keep focus in the search field
+      selectRealm(realm.slug, realm.name);
+      closeRealmCombo();
+    });
+    realmList.appendChild(li);
+  }
+}
+
+function openRealmCombo() {
+  if (!realmsReady || fallbackMode) return;
+  realmPopover.hidden = false;
+  realmTrigger.setAttribute("aria-expanded", "true");
+  realmSearch.value = "";
+  renderRealmOptions(realmItems);
+  realmSearch.focus();
+}
+
+function closeRealmCombo() {
+  realmPopover.hidden = true;
+  realmTrigger.setAttribute("aria-expanded", "false");
+  realmTrigger.focus();
+}
+
+function setActive(index) {
+  if (!filteredItems.length) return;
+  activeIndex = (index + filteredItems.length) % filteredItems.length;
+  realmList.querySelectorAll(".combo-option").forEach((li, i) => {
+    if (i === activeIndex) {
+      li.dataset.active = "true";
+      li.scrollIntoView({ block: "nearest" });
+    } else {
+      delete li.dataset.active;
+    }
+  });
+}
+
+function enableRealmFallback() {
+  fallbackMode = true;
+  realmTrigger.hidden = true;
+  realmPopover.hidden = true;
+  realmFallback.hidden = false;
+  if (realmInput.value) realmFallback.value = realmInput.value;
+  realmFallback.focus();
+}
+
+function exitRealmFallback() {
+  fallbackMode = false;
+  realmFallback.hidden = true;
+  realmTrigger.hidden = false;
+}
+
+realmTrigger.addEventListener("click", () => {
+  if (realmPopover.hidden) openRealmCombo();
+  else closeRealmCombo();
+});
+
+realmSearch.addEventListener("input", () => {
+  const query = realmSearch.value.trim().toLowerCase();
+  renderRealmOptions(
+    query
+      ? realmItems.filter(
+          (r) => r.name.toLowerCase().includes(query) || r.slug.toLowerCase().includes(query)
+        )
+      : realmItems
+  );
+});
+
+realmSearch.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    setActive(activeIndex + 1);
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    setActive(activeIndex - 1);
+  } else if (event.key === "Enter") {
+    event.preventDefault();
+    const item = filteredItems[activeIndex >= 0 ? activeIndex : 0];
+    if (item) {
+      selectRealm(item.slug, item.name);
+      closeRealmCombo();
+    }
+  } else if (event.key === "Escape" || event.key === "Tab") {
+    closeRealmCombo();
+  }
+});
+
+realmFallback.addEventListener("input", () => {
+  realmInput.value = realmFallback.value.trim().toLowerCase();
+});
+
+document.addEventListener("click", (event) => {
+  if (!realmPopover.hidden && !comboEl.contains(event.target)) closeRealmCombo();
+});
+
+async function loadRealms(region) {
+  const cached = readRealmCache(region);
+  if (cached) setRealms(cached);
+
   try {
     const resp = await fetch(`/api/realms?region=${encodeURIComponent(region)}`);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
-    realmSelect.innerHTML = "";
-    for (const realm of data.realms) {
-      const option = document.createElement("option");
-      option.value = realm.slug;
-      option.textContent = realm.name;
-      realmSelect.appendChild(option);
-    }
-    loaded = true;
+    setRealms(data.realms);
+    writeRealmCache(region, data.realms);
+    if (fallbackMode) exitRealmFallback();
   } catch {
-    // Keep whatever list we have; if empty, show a placeholder option.
-    if (realmSelect.options.length === 0) {
-      const option = document.createElement("option");
-      option.value = "";
-      option.textContent = "— select realm —";
-      realmSelect.appendChild(option);
-    }
+    if (!realmsReady) enableRealmFallback();
   }
-  const stored = preferredSlug || localStorage.getItem(REALM_STORAGE_KEY) || "draenor";
-  let match = [...realmSelect.options].find((option) => option.value === stored);
-  if (!match && stored) {
-    const option = document.createElement("option");
-    option.value = stored;
-    option.textContent = stored;
-    realmSelect.appendChild(option);
-    match = option;
-  }
-  realmSelect.value = match ? match.value : (realmSelect.options[0]?.value ?? "");
-  return loaded;
 }
 
 regionSelect.addEventListener("change", () => {
-  const region = regionSelect.value;
-  loadRealms(region, localStorage.getItem(REALM_STORAGE_KEY) || "");
-});
-
-realmSelect.addEventListener("change", () => {
-  localStorage.setItem(REALM_STORAGE_KEY, realmSelect.value);
+  realmInput.value = "";
+  realmLabel.textContent = "Loading realms…";
+  realmTrigger.disabled = true;
+  realmsReady = false;
+  exitRealmFallback();
+  loadRealms(regionSelect.value);
 });
 
 form.addEventListener("submit", analyze);
