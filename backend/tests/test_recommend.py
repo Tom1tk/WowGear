@@ -2,7 +2,7 @@
 
 import pytest
 
-from app.models import BisItem, EquippedItem
+from app.models import Action, BisItem, EquippedItem
 from app.recommend import analyze_gear, catchup_action
 
 BIS_ILVL = 289
@@ -326,3 +326,89 @@ def test_catchup_action_has_no_link_segments():
         s.url is None
         for s in action.title_segments + action.detail_segments
     )
+
+
+# ── Upgrade guidance ───────────────────────────────────────────────────
+
+def upgrade_action(item: BisItem) -> Action:
+    """Equip the BiS item below target ilvl so the upgrade task fires."""
+    equipped_items = fill_matching(
+        {item.slot: equipped(item.slot, item.item_id, item.name, 276)}
+    )
+    _, actions = analyze_gear(equipped_items, BIS_ITEMS + [item], BIS_ILVL)
+    return next(a for a in actions if a.slot == item.slot)
+
+
+def test_upgrade_mythic_plus_guidance_is_concrete():
+    """Mythic+ track: name the exact keys and the crest/vault path."""
+    item = bis(
+        "hands", 777, "Abyssal Immolator's Grasps", drop="Dropped by Vorasius",
+        links=["//www.icy-veins.com/wow/vorasius-raid-guide"],
+        link_texts=["Vorasius"], bonus=[12806],
+    )
+    item.track = "Mythic+"
+    action = upgrade_action(item)
+    assert action.category == "upgrade"
+    assert "Mythic+ keystones" in action.detail
+    assert "+6" in action.detail and "+10" in action.detail
+    assert "Great Vault" in action.detail
+    assert "Dawncrests" in action.detail
+    assert "Cuzolth" in action.detail
+    assert "289" in action.detail
+
+
+def test_upgrade_mythic_raid_guidance_is_concrete():
+    item = bis("hands", 777, "Mythic Raid Gloves", drop="Dropped by Rotmire",
+               links=["//www.icy-veins.com/wow/rotmire-raid-guide"],
+               link_texts=["Rotmire"], bonus=[13786])
+    item.track = "Mythic Raid"
+    action = upgrade_action(item)
+    assert "Mythic difficulty" in action.detail
+    assert "Great Vault" in action.detail
+    assert "Dawncrests" in action.detail
+
+
+def test_upgrade_heroic_raid_guidance_is_concrete():
+    item = bis("hands", 777, "Heroic Raid Gloves", drop="Dropped by Rotmire",
+               links=["//www.icy-veins.com/wow/rotmire-raid-guide"],
+               link_texts=["Rotmire"], bonus=[13654])
+    item.track = "Heroic Raid"
+    action = upgrade_action(item)
+    assert "Heroic difficulty" in action.detail
+    assert "Great Vault" in action.detail
+    assert "Dawncrests" in action.detail
+
+
+def test_upgrade_unknown_track_states_both_possibilities():
+    item = bis("hands", 777, "Mystery Gloves", drop="Dropped somewhere", bonus=[])
+    action = upgrade_action(item)
+    assert "Mythic or Hero" in action.detail
+    assert "Great Vault" in action.detail
+    assert "Dawncrests" in action.detail
+
+
+def test_upgrade_crafted_guidance_is_concrete():
+    item = bis(
+        "hands", 777, "Crafted Gloves", drop="Crafted by Tailoring",
+        links=["//www.icy-veins.com/wow/professions-making-gold#buying-crafted-gear",
+               "//www.icy-veins.com/wow/professions-tailoring"],
+        link_texts=["Crafted", "Tailoring"],
+    )
+    action = upgrade_action(item)
+    assert "re-craft" in action.detail or "crafter" in action.detail
+    assert "Dawncrests" in action.detail
+    assert "289" in action.detail
+
+
+def test_upgrade_catalyst_guidance_is_concrete():
+    item = bis(
+        "hands", 777, "Tier Gloves", drop="Catalyst",
+        links=["//www.icy-veins.com/wow/catalyst-guide"],
+        link_texts=["Catalyst"], bonus=[13786],
+    )
+    item.track = "Mythic Raid"
+    action = upgrade_action(item)
+    assert "Catalyst" in action.detail
+    assert "Great Vault" in action.detail
+    assert "Dawncrests" in action.detail
+    assert "Mythic" in action.detail

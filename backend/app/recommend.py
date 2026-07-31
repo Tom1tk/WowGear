@@ -100,10 +100,7 @@ def analyze_gear(
                     _item_seg(bis),
                     _seg(f" ({current.ilvl} -> {bis_ilvl})"),
                 ]
-                detail = (
-                    f"You already have the BiS item. Push {_track_hint(bis, bis_ilvl)} "
-                    "to get a higher-item-level drop of it."
-                )
+                detail = _upgrade_guidance(bis, bis_ilvl)
                 actions.append(
                     Action(
                         slot=slot, category="upgrade",
@@ -313,7 +310,67 @@ def _title(slug: str) -> str:
     )
 
 
-def _track_hint(bis: BisItem, bis_ilvl: int) -> str:
-    if bis.track:
-        return f"the {bis.track.lower()} track"
-    return f"difficulties that drop ilvl {bis_ilvl} gear"
+# Season config: personalised upgrade advice per track. A new season's
+# numbers (key thresholds, crests, vendor) live here in one place — the
+# track labels must match BONUS_TRACKS in icyveins.py.
+UPGRADE_GUIDANCE = {
+    "Mythic+": (
+        "You already have the BiS item. Run Mythic+ keystones: the same item drops "
+        "on the Hero track from +6 keys and on the Myth track from +10, and the "
+        "weekly Great Vault's Mythic slot can roll it too. If your copy is already "
+        "on the Myth track, spend Dawncrests at Cuzolth in Silvermoon City to "
+        "upgrade it to {bis_ilvl}; crests can't lift a lower track across tiers."
+    ),
+    "Mythic Raid": (
+        "You already have the BiS item. Kill bosses in the current raid on Mythic "
+        "difficulty — the item drops there at up to {bis_ilvl} — and the weekly "
+        "Great Vault's Mythic slot can roll it as well. If your copy is already "
+        "Myth-track, spend Dawncrests at Cuzolth in Silvermoon City to upgrade it "
+        "to {bis_ilvl}; a lower-track copy needs a Mythic-difficulty or +10 keystone drop."
+    ),
+    "Heroic Raid": (
+        "You already have the BiS item. Kill bosses in the current raid on Heroic "
+        "difficulty — the item drops there at up to {bis_ilvl} — and the weekly "
+        "Great Vault's Heroic slot can roll it too. If your copy is already "
+        "Hero-track, spend Dawncrests at Cuzolth in Silvermoon City to upgrade it "
+        "to {bis_ilvl}; a lower-track copy needs a Heroic-difficulty or +6 keystone drop."
+    ),
+}
+
+UNKNOWN_TRACK_GUIDANCE = (
+    "You already have the BiS item. Push Mythic or Hero content: Mythic difficulty "
+    "in the current raid and Mythic+ keys at +10 (Hero track from +6) drop "
+    "higher-item-level copies, and the weekly Great Vault can roll one too. If your "
+    "copy is on the right track, spend Dawncrests at Cuzolth in Silvermoon City to "
+    "upgrade it to {bis_ilvl}."
+)
+
+CRAFTED_UPGRADE_GUIDANCE = (
+    "You already have the BiS item. Crafted gear reaches {bis_ilvl} by re-crafting "
+    "at a higher tier with a crafter, or by spending Dawncrests at Cuzolth in "
+    "Silvermoon City to upgrade a Myth-track crafted copy — Myth-track crests come "
+    "from +10 keystones and Mythic raid."
+)
+
+CATALYST_UPGRADE_GUIDANCE = (
+    "You already have the BiS item. Tier gear converts through the Catalyst: get a "
+    "higher-item-level copy of the same slot (Mythic raid, +10 keystones, or the "
+    "weekly Great Vault's Mythic slot) and convert it. If your copy is already "
+    "Myth-track, spend Dawncrests at Cuzolth in Silvermoon City to upgrade it to "
+    "{bis_ilvl}."
+)
+
+
+def _upgrade_guidance(bis: BisItem, bis_ilvl: int) -> str:
+    """What the user should DO to lift an already-owned BiS item to target ilvl:
+    the exact content/difficulty/keys per track, and the crest upgrade path.
+    Falls back to naming both possibilities when the track is unknown."""
+    catalyst = _drop_link(bis, r"catalyst-guide")
+    if catalyst:
+        return CATALYST_UPGRADE_GUIDANCE.format(bis_ilvl=bis_ilvl)
+    if _drop_link(bis, r"professions-([\w-]+)"):
+        return CRAFTED_UPGRADE_GUIDANCE.format(bis_ilvl=bis_ilvl)
+    template = UPGRADE_GUIDANCE.get(bis.track or "")
+    if template:
+        return template.format(bis_ilvl=bis_ilvl)
+    return UNKNOWN_TRACK_GUIDANCE.format(bis_ilvl=bis_ilvl)
