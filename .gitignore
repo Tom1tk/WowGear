@@ -5,3 +5,5 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 backend/app/item_icon_cache.json
+.vercel
+.env*
