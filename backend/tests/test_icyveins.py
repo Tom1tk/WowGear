@@ -7,6 +7,7 @@ import pytest
 from app.icyveins import ParseError, parse_bis_page
 
 FIXTURE = Path(__file__).parent / "fixtures" / "brewmaster_bis.html"
+S2_FIXTURE = Path(__file__).parent / "fixtures" / "frost_mage_bis_s2.html"
 
 
 @pytest.fixture(scope="module")
@@ -99,3 +100,52 @@ def test_max_ilvl_and_tips(parsed):
 def test_empty_html_raises():
     with pytest.raises(ParseError):
         parse_bis_page("<html><body><p>nothing here</p></body></html>")
+
+
+# ── Midnight Season 2 pages ────────────────────────────────────────────
+
+@pytest.fixture(scope="module")
+def s2_parsed():
+    html = S2_FIXTURE.read_text(encoding="utf-8")
+    return parse_bis_page(html)
+
+
+def test_s2_items_parsed(s2_parsed):
+    items, _, _ = s2_parsed
+    assert len(items) == 16
+    slots = {item.slot for item in items}
+    assert {"main_hand", "off_hand", "ring_1", "ring_2", "trinket_1", "trinket_2"} <= slots
+
+
+def test_s2_track_derived_from_drop_links(s2_parsed):
+    """Season 2 items carry multipart version bonus ids (not track ids), so
+    the track comes from the drop-source guide link instead."""
+    items, _, _ = s2_parsed
+    by_slot = {item.slot: item for item in items}
+    assert by_slot["head"].track == "Mythic Raid"   # ulatek-raid-guide
+    assert by_slot["neck"].track == "Mythic Raid"   # ulatek-raid-guide
+    assert by_slot["legs"].track == "Mythic+"       # kings-rest-dungeon-guide
+    assert by_slot["wrist"].track == "Mythic+"      # den-of-nalorakk-dungeon-guide
+    assert by_slot["waist"].track is None           # crafted (professions link)
+    assert by_slot["trinket_2"].track is None       # midnight-world-bosses guide
+
+
+def test_s2_multipart_bonus_ids_preserved(s2_parsed):
+    items, _, _ = s2_parsed
+    by_slot = {item.slot: item for item in items}
+    assert 13848 in by_slot["head"].bonus
+    assert 12854 in by_slot["legs"].bonus
+    assert by_slot["legs"].bonus == [12854]
+
+
+def test_s2_faq_tips(s2_parsed):
+    _, _, tips = s2_parsed
+    titles = {tip.title for tip in tips}
+    assert len(tips) == 2
+    assert "Which Dungeons Should I Farm?" in titles
+    assert "What Raid Items Are Most Important?" in titles
+
+
+def test_s2_max_ilvl_not_stated_falls_back_to_ceiling(s2_parsed):
+    _, max_ilvl, _ = s2_parsed
+    assert max_ilvl == 0  # page omits it; the season config default (334) is used

@@ -218,7 +218,7 @@ def _drop_segments(
     if dungeon:
         segments = [
             _seg("Farm "), _seg(dungeon[0], dungeon[1]),
-            _seg(" on Mythic+ keys — Champion-track from +2-6, Hero-track from +7, "
+            _seg(" on Mythic+ keys — Champion-track from +2-5, Hero-track from +6, "
                  "Myth-track from the +10 Great Vault — until "),
             _item_seg(bis), _seg(f" ({bis_ilvl}) drops."),
         ]
@@ -266,13 +266,14 @@ def _access_note(
 ) -> str:
     """Stepping-stone note for players below the track their target sits on,
     only when the slot itself is far behind (gap >= ACCESS_GAP_THRESHOLD):
-    Myth-track targets point at the Showdown-zone Champion path; Hero-track
-    targets name +7/Heroic sources."""
-    if not avg_ilvl or avg_ilvl >= 272 or gap < ACCESS_GAP_THRESHOLD:
+    Myth-track targets point at the Champion path; Hero-track targets name
+    +6/Heroic sources. Midnight Season 2 ladder: Champion 292-308, Hero
+    305-321, Myth 318-334."""
+    if not avg_ilvl or avg_ilvl >= 318 or gap < ACCESS_GAP_THRESHOLD:
         return ""
-    if bis_ilvl >= 272 or bis.track in ("Mythic Raid", "Mythic+"):
+    if bis_ilvl >= 318 or bis.track in ("Mythic Raid", "Mythic+"):
         return MYTH_GAP_NOTE
-    if avg_ilvl < 259 and (bis_ilvl >= 259 or bis.track == "Heroic Raid"):
+    if avg_ilvl < 305 and (bis_ilvl >= 305 or bis.track == "Heroic Raid"):
         return HERO_GAP_NOTE.format(avg=avg_ilvl)
     return ""
 
@@ -338,89 +339,90 @@ def _title(slug: str) -> str:
 # Season config: personalised upgrade advice per track. A new season's
 # numbers (key thresholds, crests, vendor) live here in one place — the
 # track labels must match BONUS_TRACKS in icyveins.py.
+#
+# Midnight Season 2 ladder: Adventurer 266-282, Veteran 279-295, Champion
+# 292-308, Hero 305-321, Myth 318-334. Crests are Mistcrests (20 per
+# upgrade); the upgrade vendor is Cuzolth in Silvermoon City.
 UPGRADE_GUIDANCE = {
     "Mythic+": (
         "You already have the BiS item. Run Mythic+ keystones: the same item drops "
-        "on the Champion track from +2-6 keys, on the Hero track from +7 keys, and "
+        "on the Champion track from +2-5 keys, on the Hero track from +6 keys, and "
         "the Myth track comes from the weekly Great Vault's Mythic slot on a +10 key. "
-        "If your copy is already on the Myth track, spend Dawncrests at Cuzolth in "
+        "If your copy is already on the Myth track, spend Mistcrests at Cuzolth in "
         "Silvermoon City to upgrade it to {bis_ilvl}; crests can't lift a lower "
         "track across tiers."
     ),
     "Mythic Raid": (
-        "You already have the BiS item. Kill bosses in the current raid on Mythic "
-        "difficulty — the item drops there at up to {bis_ilvl} — and the weekly "
-        "Great Vault's Mythic slot can roll it as well. If your copy is already "
-        "Myth-track, spend Dawncrests at Cuzolth in Silvermoon City to upgrade it "
-        "to {bis_ilvl}; a lower-track copy needs a Mythic-difficulty or +10 keystone drop."
+        "You already have the BiS item. Kill bosses in the current raid (The Venomous "
+        "Abyss) on Mythic difficulty — the item drops there at up to {bis_ilvl} — and "
+        "the weekly Great Vault's Mythic slot can roll it as well. If your copy is "
+        "already Myth-track, spend Mistcrests at Cuzolth in Silvermoon City to upgrade "
+        "it to {bis_ilvl}; a lower-track copy needs a Mythic-difficulty or +10 keystone drop."
     ),
     "Heroic Raid": (
-        "You already have the BiS item. Kill bosses in the current raid on Heroic "
-        "difficulty — the item drops there at up to {bis_ilvl} — and the weekly "
-        "Great Vault's Heroic slot can roll it too. If your copy is already "
-        "Hero-track, spend Dawncrests at Cuzolth in Silvermoon City to upgrade it "
-        "to {bis_ilvl}; a lower-track copy needs a Heroic-difficulty or +7 keystone drop."
+        "You already have the BiS item. Kill bosses in the current raid (The Venomous "
+        "Abyss) on Heroic difficulty — the item drops there at up to {bis_ilvl} — and "
+        "the weekly Great Vault's Heroic slot can roll it too. If your copy is already "
+        "Hero-track, spend Mistcrests at Cuzolth in Silvermoon City to upgrade it "
+        "to {bis_ilvl}; a lower-track copy needs a Heroic-difficulty or +6 keystone drop."
     ),
 }
 
 UNKNOWN_TRACK_GUIDANCE = (
     "You already have the BiS item. Push Mythic or Hero content: Mythic difficulty "
-    "in the current raid and Mythic+ keys at +10 (Hero track from +7) drop "
+    "in the current raid and Mythic+ keys at +10 (Hero track from +6) drop "
     "higher-item-level copies, and the weekly Great Vault can roll one too. If your "
-    "copy is on the right track, spend Dawncrests at Cuzolth in Silvermoon City to "
+    "copy is on the right track, spend Mistcrests at Cuzolth in Silvermoon City to "
     "upgrade it to {bis_ilvl}."
 )
 
 CRAFTED_UPGRADE_GUIDANCE = (
-    "You already have the BiS item. Crafted gear reaches {bis_ilvl} by re-crafting "
-    "at a higher tier with a crafter, or by spending Dawncrests at Cuzolth in "
-    "Silvermoon City to upgrade a Myth-track crafted copy — Myth-track crests come "
-    "from the +10 Great Vault and Mythic raid."
+    "You already have the BiS item. Crafted gear (Spark of Tides) starts at 305 and "
+    "reaches 318 or 331 by re-crafting with 80 Hero or Myth Mistcrests as optional "
+    "reagents — or spend Mistcrests at Cuzolth in Silvermoon City. Myth-track crests "
+    "come from the +10 Great Vault and Mythic raid."
 )
 
 CATALYST_UPGRADE_GUIDANCE = (
-    "You already have the BiS item. Tier gear converts through the Catalyst: get a "
-    "higher-item-level copy of the same slot (Mythic raid, +10 keystones, or the "
-    "weekly Great Vault's Mythic slot) and convert it. If your copy is already "
-    "Myth-track, spend Dawncrests at Cuzolth in Silvermoon City to upgrade it to "
-    "{bis_ilvl}."
+    "You already have the BiS item. Tier gear converts through the Catalyst — convert "
+    "a higher-item-level copy of the same slot (Mythic raid, +10 keystones, or the "
+    "weekly Great Vault's Mythic slot); Catalyzed pieces keep their stats and "
+    "cantrips. If your copy is already Myth-track, spend Mistcrests at Cuzolth in "
+    "Silvermoon City to upgrade it to {bis_ilvl}."
 )
 
-# Season config: catch-up roadmap per average item level band (Midnight S1
-# track ladder: Adventurer 220-237, Veteran 233-250, Champion 246-263,
-# Hero 259-276, Myth 272-289). Low-ilvl players get the manageable
-# open-world path (Val/Naigtal Showdown zones + field accolades) before
-# group content; near-BiS players get only the final stretch. The factor
-# scales the catch-up urgency so the roadmap ranks high for fresh players.
+# Season config: catch-up roadmap per average item level band (Midnight S2
+# track ladder above). Low-ilvl players get the manageable open-world path
+# (Adventurer/Veteran gear, Showdown zones) before group content; near-BiS
+# players get only the final stretch. The factor scales the catch-up urgency
+# so the roadmap ranks high for fresh players.
 CATCHUP_BANDS = [
-    (254, 1.0, (
+    (299, 1.0, (
         "Your average item level is {avg}; the BiS list targets {max}. Start with "
         "World Quests in Quel'Thalas, Heroic dungeons and Delves for "
-        "Adventurer/Veteran gear (220-250). Next, work the Val and Naigtal Showdown "
+        "Adventurer/Veteran gear (266-295). Then work the Val and Naigtal Showdown "
         "zones on Normal World Tier (portal behind the Field Accolade quartermasters "
-        "in Silvermoon City): rares drop Champion gear (246-263) once a day, the "
-        "weekly world bosses Imperator Pertinax and Nexus-Captain Leth'ir guarantee a "
-        "Champion drop, and field accolades buy Champion gear for any slot from "
+        "in Silvermoon City): rares drop Adventurer gear once a day, the zone world "
+        "bosses Imperator Pertinax and Nexus-Captain Leth'ir drop a piece of gear "
+        "weekly, and field accolades buy Adventurer/Veteran gear for any slot from "
         "Maren Silverwing in Silvermoon. From there, Normal raid and Mythic+ keys "
-        "+2-6 keep you on the Champion track until you're ready for +7 keystones (Hero)."
+        "+2/+3 put you on the Champion track (292-308), then +6 keystones and Heroic "
+        "raid for Hero (305-321)."
     )),
-    (264, 0.75, (
+    (309, 0.75, (
         "Your average item level is {avg}; the BiS list targets {max}. Max out the "
-        "Champion track (246-263): Normal raid once a week, Mythic+ keys +2-6, "
-        "Bountiful Delves tier 7+ with Restored Coffer Keys, and Nightmare Prey "
-        "Hunts. Field accolades from the Val and Naigtal Showdown zones buy Champion "
-        "gear for any slot (Maren Silverwing in Silvermoon). At ~263, switch to +7 "
-        "keystones and Heroic raid for Hero-track gear (259-276)."
+        "Champion track (292-308): Normal raid once a week, Mythic+ keys +2/+3 for "
+        "Champion crests, and Bountiful Delves tier 7+ with Restored Coffer Keys. "
+        "At ~308, switch to +6 keystones and Heroic raid for Hero-track gear (305-321)."
     )),
-    (277, 0.5, (
+    (322, 0.5, (
         "Your average item level is {avg}; the BiS list targets {max}. Fill out the "
-        "Hero track (259-276): Mythic+ keys +7 and higher, Heroic raid once a week, "
-        "and Delve Hidden Troves (Trovehunter's Bounty). In the Showdown zones, "
-        "Heroic World Tier (recommended ~274) drops Hero gear from the world bosses "
-        "and yields far more field accolades for Hero tokens. Myth-track (272-289) "
-        "comes from Mythic raid, the Great Vault on a +10 key, and the 'Knocking Off "
-        "the Top' quest. Spend Dawncrests at Cuzolth in Silvermoon City to upgrade "
-        "gear along its track."
+        "Hero track (305-321): Mythic+ keys +6 and higher (Hero crests come from "
+        "+4-8 keys), Heroic raid once a week, and Delve Hidden Troves. The Showdown "
+        "zones' Heroic World Tier yields far more field accolades and its weekly "
+        "quests reward Myth Mistcrests. Myth-track (318-334) comes from Mythic raid, "
+        "the Great Vault on a +10 key, and the 'Knocking Off the Top' quest. Spend "
+        "Mistcrests at Cuzolth in Silvermoon City to upgrade gear along its track."
     )),
 ]
 CATCHUP_MYTH_FACTOR = 0.25
@@ -428,23 +430,20 @@ CATCHUP_MYTH_COPY = (
     "Your average item level is {avg}; the BiS list targets {max}. Close out the "
     "last stretch: Mythic raid once a week, the Great Vault on a +10 key, and the "
     "Showdown quest 'Knocking Off the Top' (Heroic World Tier) for Myth "
-    "cloak/belt/bracers. Crafted gear reaches Myth with 80 Myth Dawncrests. Spend "
-    "Dawncrests at Cuzolth in Silvermoon City to push pieces to the top of their "
-    "track, and use Ascendant Voidcores on fully-upgraded weapons and trinkets."
+    "cloak/belt/bracers. Crafted gear reaches 331 with 80 Myth Mistcrests. Spend "
+    "Mistcrests at Cuzolth in Silvermoon City to push pieces to the top of their track."
 )
 
 # Per-slot note for players below the track their BiS target lives on,
 # only shown when the slot itself is far behind (large ilvl gap).
 MYTH_GAP_NOTE = (
     " You're not geared for Myth-track yet — for now, fill this slot with "
-    "Champion gear from the Val and Naigtal Showdown zones (rares, world bosses, "
-    "or field accolades at Maren Silverwing in Silvermoon)."
+    "Champion gear (292-308) from Normal raid, Mythic+ keys +2/+3, or Bountiful "
+    "Delves tier 7+."
 )
 
 HERO_GAP_NOTE = (
-    " At {avg} ilvl the Hero-track version comes from +7 keystones or Heroic raid "
-    "— or buy it with field accolades from the Showdown zones' Heroic World Tier "
-    "(recommended ~274)."
+    " At {avg} ilvl the Hero-track version comes from +6 keystones or Heroic raid."
 )
 
 ACCESS_GAP_THRESHOLD = 25

@@ -23,6 +23,11 @@ POSITIONAL_SLOTS = {"Ring": "ring", "Trinket": "trinket"}
 # Season config: map WoW bonus ids to track labels. A new season can add
 # new track bonus ids here; everything else (items, bosses, dungeons, guide
 # links) is parsed from the current Icy Veins BiS page automatically.
+#
+# Midnight Season 2 items carry multi-segment bonus strings that encode the
+# item's ilvl version (e.g. 12854 standard / 13848 "elevated"), not its track,
+# so the track falls back to the drop-source link below. The bonus-id map is
+# kept for pages that still tag items with a single season-1-style id.
 BONUS_TRACKS = {
     13786: "Mythic Raid",
     12806: "Mythic+",
@@ -30,7 +35,19 @@ BONUS_TRACKS = {
     13124: "Heroic Raid",
 }
 
-FAVORITE_QUESTIONS = ("Dungeons Should I Farm", "Raid Drops Are Most Important")
+# Track fallback for pages whose items carry only version bonus ids: infer
+# the track from the drop-source guide link (a raid boss vs a Mythic+ dungeon).
+# The BiS list is the max-ilvl version of each item, so raid drops are Mythic.
+TRACK_FROM_DROP_LINK = (
+    ("-raid-guide", "Mythic Raid"),
+    ("-dungeon-guide", "Mythic+"),
+)
+
+FAVORITE_QUESTIONS = (
+    "Dungeons Should I Farm",
+    "Raid Items Are Most Important",
+    "Raid Drops Are Most Important",
+)
 
 
 class IcyVeinsError(Exception):
@@ -93,6 +110,15 @@ def parse_bis_page(html: str) -> tuple[list[BisItem], int, list[FarmTip]]:
         drop_link_texts = [
             a.get_text(" ", strip=True) for a in drop_el.select("a")
         ] if drop_el else []
+
+        if track is None:
+            for link in drop_links:
+                for marker, label in TRACK_FROM_DROP_LINK:
+                    if marker in link:
+                        track = label
+                        break
+                if track is not None:
+                    break
 
         enchant_el = element.select_one("span.bis_item_enchant")
         enchant = enchant_el.get_text(" ", strip=True) if enchant_el else None
