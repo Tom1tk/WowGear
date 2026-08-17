@@ -1,21 +1,22 @@
 /* WowGearBis — "Ula'tek Venom" design system.
-   Dark venom-green theme for Midnight Season 2 (Curse of Ula'tek),
-   replacing the Season 1 "Azeroth Amber" parchment-and-gold palette. */
+   Palette derived from the official Midnight Curse of Ula'tek (12.1) key
+   art: dark emerald jungle greens with warm serpent-gold accents, replacing
+   the Season 1 "Azeroth Amber" parchment-and-gold theme. */
 
 :root {
-  --bg: #0c0f0b;
-  --bg-deep: #070a07;
-  --panel: #121610;
-  --panel-2: #191e15;
-  --panel-3: #20271a;
-  --border: #21281a;
-  --border-strong: #37452a;
-  --text: #e8ebd9;
-  --muted: #9aa38b;
-  --venom: #a5c24f;
-  --venom-bright: #c6e56c;
-  --venom-dim: #6c8434;
-  --green: #5fbf77;
+  --bg: #0b110c;
+  --bg-deep: #070c08;
+  --panel: #111911;
+  --panel-2: #182117;
+  --panel-3: #202a1d;
+  --border: #212b20;
+  --border-strong: #394c2f;
+  --text: #eae6d3;
+  --muted: #97a18a;
+  --gold: #d0a94f;
+  --gold-bright: #e7c470;
+  --gold-dim: #8a7338;
+  --green: #5fae63;
   --red: #d4675b;
   --orange: #d9ae54;
   --blue: #6f9ad6;
@@ -42,25 +43,25 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Page backdrop: Season 2 "Ula'tek Venom" wallpaper (generated coil-and-glow
-   motif) at low opacity beneath a soft vignette, so it blends into the
-   static background behind all elements. */
+/* Page backdrop: official Midnight Curse of Ula'tek (12.1) key art behind a
+   soft dark emerald vignette, so it blends into the static background
+   behind all elements. */
 .page-bg {
   position: fixed;
   inset: 0;
   z-index: -1;
-background:
-    radial-gradient(1200px 600px at 50% -12%, rgba(165, 194, 79, 0.07), transparent 65%),
-    radial-gradient(900px 500px at 85% 110%, rgba(90, 120, 50, 0.06), transparent 60%),
-    radial-gradient(700px 420px at 8% 100%, rgba(40, 70, 35, 0.05), transparent 60%),
-    url("/static/background.jpg") no-repeat center 30% / cover;
+  background:
+    radial-gradient(1200px 600px at 50% -12%, rgba(208, 169, 79, 0.07), transparent 65%),
+    radial-gradient(900px 500px at 85% 110%, rgba(48, 80, 64, 0.08), transparent 60%),
+    radial-gradient(700px 420px at 8% 100%, rgba(32, 64, 48, 0.07), transparent 60%),
+    url("/static/background.jpg") no-repeat center 25% / cover;
 }
 
 .page-bg::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(12, 15, 11, 0.72), rgba(7, 10, 7, 0.8));
+  background: linear-gradient(180deg, rgba(11, 17, 12, 0.72), rgba(7, 12, 8, 0.8));
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
@@ -78,8 +79,8 @@ header {
   font-weight: 700;
   font-size: clamp(22px, 3vw, 30px);
   letter-spacing: 0.06em;
-  color: var(--venom-bright);
-  text-shadow: 0 2px 18px rgba(165, 194, 79, 0.25);
+  color: var(--gold-bright);
+  text-shadow: 0 2px 18px rgba(208, 169, 79, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,8 +89,8 @@ header {
 
 .wm-sword {
   font-size: 0.62em;
-  color: var(--venom-dim);
-  filter: drop-shadow(0 0 8px rgba(165, 194, 79, 0.35));
+  color: var(--gold-dim);
+  filter: drop-shadow(0 0 8px rgba(208, 169, 79, 0.35));
 }
 
 .wm-bis { color: var(--text); font-weight: 500; }
@@ -120,8 +121,8 @@ main {
   left: 0;
   height: 3px;
   width: 0;
-  background: linear-gradient(90deg, var(--venom-dim), var(--venom-bright));
-  box-shadow: 0 0 12px rgba(198, 229, 108, 0.6);
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright));
+  box-shadow: 0 0 12px rgba(231, 196, 112, 0.6);
   z-index: 300;
   opacity: 0;
   pointer-events: none;
@@ -154,7 +155,7 @@ label {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--venom-dim);
+  color: var(--gold-dim);
 }
 
 input[type="text"], select {
@@ -171,14 +172,14 @@ input[type="text"], select {
 
 input[type="text"]:focus, select:focus {
   outline: none;
-  border-color: var(--venom-dim);
-  box-shadow: 0 0 0 3px rgba(165, 194, 79, 0.14);
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 3px rgba(208, 169, 79, 0.14);
 }
 
 select {
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5.5 7.5L10 12l4.5-4.5' stroke='%23a5c24f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5.5 7.5L10 12l4.5-4.5' stroke='%23d0a94f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 30px;
@@ -202,15 +203,15 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(180deg, var(--venom-bright), var(--venom));
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
   color: #191105;
-  border: 1px solid rgba(224, 242, 168, 0.55);
+  border: 1px solid rgba(231, 214, 150, 0.55);
   border-radius: var(--radius-sm);
   padding: 9px 18px;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  box-shadow: 0 2px 10px rgba(165, 194, 79, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 2px 10px rgba(208, 169, 79, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transition: transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
@@ -218,7 +219,7 @@ button {
 
 #analyze-btn:hover:not(:disabled) {
   filter: brightness(1.06);
-  box-shadow: 0 4px 16px rgba(165, 194, 79, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 16px rgba(208, 169, 79, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transform: translateY(-1px);
 }
 
@@ -246,17 +247,17 @@ button {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.combo-trigger:hover:not(:disabled) { border-color: var(--venom-dim); }
+.combo-trigger:hover:not(:disabled) { border-color: var(--gold-dim); }
 
 .combo-trigger:focus-visible {
   outline: none;
-  border-color: var(--venom-dim);
-  box-shadow: 0 0 0 3px rgba(165, 194, 79, 0.14);
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 3px rgba(208, 169, 79, 0.14);
 }
 
 .combo-trigger[aria-expanded="true"] {
-  border-color: var(--venom-dim);
-  box-shadow: 0 0 0 3px rgba(165, 194, 79, 0.14);
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 3px rgba(208, 169, 79, 0.14);
 }
 
 .combo-trigger:disabled { color: var(--muted); cursor: wait; }
@@ -271,7 +272,7 @@ button {
   width: 16px;
   height: 16px;
   flex: none;
-  color: var(--venom);
+  color: var(--gold);
   transition: transform 0.15s ease;
 }
 
@@ -287,7 +288,7 @@ button {
   background: var(--panel-2);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
-  box-shadow: var(--shadow), 0 0 0 1px rgba(165, 194, 79, 0.08);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(208, 169, 79, 0.08);
   overflow: hidden;
   animation: combo-in 0.12s ease;
 }
@@ -306,7 +307,7 @@ button {
   background: var(--bg-deep);
 }
 
-.combo-search svg { width: 15px; height: 15px; color: var(--venom-dim); flex: none; }
+.combo-search svg { width: 15px; height: 15px; color: var(--gold-dim); flex: none; }
 
 .combo-search input {
   width: 100%;
@@ -342,13 +343,13 @@ button {
   scroll-margin: 4px;
 }
 
-.combo-option .combo-check { margin-left: auto; color: var(--venom); flex: none; }
+.combo-option .combo-check { margin-left: auto; color: var(--gold); flex: none; }
 
 .combo-option:hover, .combo-option[data-active="true"] {
-  background: rgba(165, 194, 79, 0.1);
+  background: rgba(208, 169, 79, 0.1);
 }
 
-.combo-option.selected { color: var(--venom-bright); }
+.combo-option.selected { color: var(--gold-bright); }
 
 .combo-empty {
   margin: 0;
@@ -407,7 +408,7 @@ button {
   box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.card h2 { margin: 0 0 4px; font-size: 20px; color: var(--venom-bright); }
+.card h2 { margin: 0 0 4px; font-size: 20px; color: var(--gold-bright); }
 .card .sub { margin: 0 0 6px; color: var(--muted); }
 .card .stats { margin: 0; color: var(--text); font-size: 14px; }
 
@@ -417,7 +418,7 @@ button {
   font-size: 17px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--venom-bright) !important;
+  color: var(--gold-bright) !important;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
 }
@@ -494,7 +495,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--venom-dim);
+  color: var(--gold-dim);
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -526,12 +527,12 @@ button {
   right: 2px;
   bottom: 2px;
   background: rgba(10, 9, 8, 0.82);
-  color: var(--venom-bright);
+  color: var(--gold-bright);
   font-size: 9px;
   font-weight: 700;
   padding: 0 3px;
   border-radius: 3px;
-  border: 1px solid rgba(198, 229, 108, 0.4);
+  border: 1px solid rgba(231, 196, 112, 0.4);
 }
 
 /* ── Tooltip ────────────────────────────────────────────────────────── */
@@ -541,7 +542,7 @@ button {
   z-index: 200;
   background: #14110d;
   border: 1px solid var(--border-strong);
-  border-top: 1px solid var(--venom-dim);
+  border-top: 1px solid var(--gold-dim);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
   font-size: 13px;
@@ -552,7 +553,7 @@ button {
 
 .tooltip .tt-name { font-weight: 700; margin-bottom: 3px; }
 .tooltip .tt-line { color: var(--muted); }
-.tooltip .tt-bis { margin-top: 5px; color: var(--venom-bright); }
+.tooltip .tt-bis { margin-top: 5px; color: var(--gold-bright); }
 .tooltip .tt-status { margin-top: 4px; color: var(--orange); font-size: 12px; }
 
 /* ── Headings & sections ────────────────────────────────────────────── */
@@ -564,7 +565,7 @@ h2 {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin: 22px 0 10px;
-  color: var(--venom-bright);
+  color: var(--gold-bright);
 }
 
 .section-head {
@@ -588,7 +589,7 @@ h2 {
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.sort-toggle:hover { color: var(--venom-bright); border-color: var(--venom-dim); }
+.sort-toggle:hover { color: var(--gold-bright); border-color: var(--gold-dim); }
 
 /* ── Action list ────────────────────────────────────────────────────── */
 
@@ -616,8 +617,8 @@ h2 {
   height: 26px;
   border-radius: 50%;
   background: linear-gradient(180deg, var(--panel-3), var(--panel-2));
-  border: 1px solid var(--venom-dim);
-  color: var(--venom-bright);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold-bright);
   font-family: var(--font-display);
   font-weight: 700;
   display: flex;
@@ -638,7 +639,7 @@ h2 {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--venom-dim);
+  color: var(--gold-dim);
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   padding: 2px 9px;
@@ -650,15 +651,15 @@ h2 {
 .action-detail { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
 
 .action-title a, .action-detail a {
-  color: var(--venom);
+  color: var(--gold);
   text-decoration: underline;
-  text-decoration-color: rgba(165, 194, 79, 0.35);
+  text-decoration-color: rgba(208, 169, 79, 0.35);
   text-underline-offset: 2px;
   transition: color 0.15s ease, text-decoration-color 0.15s ease;
 }
 
 .action-title a:hover, .action-detail a:hover {
-  color: var(--venom-bright);
+  color: var(--gold-bright);
   text-decoration-color: currentColor;
 }
 
@@ -683,7 +684,7 @@ th, td {
 }
 
 th {
-  color: var(--venom-dim);
+  color: var(--gold-dim);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -691,17 +692,17 @@ th {
 }
 
 tbody tr { transition: background 0.12s ease; }
-tbody tr:hover { background: rgba(165, 194, 79, 0.04); }
+tbody tr:hover { background: rgba(208, 169, 79, 0.04); }
 tr:last-child td { border-bottom: none; }
 
 td.slot {
-  color: var(--venom-bright);
+  color: var(--gold-bright);
   font-weight: 600;
   font-size: 12px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-td.bis-name { color: var(--venom); }
+td.bis-name { color: var(--gold); }
 
 td.delta { font-weight: 700; }
 td.delta.ok { color: var(--green); }
@@ -727,26 +728,26 @@ td.status {
 
 #farm-tips summary {
   cursor: pointer;
-  color: var(--venom-bright);
+  color: var(--gold-bright);
   font-weight: 600;
   font-size: 14px;
 }
 
-#farm-tips summary::marker { color: var(--venom-dim); }
+#farm-tips summary::marker { color: var(--gold-dim); }
 #farm-tips p { color: var(--muted); margin: 8px 0 2px; font-size: 13.5px; }
 
 /* ── Source links & upgrade guide ───────────────────────────────────── */
 
 .source-link { margin-top: 20px; color: var(--muted); font-size: 13.5px; }
-.source-link a { color: var(--venom); }
+.source-link a { color: var(--gold); }
 
 .upgrade-guide ul { margin: 0 0 12px; padding-left: 18px; color: var(--text); font-size: 14px; }
 .upgrade-guide li { margin-bottom: 8px; }
-.upgrade-guide strong { color: var(--venom-bright); }
+.upgrade-guide strong { color: var(--gold-bright); }
 .upgrade-guide .source-link { margin-top: 0; font-size: 13px; }
 
 ::selection {
-  background: rgba(165, 194, 79, 0.3);
+  background: rgba(208, 169, 79, 0.3);
   color: var(--text);
 }
 
@@ -758,5 +759,5 @@ td.status {
   border: 2px solid transparent;
   background-clip: content-box;
 }
-::-webkit-scrollbar-thumb:hover { background-color: var(--venom-dim); }
+::-webkit-scrollbar-thumb:hover { background-color: var(--gold-dim); }
 ::-webkit-scrollbar-track { background: transparent; }
