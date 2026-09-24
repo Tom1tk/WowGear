@@ -38,6 +38,9 @@ QUALITY = {"UNCOMMON": 2, "RARE": 3, "EPIC": 4, "LEGENDARY": 5}
 ALLIANCE_RACES = 1 | 4 | 8 | 64
 HORDE_RACES = 2 | 16 | 32 | 128
 WORLD_DROP_NPCS = 12  # more droppers than this = a random "world drop"
+# Reputations earned only in raids: quest rewards gated by them belong to that tier.
+RAID_FACTIONS = {910: "temple_of_ahnqiraj", 270: "zulgurub", 749: "molten_core"}
+PVP_FACTIONS = {890, 889, 509, 510, 730, 729}
 RANK_NAMES = {0: "normal", 1: "elite", 2: "rare elite", 3: "boss", 4: "rare"}
 
 
@@ -180,6 +183,63 @@ class Merger:
         return max((src["items"].get(iid) or {}).get("honor_rank") or 0 for src in (self.cm, self.vm))
 
     # ---------- sources ----------
+    def quest_raid(self, qq: dict, depth: int = 0) -> str | None:
+        """Raid a quest depends on: needed items that drop in a raid, a raid
+        reputation, or a previous quest that is itself raid-gated."""
+        best = None
+        rep = qq.get("requiredMinRep")
+        if isinstance(rep, list) and rep and rep[0] in RAID_FACTIONS:
+            best = RAID_FACTIONS[rep[0]]
+        started = qq.get("startedBy") or {}
+        item_starts = (started.get("3") if isinstance(started, dict) else
+                       (started[2] if len(started) > 2 else None)) or []
+        needed = ((qq.get("objectiveItems") or []) + (qq.get("requiredSourceItems") or [])
+                  + list(item_starts) + ([qq["sourceItemId"]] if qq.get("sourceItemId") else []))
+        for item in needed:
+            for src in self._raw_item_instances(str(item)):
+                if self.instances[src].get("tier") and (
+                        best is None or self.instances[src]["tier"] > self.instances[best].get("tier", 0)):
+                    best = src
+        if best is None and depth < 6:
+            for pre in (qq.get("preQuestSingle") or []) + (qq.get("preQuestGroup") or []):
+                pq = self.q["quest"].get(str(pre))
+                if pq:
+                    got = self.quest_raid(pq, depth + 1)
+                    if got:
+                        return got
+        return best
+
+    def craft_raid(self, reagents: list[int]) -> str | None:
+        """Raid whose drops a recipe needs (a reagent that only drops in raids)."""
+        best = None
+        for reagent in reagents:
+            rec = self.q["item"].get(str(reagent)) or {}
+            if rec.get("vendors"):
+                continue
+            insts = self._raw_item_instances(str(reagent))
+            npcs = rec.get("npcDrops") or []
+            if not insts or not npcs:
+                continue
+            tiers = [self.instances[i].get("tier", 0) for i in insts]
+            if min(tiers) > 0:
+                raid = min(insts, key=lambda i: self.instances[i].get("tier", 0))
+                if best is None or self.instances[raid]["tier"] > self.instances[best]["tier"]:
+                    best = raid
+        return best
+
+    def _raw_item_instances(self, iid: str) -> set:
+        rec = self.q["item"].get(iid) or {}
+        out = set()
+        for npc in rec.get("npcDrops") or []:
+            inst = self.instance_of_npc(int(npc))
+            if inst:
+                out.add(inst)
+        for obj in rec.get("objectDrops") or []:
+            zone = (self.q["object"].get(str(obj)) or {}).get("zoneID")
+            if zone and int(zone) in self.area_to_instance:
+                out.add(self.area_to_instance[int(zone)])
+        return out
+
     def npc_info(self, npc_id: int) -> dict:
         q = self.q["npc"].get(str(npc_id)) or {}
         c = self.cm["npc"].get(str(npc_id)) or self.vm["npc"].get(str(npc_id)) or {}
@@ -236,6 +296,9 @@ class Merger:
             add("craft", info["profession"], "AtlasLoot")
             rec = found[("craft", info["profession"])]
             rec["skill"] = info["skill"]
+            raid = self.craft_raid(info.get("reagents") or [])
+            if raid:
+                rec["instance"] = raid
             recipe = self.recipe_items.get(blz["name"].lower())
             if recipe:
                 add("craft", info["profession"], "QuestieDB (recipe item)")
@@ -278,6 +341,17 @@ class Merger:
                 rec.update(name=info["name"], zone=info["zone"], title=info["title"])
                 if info["friendly"] in ("A", "H"):
                     rec["faction"] = info["friendly"]
+                title = info["title"] or ""
+                if title.endswith("Supply Officer") and any(
+                        w in title for w in ("Arathor", "Warsong", "Silverwing", "Defilers", "Frostwolf", "Stormpike")):
+                    rec["type"] = "pvp_rep"  # battleground reputation reward
+                rep = blz.get("reputation")
+                if rep:
+                    rec["reputation"] = rep
+                    if rep.get("faction_id") in PVP_FACTIONS:
+                        rec["type"] = "pvp_rep"
+                    elif rep.get("faction_id") in RAID_FACTIONS:
+                        rec["instance"] = RAID_FACTIONS[rep["faction_id"]]
             elif r["type"] == "quest":
                 qq = self.q["quest"].get(str(r["id"])) or {}
                 cq = self.cm["quests"].get(str(r["id"])) or self.vm["quests"].get(str(r["id"])) or {}
@@ -299,6 +373,9 @@ class Merger:
                         rec["instance"] = self.area_to_instance[zone]
                 started = qq.get("startedBy") or []
                 starters = (started.get("1") if isinstance(started, dict) else started[:1] and started[0]) or []
+                raid = self.quest_raid(qq)
+                if raid:
+                    rec["instance"] = raid
                 if starters:
                     rec["start_npc"] = self.npc_info(starters[0])["name"]
             elif r["type"] == "object":
@@ -312,6 +389,8 @@ class Merger:
                         rec["instance"] = self.area_to_instance[int(zone)]
             elif r["type"] == "craft":
                 rec["skill"] = r.get("skill")
+                if r.get("instance"):
+                    rec["instance"] = r["instance"]
                 if r.get("recipe"):
                     rec["recipe"] = r["recipe"]
             elif r["type"] == "container":
@@ -349,7 +428,7 @@ class Merger:
             stat_checks[check] += 1
             if notes and check != "confirmed":
                 self.conflicts.append(f"- {blz['name']} ({iid}): {' | '.join(notes)}")
-            item = {k: v for k, v in blz.items() if v not in (None, [], {}, False)}
+            item = {k: v for k, v in blz.items() if v is not None and v != [] and v != {} and v is not False}
             item["quality"] = QUALITY[blz["quality"]]
             item["stats_check"] = check
             items[iid] = item

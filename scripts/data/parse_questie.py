@@ -148,8 +148,18 @@ def main() -> None:
                 rec.pop("waypoints", None)
         if kind == "quest":
             for rec in parsed.values():
-                for drop in ("objectivesText", "triggerEnd", "extraObjectives", "objectives"):
+                for drop in ("objectivesText", "triggerEnd", "extraObjectives"):
                     rec.pop(drop, None)
+                obj = rec.pop("objectives", None)
+                items = []
+                if isinstance(obj, dict):
+                    obj = [obj.get(str(i)) or obj.get(i) for i in range(1, 7)]
+                if isinstance(obj, list) and len(obj) >= 3 and obj[2]:
+                    for entry in obj[2]:
+                        if isinstance(entry, list) and entry:
+                            items.append(entry[0])
+                if items:
+                    rec["objectiveItems"] = items
         result[kind] = parsed
         print(f"{kind}: {len(parsed)} rows, {n} Era fixes applied")
 

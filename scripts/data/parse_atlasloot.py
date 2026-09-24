@@ -87,9 +87,11 @@ def parse_profession_spells():
     start = text.index("PROFESSION_DATA.CLASSIC = {")
     end = text.index("\n}", start)
     out = {}
-    for m in re.finditer(r"\[(\d+)\] = \{(\d+),(\d+),(\d+)", text[start:end]):
-        spell, item, prof, skill = (int(x) for x in m.groups())
-        out[spell] = {"item": item, "profession": PROFESSIONS.get(prof, str(prof)), "skill": skill}
+    for m in re.finditer(r"\[(\d+)\] = \{(\d+),(\d+),(\d+),\d+,\d+,\{([\d,]*)\}", text[start:end]):
+        spell, item, prof, skill = (int(x) for x in m.groups()[:4])
+        reagents = [int(x) for x in m.group(5).split(",") if x]
+        out[spell] = {"item": item, "profession": PROFESSIONS.get(prof, str(prof)), "skill": skill,
+                      "reagents": reagents}
     return out
 
 
@@ -102,7 +104,8 @@ def main():
         for sid in spell_ids:
             info = spells.get(sid)
             if info:
-                items[info["item"]] = {"spell": sid, "skill": info["skill"], "profession": info["profession"]}
+                items[info["item"]] = {"spell": sid, "skill": info["skill"], "profession": info["profession"],
+                                       "reagents": info["reagents"]}
         craft[prof] = items
     write_json(STAGING / "atlasloot.json", {"instances": inst, "crafting": craft})
     print(f"instances: {len(inst)}, bosses: {sum(len(v['bosses']) for v in inst.values())}, "

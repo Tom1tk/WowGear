@@ -1,0 +1,21 @@
+{
+ "_about": "Leveling items named in the NoobToBoss Feral Druid leveling guide (text copied by hand, 2026-09-24). Used for validation only.",
+ "url": "https://noobtoboss.com/wow-classic-druid-feral-leveling-guide/",
+ "spec": "druid.feral_cat",
+ "items": [
+  {"item": "Staff of Westfall", "levels": [10, 20]},
+  {"item": "Crescent Staff", "levels": [20, 30]},
+  {"item": "Odo's Ley Staff", "levels": [20, 30]},
+  {"item": "Armor of the Fang", "levels": [20, 30]},
+  {"item": "Spaulders of the Rhino", "levels": [20, 30]},
+  {"item": "Pendulum of Doom", "levels": [20, 30]},
+  {"item": "Vanquisher's Sword", "levels": [30, 40]},
+  {"item": "Blackstone Ring", "levels": [30, 40]},
+  {"item": "Bloodrazor", "levels": [40, 50]},
+  {"item": "Glavenor's Frigid Glade", "levels": [40, 50]},
+  {"item": "Viper Sting Cloak", "levels": [40, 50]},
+  {"item": "Manual Crowd Pummeler", "levels": [29, 45]},
+  {"item": "Bonecrusher", "levels": [55, 60]},
+  {"item": "Unyielding Maul", "levels": [50, 60]}
+ ]
+}

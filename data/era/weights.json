@@ -1,0 +1,693 @@
+{
+ "_about": "Stat weights per class.spec. 'leveling' is used below level 60, 'endgame' at 60. Values are equivalence points in the role's main unit (AP, spell power, +healing or Stamina). Weapons: 'dps' points per weapon DPS (main hand / two-hander), 'offhand_dps' for dual wield, 'ranged_dps' for hunters, 'slow_bonus' points per second of weapon speed above 2.5. Sources are listed per profile; tune values here and re-run scripts/data/build_gear.py.",
+ "profiles": {
+  "druid.feral_cat": {
+   "leveling": {
+    "str": 2.2,
+    "agi": 2.0,
+    "ap": 1.0,
+    "crit": 20,
+    "hit": 12,
+    "sta": 0.6,
+    "spi": 0.3,
+    "armor": 0.01,
+    "hp5": 1.0,
+    "wskill": 3,
+    "feral_ap": 1.0,
+    "int": 0.2
+   },
+   "endgame": {
+    "str": 2.4,
+    "agi": 2.2,
+    "ap": 1.0,
+    "crit": 22,
+    "hit": 18,
+    "sta": 0.1,
+    "wskill": 4,
+    "feral_ap": 1.0
+   },
+   "weapon": {
+    "dps": 0,
+    "note": "In Cat Form weapon damage does not count; only the weapon's stats and feral attack power."
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "https://www.warcrafttavern.com/wow-classic/guides/pve-feral-druid-dps-stat-priority/",
+    "Heart of the Wild: +20% Strength in Cat Form."
+   ]
+  },
+  "druid.feral_bear": {
+   "leveling": {
+    "sta": 1.0,
+    "def": 1.0,
+    "armor": 0.05,
+    "dodge": 8,
+    "str": 0.8,
+    "agi": 0.7,
+    "hit": 4,
+    "ap": 0.3,
+    "hp5": 1.0,
+    "feral_ap": 0.3
+   },
+   "endgame": {
+    "sta": 1.0,
+    "armor": 0.1,
+    "agi": 1.0,
+    "str": 1.0,
+    "ap": 0.6,
+    "feral_ap": 0.6,
+    "hit": 12,
+    "crit": 10,
+    "def": 1.0,
+    "dodge": 10,
+    "res_shadow": 0,
+    "hp5": 0.5
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "Bear Form: armor from items x ~4.5 (Dire Bear + Thick Hide), no parry or block.",
+    "Tuned for threat and survival: pre-raid bear lists mix Stamina/armor with Strength, AP, hit and crit for threat."
+   ]
+  },
+  "druid.balance": {
+   "leveling": {
+    "sp": 1.0,
+    "spell_crit": 7,
+    "spell_hit": 8,
+    "int": 0.5,
+    "spi": 0.5,
+    "mp5": 0.9,
+    "sta": 0.5,
+    "armor": 0.005,
+    "sp_nature": 0.6,
+    "sp_arcane": 0.4
+   },
+   "endgame": {
+    "sp": 1.0,
+    "spell_crit": 9,
+    "spell_hit": 12,
+    "int": 0.4,
+    "spi": 0.2,
+    "mp5": 0.6,
+    "sta": 0.1,
+    "spell_pen": 0.4,
+    "sp_nature": 0.6,
+    "sp_arcane": 0.4
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "Wrath/Starfire: Nature and Arcane spells."
+   ]
+  },
+  "druid.restoration": {
+   "leveling": {
+    "heal": 0.6,
+    "sp": 1.0,
+    "int": 0.6,
+    "spi": 0.6,
+    "mp5": 1.5,
+    "spell_crit": 4,
+    "sta": 0.6
+   },
+   "endgame": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.6,
+    "spi": 0.4,
+    "mp5": 2.0,
+    "spell_crit": 5,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "Reflection: Spirit regen while casting."
+   ]
+  },
+  "shaman.enhancement": {
+   "leveling": {
+    "str": 2.0,
+    "agi": 1.1,
+    "ap": 1.0,
+    "crit": 20,
+    "hit": 12,
+    "sta": 0.6,
+    "spi": 0.15,
+    "armor": 0.01,
+    "hp5": 1.0,
+    "wskill": 3,
+    "int": 0.3
+   },
+   "endgame": {
+    "str": 2.0,
+    "agi": 1.2,
+    "ap": 1.0,
+    "crit": 22,
+    "hit": 18,
+    "sta": 0.1,
+    "wskill": 4,
+    "int": 0.4
+   },
+   "weapon": {
+    "dps": 14,
+    "slow_bonus": 30,
+    "note": "Slow two-handers are best for Windfury Weapon (from level 30) and Stormstrike."
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "https://www.warcrafttavern.com/wow-classic/guides/pve-enhancement-shaman/",
+    "https://www.icy-veins.com/wow-classic/enhancement-shaman-dps-pve-stat-priority"
+   ]
+  },
+  "shaman.elemental": {
+   "leveling": {
+    "sp": 1.0,
+    "spell_crit": 7,
+    "spell_hit": 8,
+    "int": 0.5,
+    "spi": 0.5,
+    "mp5": 0.9,
+    "sta": 0.5,
+    "armor": 0.005,
+    "sp_nature": 1.0,
+    "sp_fire": 0.2
+   },
+   "endgame": {
+    "sp": 1.0,
+    "spell_crit": 12,
+    "spell_hit": 12,
+    "int": 0.4,
+    "spi": 0.05,
+    "mp5": 0.8,
+    "sta": 0.1,
+    "spell_pen": 0.4,
+    "sp_nature": 1.0,
+    "sp_fire": 0.2
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "Lightning Bolt / Chain Lightning are Nature spells."
+   ]
+  },
+  "shaman.restoration": {
+   "leveling": {
+    "heal": 0.6,
+    "sp": 1.0,
+    "int": 0.6,
+    "spi": 0.3,
+    "mp5": 1.5,
+    "spell_crit": 4,
+    "sta": 0.6
+   },
+   "endgame": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.6,
+    "spi": 0.1,
+    "mp5": 2.2,
+    "spell_crit": 5,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap."
+   ]
+  },
+  "warrior.arms": {
+   "leveling": {
+    "str": 2.0,
+    "agi": 1.1,
+    "ap": 1.0,
+    "crit": 20,
+    "hit": 12,
+    "sta": 0.6,
+    "spi": 0.15,
+    "armor": 0.01,
+    "hp5": 1.0,
+    "wskill": 3
+   },
+   "endgame": {
+    "str": 2.0,
+    "agi": 1.2,
+    "ap": 1.0,
+    "crit": 24,
+    "hit": 18,
+    "sta": 0.1,
+    "wskill": 4
+   },
+   "weapon": {
+    "dps": 14,
+    "slow_bonus": 20,
+    "note": "Slow two-handers hit hardest with Mortal Strike and Overpower."
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap."
+   ]
+  },
+  "warrior.fury": {
+   "leveling": {
+    "str": 2.0,
+    "agi": 1.1,
+    "ap": 1.0,
+    "crit": 20,
+    "hit": 12,
+    "sta": 0.6,
+    "spi": 0.15,
+    "armor": 0.01,
+    "hp5": 1.0,
+    "wskill": 3
+   },
+   "endgame": {
+    "str": 2.0,
+    "agi": 1.2,
+    "ap": 1.0,
+    "crit": 26,
+    "hit": 18,
+    "sta": 0.1,
+    "wskill": 4
+   },
+   "weapon": {
+    "dps": 14,
+    "offhand_dps": 7,
+    "slow_bonus": 10
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap."
+   ]
+  },
+  "warrior.protection": {
+   "leveling": {
+    "sta": 1.0,
+    "def": 1.0,
+    "armor": 0.05,
+    "dodge": 8,
+    "parry": 8,
+    "block": 4,
+    "block_value": 0.2,
+    "str": 0.8,
+    "agi": 0.7,
+    "hit": 4,
+    "ap": 0.3,
+    "hp5": 1.0
+   },
+   "endgame": {
+    "sta": 1.0,
+    "def": 1.5,
+    "armor": 0.07,
+    "dodge": 12,
+    "parry": 12,
+    "block": 6,
+    "block_value": 0.3,
+    "str": 0.5,
+    "agi": 0.7,
+    "hit": 5,
+    "ap": 0.2,
+    "wskill": 1
+   },
+   "weapon": {
+    "dps": 4
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap."
+   ]
+  },
+  "paladin.retribution": {
+   "leveling": {
+    "str": 2.0,
+    "agi": 1.1,
+    "ap": 1.0,
+    "crit": 20,
+    "hit": 12,
+    "sta": 0.6,
+    "spi": 0.15,
+    "armor": 0.01,
+    "hp5": 1.0,
+    "wskill": 3,
+    "int": 0.3
+   },
+   "endgame": {
+    "str": 2.0,
+    "agi": 1.2,
+    "ap": 1.0,
+    "crit": 22,
+    "hit": 18,
+    "sta": 0.1,
+    "wskill": 4,
+    "int": 0.4,
+    "sp": 0.3
+   },
+   "weapon": {
+    "dps": 14,
+    "slow_bonus": 30,
+    "note": "Slow two-handers work best with Seal of Command."
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap."
+   ]
+  },
+  "paladin.holy": {
+   "leveling": {
+    "heal": 0.6,
+    "sp": 1.0,
+    "int": 0.6,
+    "spi": 0.2,
+    "mp5": 1.5,
+    "spell_crit": 4,
+    "sta": 0.6
+   },
+   "endgame": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.7,
+    "spi": 0.05,
+    "mp5": 2.0,
+    "spell_crit": 8,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "Illumination: healing crits refund mana."
+   ]
+  },
+  "paladin.protection": {
+   "leveling": {
+    "sta": 1.0,
+    "def": 1.0,
+    "armor": 0.05,
+    "dodge": 8,
+    "parry": 8,
+    "block": 4,
+    "block_value": 0.2,
+    "str": 0.8,
+    "agi": 0.7,
+    "hit": 4,
+    "ap": 0.3,
+    "hp5": 1.0,
+    "sp": 0.3
+   },
+   "endgame": {
+    "sta": 1.0,
+    "def": 1.5,
+    "armor": 0.07,
+    "dodge": 12,
+    "parry": 12,
+    "block": 6,
+    "block_value": 0.3,
+    "str": 0.5,
+    "agi": 0.7,
+    "hit": 5,
+    "ap": 0.2,
+    "wskill": 1,
+    "sp": 0.6,
+    "int": 0.3
+   },
+   "weapon": {
+    "dps": 3
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "Holy Shield / Consecration scale with spell power."
+   ]
+  },
+  "hunter.beast_mastery": {
+   "leveling": {
+    "agi": 2.4,
+    "rap": 1.0,
+    "ap": 1.0,
+    "crit": 20,
+    "hit": 14,
+    "sta": 0.5,
+    "int": 0.3,
+    "spi": 0.1,
+    "str": 0.1,
+    "hp5": 1.0
+   },
+   "endgame": {
+    "agi": 2.5,
+    "rap": 1.0,
+    "ap": 1.0,
+    "crit": 26,
+    "hit": 20,
+    "sta": 0.1,
+    "int": 0.3,
+    "mp5": 1.0
+   },
+   "weapon": {
+    "dps": 1,
+    "ranged_dps": 30,
+    "note": "The ranged weapon matters most; melee weapons are mostly for their stats."
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "Items with '+Attack Power' raise both melee and ranged attack power in patch 1.12, so AP counts fully for hunters."
+   ]
+  },
+  "rogue.combat": {
+   "leveling": {
+    "agi": 2.0,
+    "str": 1.0,
+    "ap": 1.0,
+    "crit": 24,
+    "hit": 16,
+    "sta": 0.5,
+    "hp5": 1.0,
+    "wskill": 4
+   },
+   "endgame": {
+    "agi": 2.0,
+    "str": 1.0,
+    "ap": 1.0,
+    "crit": 28,
+    "hit": 20,
+    "sta": 0.1,
+    "wskill": 6
+   },
+   "weapon": {
+    "dps": 14,
+    "offhand_dps": 7,
+    "note": "Combat: swords or maces (slow main hand)."
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap."
+   ]
+  },
+  "priest.shadow": {
+   "leveling": {
+    "sp": 1.0,
+    "spell_crit": 7,
+    "spell_hit": 8,
+    "int": 0.5,
+    "spi": 0.7,
+    "mp5": 0.9,
+    "sta": 0.5,
+    "armor": 0.005,
+    "sp_shadow": 1.0
+   },
+   "endgame": {
+    "sp": 1.0,
+    "spell_crit": 3,
+    "spell_hit": 12,
+    "int": 0.4,
+    "spi": 0.3,
+    "mp5": 0.6,
+    "sta": 0.1,
+    "spell_pen": 0.4,
+    "sp_shadow": 1.0
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "Spirit Tap: Spirit is strong while leveling. In patch 1.12 most Shadow damage cannot crit (only Mind Blast), so spell crit has low value."
+   ]
+  },
+  "priest.holy": {
+   "leveling": {
+    "heal": 0.6,
+    "sp": 1.0,
+    "int": 0.6,
+    "spi": 0.8,
+    "mp5": 1.5,
+    "spell_crit": 4,
+    "sta": 0.6
+   },
+   "endgame": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.6,
+    "spi": 0.6,
+    "mp5": 2.0,
+    "spell_crit": 5,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "Spiritual Guidance: Spirit adds healing."
+   ]
+  },
+  "mage.frost": {
+   "leveling": {
+    "sp": 1.0,
+    "spell_crit": 7,
+    "spell_hit": 8,
+    "int": 0.5,
+    "spi": 0.5,
+    "mp5": 0.9,
+    "sta": 0.5,
+    "armor": 0.005,
+    "sp_frost": 1.0
+   },
+   "endgame": {
+    "sp": 1.0,
+    "spell_crit": 10,
+    "spell_hit": 12,
+    "int": 0.4,
+    "spi": 0.1,
+    "mp5": 0.6,
+    "sta": 0.1,
+    "spell_pen": 0.4,
+    "sp_frost": 1.0
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap."
+   ]
+  },
+  "mage.fire": {
+   "leveling": {
+    "sp": 1.0,
+    "spell_crit": 7,
+    "spell_hit": 8,
+    "int": 0.5,
+    "spi": 0.5,
+    "mp5": 0.9,
+    "sta": 0.5,
+    "armor": 0.005,
+    "sp_fire": 1.0
+   },
+   "endgame": {
+    "sp": 1.0,
+    "spell_crit": 12,
+    "spell_hit": 12,
+    "int": 0.4,
+    "spi": 0.1,
+    "mp5": 0.6,
+    "sta": 0.1,
+    "spell_pen": 0.4,
+    "sp_fire": 1.0
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap."
+   ]
+  },
+  "warlock.affliction": {
+   "leveling": {
+    "sp": 1.0,
+    "spell_crit": 7,
+    "spell_hit": 8,
+    "int": 0.5,
+    "spi": 0.5,
+    "mp5": 0.9,
+    "sta": 0.7,
+    "armor": 0.005,
+    "sp_shadow": 1.0
+   },
+   "endgame": {
+    "sp": 1.0,
+    "spell_crit": 6,
+    "spell_hit": 12,
+    "int": 0.4,
+    "spi": 0.1,
+    "mp5": 0.6,
+    "sta": 0.3,
+    "spell_pen": 0.4,
+    "sp_shadow": 1.0
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "Life Tap turns health into mana, so Stamina has value."
+   ]
+  },
+  "warlock.destruction": {
+   "leveling": {
+    "sp": 1.0,
+    "spell_crit": 7,
+    "spell_hit": 8,
+    "int": 0.5,
+    "spi": 0.5,
+    "mp5": 0.9,
+    "sta": 0.6,
+    "armor": 0.005,
+    "sp_shadow": 1.0,
+    "sp_fire": 0.3
+   },
+   "endgame": {
+    "sp": 1.0,
+    "spell_crit": 10,
+    "spell_hit": 12,
+    "int": 0.4,
+    "spi": 0.1,
+    "mp5": 0.6,
+    "sta": 0.3,
+    "spell_pen": 0.4,
+    "sp_shadow": 1.0,
+    "sp_fire": 0.3
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "Patch 1.12 formulas: Warrior/Paladin/Shaman/Druid-cat 1 Str = 2 AP; Rogue 1 Agi = 1 AP and 1 Str = 1 AP; Hunter 1 Agi = 2 ranged AP; ~20 Agi = 1% melee crit (Rogue ~29, Hunter ~53); 1% crit ~ 20-30 AP; 1% hit ~ 15-20 AP up to the hit cap.",
+    "Shadow Bolt is the main spell."
+   ]
+  }
+ },
+ "aliases": {
+  "hunter.marksmanship": "hunter.beast_mastery",
+  "hunter.survival": "hunter.beast_mastery",
+  "rogue.assassination": "rogue.combat",
+  "rogue.subtlety": "rogue.combat",
+  "priest.discipline": "priest.holy",
+  "mage.arcane": "mage.frost",
+  "warlock.demonology": "warlock.affliction"
+ },
+ "leveling_default": {
+  "warrior": "arms",
+  "paladin": "retribution",
+  "hunter": "beast_mastery",
+  "rogue": "combat",
+  "priest": "shadow",
+  "shaman": "enhancement",
+  "mage": "frost",
+  "warlock": "affliction",
+  "druid": "feral_cat"
+ }
+}
