@@ -9,3 +9,5 @@ backend/app/item_icon_cache.json
 .env*
 data/raw/
 data/era/staging/
+node_modules/
+shots/

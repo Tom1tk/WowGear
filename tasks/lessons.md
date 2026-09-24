@@ -23,3 +23,14 @@
   actually restarted with the new code (cwd/`--app-dir` matter for uvicorn).
 - Keep raw A/B probes byte-identical to the code under test; any extra param
   invalidates the comparison.
+
+## Classic Era rebuild (2026-09-24)
+
+- Check robots.txt before collecting data: Wowhead blocks AI agents by name; wago.tools blocks everything.
+- Guides can be wrong (a feral druid guide listed swords, an axe and items that do not exist).
+  Cross-check with class rules and item data before trusting a list.
+- Emulator dumps: HeidiSQL (VMaNGOS) puts one row per line with spaces after commas;
+  CMaNGOS puts all rows on one line. The SQL parser must handle both.
+- QuestieDB spawn tables with keys 1..n turn into Lua arrays; read table keys directly.
+- Blizzard `required_level` is 0 for some high-level items → use an item-level floor.
+- Quest rewards can be raid-gated through the quest's needed items or a previous quest.

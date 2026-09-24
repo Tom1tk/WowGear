@@ -1,0 +1,654 @@
+{
+ "character": {
+  "key": {
+   "href": "https://us.api.blizzard.com/profile/wow/character/whitemane/testchar?namespace=profile-classic1x-us"
+  },
+  "name": "Testchar",
+  "id": 94318991,
+  "realm": {
+   "key": {
+    "href": "https://us.api.blizzard.com/data/wow/realm/5066?namespace=dynamic-classic1x-us"
+   },
+   "name": "Whitemane",
+   "id": 5066,
+   "slug": "whitemane"
+  }
+ },
+ "equipped_items": [
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/12640?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 12640
+   },
+   "enchantments": [
+    {
+     "display_string": "Enchanted: Attack Speed +1%",
+     "source_item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/18329?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "Arcanum of Rapidity",
+      "id": 18329
+     },
+     "enchantment_id": 2543,
+     "enchantment_slot": {
+      "id": 0,
+      "type": "PERMANENT"
+     }
+    }
+   ],
+   "slot": {
+    "type": "HEAD",
+    "name": "Head"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Lionheart Helm",
+   "inventory_type": {
+    "type": "HEAD",
+    "name": "Head"
+   }
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/21664?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 21664
+   },
+   "slot": {
+    "type": "NECK",
+    "name": "Neck"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Barbed Choker",
+   "inventory_type": {
+    "type": "NECK",
+    "name": "Neck"
+   },
+   "is_subclass_hidden": true
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/21330?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 21330
+   },
+   "enchantments": [
+    {
+     "display_string": "Enchanted: +30 Attack Power",
+     "source_item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/20077?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "Zandalar Signet of Might",
+      "id": 20077
+     },
+     "enchantment_id": 2606,
+     "enchantment_slot": {
+      "id": 0,
+      "type": "PERMANENT"
+     }
+    }
+   ],
+   "slot": {
+    "type": "SHOULDER",
+    "name": "Shoulders"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Conqueror's Spaulders",
+   "inventory_type": {
+    "type": "SHOULDER",
+    "name": "Shoulder"
+   }
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/3427?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 3427
+   },
+   "slot": {
+    "type": "SHIRT",
+    "name": "Shirt"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "COMMON",
+    "name": "Common"
+   },
+   "name": "Stylish Black Shirt",
+   "inventory_type": {
+    "type": "BODY",
+    "name": "Shirt"
+   },
+   "is_subclass_hidden": true
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/21331?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 21331
+   },
+   "enchantments": [
+    {
+     "display_string": "Enchanted: All Stats +4",
+     "source_item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/22028?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "QAEnchant Chest +4 Stats",
+      "id": 22028
+     },
+     "enchantment_id": 1891,
+     "enchantment_slot": {
+      "id": 0,
+      "type": "PERMANENT"
+     }
+    }
+   ],
+   "slot": {
+    "type": "CHEST",
+    "name": "Chest"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Conqueror's Breastplate",
+   "inventory_type": {
+    "type": "CHEST",
+    "name": "Chest"
+   }
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/13959?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 13959
+   },
+   "slot": {
+    "type": "WAIST",
+    "name": "Waist"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "RARE",
+    "name": "Rare"
+   },
+   "name": "Omokk's Girth Restrainer",
+   "inventory_type": {
+    "type": "WAIST",
+    "name": "Waist"
+   }
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/21332?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 21332
+   },
+   "slot": {
+    "type": "LEGS",
+    "name": "Legs"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Conqueror's Legguards",
+   "inventory_type": {
+    "type": "LEGS",
+    "name": "Legs"
+   }
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/13070?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 13070
+   },
+   "enchantments": [
+    {
+     "display_string": "Enchanted: Minor Speed Increase",
+     "source_item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/22587?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "QAEnchant Boots +8% Speed",
+      "id": 22587
+     },
+     "enchantment_id": 911,
+     "enchantment_slot": {
+      "id": 0,
+      "type": "PERMANENT"
+     }
+    }
+   ],
+   "slot": {
+    "type": "FEET",
+    "name": "Feet"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "RARE",
+    "name": "Rare"
+   },
+   "name": "Sapphiron's Scale Boots",
+   "inventory_type": {
+    "type": "FEET",
+    "name": "Feet"
+   }
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/22204?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 22204
+   },
+   "slot": {
+    "type": "WRIST",
+    "name": "Wrist"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "RARE",
+    "name": "Rare"
+   },
+   "name": "Wristguards of Renown",
+   "inventory_type": {
+    "type": "WRIST",
+    "name": "Wrist"
+   }
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/14551?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 14551
+   },
+   "enchantments": [
+    {
+     "display_string": "Enchanted: Agility +15",
+     "source_item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/22033?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "QAEnchant Gloves +15 Agility",
+      "id": 22033
+     },
+     "enchantment_id": 2564,
+     "enchantment_slot": {
+      "id": 0,
+      "type": "PERMANENT"
+     }
+    }
+   ],
+   "slot": {
+    "type": "HANDS",
+    "name": "Hands"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Edgemaster's Handguards",
+   "inventory_type": {
+    "type": "HAND",
+    "name": "Hands"
+   }
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/19325?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 19325
+   },
+   "slot": {
+    "type": "FINGER_1",
+    "name": "Ring 1"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Don Julio's Band",
+   "inventory_type": {
+    "type": "FINGER",
+    "name": "Finger"
+   },
+   "unique_equipped": "Unique",
+   "is_subclass_hidden": true
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/19384?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 19384
+   },
+   "slot": {
+    "type": "FINGER_2",
+    "name": "Ring 2"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Master Dragonslayer's Ring",
+   "inventory_type": {
+    "type": "FINGER",
+    "name": "Finger"
+   },
+   "unique_equipped": "Unique",
+   "is_subclass_hidden": true
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/18834?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 18834
+   },
+   "slot": {
+    "type": "TRINKET_1",
+    "name": "Trinket 1"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "RARE",
+    "name": "Rare"
+   },
+   "name": "Insignia of the Horde",
+   "inventory_type": {
+    "type": "TRINKET",
+    "name": "Trinket"
+   },
+   "unique_equipped": "Unique",
+   "is_subclass_hidden": true
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/11815?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 11815
+   },
+   "slot": {
+    "type": "TRINKET_2",
+    "name": "Trinket 2"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "RARE",
+    "name": "Rare"
+   },
+   "name": "Hand of Justice",
+   "inventory_type": {
+    "type": "TRINKET",
+    "name": "Trinket"
+   },
+   "unique_equipped": "Unique",
+   "is_subclass_hidden": true
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/21701?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 21701
+   },
+   "enchantments": [
+    {
+     "display_string": "Enchanted: Agility +3",
+     "enchantment_id": 849,
+     "enchantment_slot": {
+      "id": 0,
+      "type": "PERMANENT"
+     }
+    }
+   ],
+   "slot": {
+    "type": "BACK",
+    "name": "Back"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Cloak of Concentrated Hatred",
+   "inventory_type": {
+    "type": "CLOAK",
+    "name": "Back"
+   },
+   "is_subclass_hidden": true
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/22802?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 22802
+   },
+   "enchantments": [
+    {
+     "display_string": "Enchanted: Crusader",
+     "source_item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/18666?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "QAEnchant Weapon Crusader",
+      "id": 18666
+     },
+     "enchantment_id": 1900,
+     "enchantment_slot": {
+      "id": 0,
+      "type": "PERMANENT"
+     }
+    }
+   ],
+   "slot": {
+    "type": "MAIN_HAND",
+    "name": "Main Hand"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Kingsfall",
+   "inventory_type": {
+    "type": "WEAPON",
+    "name": "One-Hand"
+   },
+   "unique_equipped": "Unique"
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/22806?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 22806
+   },
+   "enchantments": [
+    {
+     "display_string": "Enchanted: Crusader",
+     "source_item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/18666?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "QAEnchant Weapon Crusader",
+      "id": 18666
+     },
+     "enchantment_id": 1900,
+     "enchantment_slot": {
+      "id": 0,
+      "type": "PERMANENT"
+     }
+    }
+   ],
+   "slot": {
+    "type": "OFF_HAND",
+    "name": "Off Hand"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Widow's Remorse",
+   "inventory_type": {
+    "type": "WEAPON",
+    "name": "One-Hand"
+   },
+   "unique_equipped": "Unique"
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/23557?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 23557
+   },
+   "slot": {
+    "type": "RANGED",
+    "name": "Ranged"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "EPIC",
+    "name": "Epic"
+   },
+   "name": "Larvae of the Great Worm",
+   "inventory_type": {
+    "type": "RANGEDRIGHT",
+    "name": "Ranged"
+   }
+  },
+  {
+   "item": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item/5976?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "id": 5976
+   },
+   "slot": {
+    "type": "TABARD",
+    "name": "Tabard"
+   },
+   "quantity": 1,
+   "quality": {
+    "type": "COMMON",
+    "name": "Common"
+   },
+   "name": "Guild Tabard",
+   "inventory_type": {
+    "type": "TABARD",
+    "name": "Tabard"
+   },
+   "is_subclass_hidden": true
+  }
+ ],
+ "equipped_item_sets": [
+  {},
+  {
+   "item_set": {
+    "key": {
+     "href": "https://us.api.blizzard.com/data/wow/item-set/496?namespace=static-1.15.9_68185-classic1x-us"
+    },
+    "name": "Conqueror's Battlegear",
+    "id": 496
+   },
+   "items": [
+    {
+     "item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/21331?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "Conqueror's Breastplate",
+      "id": 21331
+     },
+     "is_equipped": true
+    },
+    {
+     "item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/21329?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "Conqueror's Crown",
+      "id": 21329
+     }
+    },
+    {
+     "item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/21333?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "Conqueror's Greaves",
+      "id": 21333
+     }
+    },
+    {
+     "item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/21332?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "Conqueror's Legguards",
+      "id": 21332
+     },
+     "is_equipped": true
+    },
+    {
+     "item": {
+      "key": {
+       "href": "https://us.api.blizzard.com/data/wow/item/21330?namespace=static-1.15.9_68185-classic1x-us"
+      },
+      "name": "Conqueror's Spaulders",
+      "id": 21330
+     },
+     "is_equipped": true
+    }
+   ],
+   "effects": [
+    {
+     "display_string": "Set: Decreases the rage cost of all Warrior shouts by 35%.",
+     "required_count": 3,
+     "is_active": true
+    },
+    {
+     "display_string": "(5) Set: Increase the Slow effect and damage of Thunder Clap by 50%.",
+     "required_count": 5
+    }
+   ],
+   "display_string": "Conqueror's Battlegear (3/5)"
+  }
+ ]
+}

@@ -17,7 +17,7 @@ import sys
 from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(__file__))
-from _common import ERA, REPORTS, read_json  # noqa: E402
+from _common import ERA, REPORTS, ROOT, read_json  # noqa: E402
 from build_gear import Builder  # noqa: E402
 
 SLOT_MAP = {"head": "head", "neck": "neck", "shoulder": "shoulders", "back": "back", "chest": "chest",
@@ -45,7 +45,7 @@ def gear_file(key: str, builder: Builder):
     cls_id = next(k for k, v in builder.classes.items() if v["slug"] == cls_slug)
     factions = sorted({r["faction"] for r in builder.races.values() if int(cls_id) in r["classes"]})
     faction = "H" if "H" in factions and cls_slug == "shaman" else factions[0]
-    return cls_id, faction, read_json(ERA / "gear" / f"{key}.{faction}.json")
+    return cls_id, faction, read_json(ROOT / "frontend" / "data" / "gear" / f"{key}.{faction}.json")
 
 
 def classify(name, slot, gear, builder, cls_id, levels=None):

@@ -18,7 +18,7 @@ trinkets). `unusable` means our class rules say the class cannot equip the item
 | mage.fire (A) | 16 | 8 | 0 | 7 | 0 | 1 | 50% |
 | mage.frost (A) | 17 | 11 | 0 | 5 | 0 | 1 | 65% |
 | paladin.holy (A) | 16 | 12 | 0 | 4 | 0 | 0 | 75% |
-| paladin.retribution (A) | 15 | 12 | 0 | 3 | 0 | 0 | 80% |
+| paladin.retribution (A) | 15 | 12 | 1 | 2 | 0 | 0 | 87% |
 | priest.holy (A) | 17 | 12 | 0 | 5 | 0 | 0 | 71% |
 | priest.shadow (A) | 17 | 14 | 0 | 3 | 0 | 0 | 82% |
 | rogue.combat (A) | 17 | 14 | 1 | 2 | 0 | 0 | 88% |
@@ -29,7 +29,7 @@ trinkets). `unusable` means our class rules say the class cannot equip the item
 | warlock.destruction (A) | 17 | 10 | 0 | 6 | 0 | 1 | 59% |
 | warrior.fury (A) | 19 | 13 | 1 | 5 | 0 | 0 | 74% |
 
-**Overall:** 210 of 310 usable reference items are in our top lists (68%); with close calls 217 (70%).
+**Overall:** 210 of 310 usable reference items are in our top lists (68%); with close calls 218 (70%).
 
 ## Leveling: NoobToBoss feral druid guide
 
@@ -259,7 +259,7 @@ trinkets). `unusable` means our class rules say the class cannot equip the item
 | finger_2 | Blackstone Ring | top | our #3 |
 | trinket_1 | Blackhand's Breadth | top | our #2 |
 | trinket_2 | Hand of Justice | top | our #3 |
-| human_weapon | Arcanite Reaper | ranked | usable, other items score higher |
+| human_weapon | Arcanite Reaper | close | scores 856 vs our #1 918 |
 
 ### priest.holy — [https://wowtbc.gg/classic/bis-list/holy-priest/](https://wowtbc.gg/classic/bis-list/holy-priest/)
 

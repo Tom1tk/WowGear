@@ -1,0 +1,611 @@
+{
+ "built": "2026-09-24",
+ "classes": {
+  "1": {
+   "leveling_spec": "arms",
+   "name": "Warrior",
+   "slug": "warrior",
+   "specs": {
+    "arms": "Arms",
+    "fury": "Fury",
+    "protection": "Protection"
+   }
+  },
+  "11": {
+   "leveling_spec": "feral_cat",
+   "name": "Druid",
+   "slug": "druid",
+   "specs": {
+    "balance": "Balance",
+    "feral_bear": "Feral (Bear)",
+    "feral_cat": "Feral (Cat)",
+    "restoration": "Restoration"
+   }
+  },
+  "2": {
+   "leveling_spec": "retribution",
+   "name": "Paladin",
+   "slug": "paladin",
+   "specs": {
+    "holy": "Holy",
+    "protection": "Protection",
+    "retribution": "Retribution"
+   }
+  },
+  "3": {
+   "leveling_spec": "beast_mastery",
+   "name": "Hunter",
+   "slug": "hunter",
+   "specs": {
+    "beast_mastery": "Beast Mastery",
+    "marksmanship": "Marksmanship",
+    "survival": "Survival"
+   }
+  },
+  "4": {
+   "leveling_spec": "combat",
+   "name": "Rogue",
+   "slug": "rogue",
+   "specs": {
+    "assassination": "Assassination",
+    "combat": "Combat",
+    "subtlety": "Subtlety"
+   }
+  },
+  "5": {
+   "leveling_spec": "shadow",
+   "name": "Priest",
+   "slug": "priest",
+   "specs": {
+    "discipline": "Discipline",
+    "holy": "Holy",
+    "shadow": "Shadow"
+   }
+  },
+  "7": {
+   "leveling_spec": "enhancement",
+   "name": "Shaman",
+   "slug": "shaman",
+   "specs": {
+    "elemental": "Elemental",
+    "enhancement": "Enhancement",
+    "restoration": "Restoration"
+   }
+  },
+  "8": {
+   "leveling_spec": "frost",
+   "name": "Mage",
+   "slug": "mage",
+   "specs": {
+    "arcane": "Arcane",
+    "fire": "Fire",
+    "frost": "Frost"
+   }
+  },
+  "9": {
+   "leveling_spec": "affliction",
+   "name": "Warlock",
+   "slug": "warlock",
+   "specs": {
+    "affliction": "Affliction",
+    "demonology": "Demonology",
+    "destruction": "Destruction"
+   }
+  }
+ },
+ "instances": {
+  "blackfathom_deeps": {
+   "levels": [
+    24,
+    32
+   ],
+   "name": "Blackfathom Deeps",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Ashenvale"
+  },
+  "blackrock_depths": {
+   "levels": [
+    52,
+    60
+   ],
+   "name": "Blackrock Depths",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Blackrock Mountain"
+  },
+  "blackwing_lair": {
+   "levels": [
+    60,
+    60
+   ],
+   "name": "Blackwing Lair",
+   "note": "Attunement: touch the orb after the quest 'Blackhand's Command' (Upper Blackrock Spire).",
+   "side": null,
+   "tier": 2,
+   "type": "raid40",
+   "zone": "Blackrock Mountain"
+  },
+  "dire_maul_east": {
+   "levels": [
+    55,
+    60
+   ],
+   "name": "Dire Maul: East",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Feralas"
+  },
+  "dire_maul_north": {
+   "levels": [
+    57,
+    60
+   ],
+   "name": "Dire Maul: North",
+   "note": "Needs the Crescent Key (from Dire Maul: East) to open the door.",
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Feralas"
+  },
+  "dire_maul_west": {
+   "levels": [
+    57,
+    60
+   ],
+   "name": "Dire Maul: West",
+   "note": "Needs the Crescent Key (from Dire Maul: East) to open the door.",
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Feralas"
+  },
+  "gnomeregan": {
+   "levels": [
+    29,
+    38
+   ],
+   "name": "Gnomeregan",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Dun Morogh"
+  },
+  "lower_blackrock_spire": {
+   "levels": [
+    55,
+    60
+   ],
+   "name": "Lower Blackrock Spire",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Blackrock Mountain"
+  },
+  "maraudon": {
+   "levels": [
+    46,
+    55
+   ],
+   "name": "Maraudon",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Desolace"
+  },
+  "molten_core": {
+   "levels": [
+    60,
+    60
+   ],
+   "name": "Molten Core",
+   "note": "Attunement: quest 'Attunement to the Core' in Blackrock Depths (lets you enter directly).",
+   "side": null,
+   "tier": 1,
+   "type": "raid40",
+   "zone": "Blackrock Mountain"
+  },
+  "naxxramas": {
+   "levels": [
+    60,
+    60
+   ],
+   "name": "Naxxramas",
+   "note": "Attunement: Argent Dawn reputation (Honored) at the Light's Hope Chapel entrance.",
+   "side": null,
+   "tier": 4,
+   "type": "raid40",
+   "zone": "Eastern Plaguelands"
+  },
+  "onyxias_lair": {
+   "levels": [
+    60,
+    60
+   ],
+   "name": "Onyxia's Lair",
+   "note": "Attunement: a long quest chain that gives the Drakefire Amulet.",
+   "side": null,
+   "tier": 1,
+   "type": "raid40",
+   "zone": "Dustwallow Marsh"
+  },
+  "ragefire_chasm": {
+   "levels": [
+    13,
+    18
+   ],
+   "name": "Ragefire Chasm",
+   "note": null,
+   "side": "H",
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Orgrimmar"
+  },
+  "razorfen_downs": {
+   "levels": [
+    37,
+    46
+   ],
+   "name": "Razorfen Downs",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "The Barrens"
+  },
+  "razorfen_kraul": {
+   "levels": [
+    29,
+    38
+   ],
+   "name": "Razorfen Kraul",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "The Barrens"
+  },
+  "ruins_of_ahnqiraj": {
+   "levels": [
+    60,
+    60
+   ],
+   "name": "Ruins of Ahn'Qiraj",
+   "note": null,
+   "side": null,
+   "tier": 3,
+   "type": "raid20",
+   "zone": "Silithus"
+  },
+  "scholomance": {
+   "levels": [
+    58,
+    60
+   ],
+   "name": "Scholomance",
+   "note": "Needs the Skeleton Key (quest chain from Western Plaguelands).",
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Western Plaguelands"
+  },
+  "shadowfang_keep": {
+   "levels": [
+    22,
+    30
+   ],
+   "name": "Shadowfang Keep",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Silverpine Forest"
+  },
+  "sm_armory": {
+   "levels": [
+    32,
+    42
+   ],
+   "name": "Scarlet Monastery: Armory",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Tirisfal Glades"
+  },
+  "sm_cathedral": {
+   "levels": [
+    35,
+    45
+   ],
+   "name": "Scarlet Monastery: Cathedral",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Tirisfal Glades"
+  },
+  "sm_graveyard": {
+   "levels": [
+    26,
+    36
+   ],
+   "name": "Scarlet Monastery: Graveyard",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Tirisfal Glades"
+  },
+  "sm_library": {
+   "levels": [
+    29,
+    39
+   ],
+   "name": "Scarlet Monastery: Library",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Tirisfal Glades"
+  },
+  "stratholme": {
+   "levels": [
+    58,
+    60
+   ],
+   "name": "Stratholme",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Eastern Plaguelands"
+  },
+  "sunken_temple": {
+   "levels": [
+    50,
+    60
+   ],
+   "name": "The Temple of Atal'Hakkar (Sunken Temple)",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Swamp of Sorrows"
+  },
+  "temple_of_ahnqiraj": {
+   "levels": [
+    60,
+    60
+   ],
+   "name": "Temple of Ahn'Qiraj",
+   "note": null,
+   "side": null,
+   "tier": 3,
+   "type": "raid40",
+   "zone": "Silithus"
+  },
+  "the_deadmines": {
+   "levels": [
+    17,
+    26
+   ],
+   "name": "The Deadmines",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Westfall"
+  },
+  "the_stockade": {
+   "levels": [
+    24,
+    32
+   ],
+   "name": "The Stockade",
+   "note": null,
+   "side": "A",
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Stormwind City"
+  },
+  "uldaman": {
+   "levels": [
+    41,
+    51
+   ],
+   "name": "Uldaman",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Badlands"
+  },
+  "upper_blackrock_spire": {
+   "levels": [
+    55,
+    60
+   ],
+   "name": "Upper Blackrock Spire",
+   "note": "10-player dungeon. Check in game if the Seal of Ascension key is needed.",
+   "side": null,
+   "tier": 0,
+   "type": "dungeon10",
+   "zone": "Blackrock Mountain"
+  },
+  "wailing_caverns": {
+   "levels": [
+    17,
+    24
+   ],
+   "name": "Wailing Caverns",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "The Barrens"
+  },
+  "world_bosses": {
+   "levels": [
+    60,
+    60
+   ],
+   "name": "World bosses",
+   "note": null,
+   "side": null,
+   "tier": 1,
+   "type": "world_boss",
+   "zone": "Various"
+  },
+  "zulfarrak": {
+   "levels": [
+    44,
+    54
+   ],
+   "name": "Zul'Farrak",
+   "note": null,
+   "side": null,
+   "tier": 0,
+   "type": "dungeon",
+   "zone": "Tanaris"
+  },
+  "zulgurub": {
+   "levels": [
+    60,
+    60
+   ],
+   "name": "Zul'Gurub",
+   "note": null,
+   "side": null,
+   "tier": 2,
+   "type": "raid20",
+   "zone": "Stranglethorn Vale"
+  }
+ },
+ "races": {
+  "1": {
+   "classes": [
+    1,
+    2,
+    4,
+    5,
+    8,
+    9
+   ],
+   "faction": "A",
+   "name": "Human",
+   "weapon_skill": {
+    "2h_mace": 5,
+    "2h_sword": 5,
+    "mace": 5,
+    "sword": 5
+   }
+  },
+  "2": {
+   "classes": [
+    1,
+    3,
+    4,
+    7,
+    9
+   ],
+   "faction": "H",
+   "name": "Orc",
+   "weapon_skill": {
+    "2h_axe": 5,
+    "axe": 5
+   }
+  },
+  "3": {
+   "classes": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "faction": "A",
+   "name": "Dwarf",
+   "weapon_skill": {
+    "gun": 5
+   }
+  },
+  "4": {
+   "classes": [
+    1,
+    3,
+    4,
+    5,
+    11
+   ],
+   "faction": "A",
+   "name": "Night Elf",
+   "weapon_skill": {}
+  },
+  "5": {
+   "classes": [
+    1,
+    4,
+    5,
+    8,
+    9
+   ],
+   "faction": "H",
+   "name": "Undead",
+   "weapon_skill": {}
+  },
+  "6": {
+   "classes": [
+    1,
+    3,
+    7,
+    11
+   ],
+   "faction": "H",
+   "name": "Tauren",
+   "weapon_skill": {}
+  },
+  "7": {
+   "classes": [
+    1,
+    4,
+    8,
+    9
+   ],
+   "faction": "A",
+   "name": "Gnome",
+   "weapon_skill": {}
+  },
+  "8": {
+   "classes": [
+    1,
+    3,
+    4,
+    5,
+    7,
+    8
+   ],
+   "faction": "H",
+   "name": "Troll",
+   "weapon_skill": {
+    "bow": 5
+   }
+  }
+ },
+ "tiers": {
+  "0": "Pre-raid (dungeons, quests, crafting)",
+  "1": "Molten Core, Onyxia, world bosses",
+  "2": "+ Blackwing Lair, Zul'Gurub",
+  "3": "+ Ahn'Qiraj",
+  "4": "+ Naxxramas"
+ }
+}

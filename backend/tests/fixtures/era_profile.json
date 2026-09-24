@@ -1,0 +1,82 @@
+{
+ "id": 94318991,
+ "name": "Testchar",
+ "gender": {
+  "type": "MALE",
+  "name": "Male"
+ },
+ "faction": {
+  "type": "HORDE",
+  "name": "Horde"
+ },
+ "race": {
+  "key": {
+   "href": "https://us.api.blizzard.com/data/wow/playable-race/8?namespace=static-1.15.9_68185-classic1x-us"
+  },
+  "name": "Troll",
+  "id": 8
+ },
+ "character_class": {
+  "key": {
+   "href": "https://us.api.blizzard.com/data/wow/playable-class/1?namespace=static-1.15.9_68185-classic1x-us"
+  },
+  "name": "Warrior",
+  "id": 1
+ },
+ "realm": {
+  "key": {
+   "href": "https://us.api.blizzard.com/data/wow/realm/5066?namespace=dynamic-classic1x-us"
+  },
+  "name": "Whitemane",
+  "id": 5066,
+  "slug": "whitemane"
+ },
+ "guild": {
+  "key": {
+   "href": "https://us.api.blizzard.com/data/wow/guild/whitemane/stripciub?namespace=profile-classic1x-us"
+  },
+  "name": "Test Guild",
+  "id": 1393012,
+  "realm": {
+   "key": {
+    "href": "https://us.api.blizzard.com/data/wow/realm/5066?namespace=dynamic-classic1x-us"
+   },
+   "name": "Whitemane",
+   "id": 5066,
+   "slug": "whitemane"
+  },
+  "faction": {
+   "type": "HORDE",
+   "name": "Horde"
+  }
+ },
+ "level": 60,
+ "experience": 0,
+ "titles": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/whitemane/testchar/titles?namespace=profile-classic1x-us"
+ },
+ "pvp_summary": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/whitemane/testchar/pvp-summary?namespace=profile-classic1x-us"
+ },
+ "media": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/whitemane/testchar/character-media?namespace=profile-classic1x-us"
+ },
+ "last_login_timestamp": 1789482406000,
+ "average_item_level": 75,
+ "equipped_item_level": 66,
+ "specializations": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/whitemane/testchar/specializations?namespace=profile-classic1x-us"
+ },
+ "statistics": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/whitemane/testchar/statistics?namespace=profile-classic1x-us"
+ },
+ "equipment": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/whitemane/testchar/equipment?namespace=profile-classic1x-us"
+ },
+ "appearance": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/whitemane/testchar/appearance?namespace=profile-classic1x-us"
+ },
+ "reputations": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/whitemane/testchar/reputations?namespace=profile-classic1x-us"
+ }
+}

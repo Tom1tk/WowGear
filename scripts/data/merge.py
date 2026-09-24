@@ -69,6 +69,7 @@ class Merger:
         self.instances = {k: v for k, v in read_json(ERA / "instances.json").items() if not k.startswith("_")}
         self.conflicts: list[str] = []
         self.recipe_items = self._recipe_index()
+        self.excluded = {k for k in read_json(ERA / "exclude.json") if not k.startswith("_")}
         self._index_instances()
 
     def _recipe_index(self) -> dict:
@@ -413,6 +414,9 @@ class Merger:
             known = iid in self.q["item"] or iid in self.cm["items"] or iid in self.vm["items"]
             if not known:
                 dropped["not in Era data (e.g. Season of Discovery)"] += 1
+                continue
+            if blz.get("temporary") or iid in self.excluded:
+                dropped["temporary or excluded by hand (data/era/exclude.json)"] += 1
                 continue
             if self.is_random_suffix(iid, blz):
                 dropped["random suffix (no fixed stats)"] += 1

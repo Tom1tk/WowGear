@@ -1,13 +1,14 @@
 # Data merge report
 
-Items kept: **5805**
+Items kept: **5804**
 
 ## Items not kept
 
 - not in Era data (e.g. Season of Discovery): 4438
 - random suffix (no fixed stats): 1690
-- no known source: 256
+- no known source: 255
 - not gear: 75
+- temporary or excluded by hand (data/era/exclude.json): 2
 
 ## Item stats check (Blizzard Era API vs CMaNGOS / VMaNGOS 1.12)
 
@@ -16,19 +17,18 @@ Items kept: **5805**
 - single-source: only Blizzard (and QuestieDB) know the item
 
 - confirmed: 5737
-- era-changed: 68
+- era-changed: 67
 
 ## Item sources
 
-- confirmed (2+ datasets): 13960
-- single-source: 1194
+- confirmed (2+ datasets): 13959
+- single-source: 1193
 
-## Stat differences (68)
+## Stat differences (67)
 
 The site uses the Blizzard value. Listed so a human can spot data errors.
 
 - Amberseal Keeper (17113): CMaNGOS: damage [144.9, 228.9] vs [168, 252] | VMaNGOS: damage [144.9, 228.9] vs [168, 252]
-- Andonisus, Reaper of Souls (22736): CMaNGOS: damage [159, 296] vs [177, 329] | VMaNGOS: damage [159, 296] vs [177, 329]
 - Arlokk's Grasp (19910): CMaNGOS: damage [41.5, 84.5] vs [49, 92] | VMaNGOS: damage [41.5, 84.5] vs [49, 92]
 - Atiesh, Greatstaff of the Guardian (22589): CMaNGOS: damage [130, 243] vs [225, 338] | VMaNGOS: damage [130, 243] vs [225, 338]
 - Atiesh, Greatstaff of the Guardian (22630): CMaNGOS: damage [130, 243] vs [225, 338] | VMaNGOS: damage [130, 243] vs [225, 338]

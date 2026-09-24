@@ -1,0 +1,4 @@
+# Extra packages for the offline data pipeline (scripts/data). Not needed to run the site.
+-r requirements.txt
+lupa
+py7zr

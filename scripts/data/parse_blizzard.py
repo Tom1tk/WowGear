@@ -134,6 +134,7 @@ def normalize(raw: dict) -> dict:
         "skill": {"name": skill["profession"]["name"], "level": skill["level"]} if skill else None,
         "set": (p.get("set") or {}).get("item_set", {}).get("name"),
         "unique": bool(p.get("unique_equipped") or p.get("limit_category")),
+        "temporary": bool(p.get("expiration_time_left")),
     }
 
 

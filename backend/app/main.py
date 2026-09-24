@@ -1,4 +1,9 @@
-"""WowGearBis FastAPI application."""
+"""WowGearBis (Classic Era) FastAPI application.
+
+The gear lists are static files (frontend/data/gear/*.json, made by
+scripts/data/build_gear.py). The API only does what needs the server:
+the Blizzard character lookup, the realm list, and item scores.
+"""
 
 from pathlib import Path
 
@@ -6,35 +11,26 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from .armory import (
-    ArmoryCharacterNotFoundError,
-    ArmoryError,
-    ArmoryParseError,
-    fetch_armory_page,
-    parse_armory_page,
-)
 from .blizzard import (
     ApiKeyInvalidError,
     ApiKeyMissingError,
-    ApiUnavailableError,
     BlizzardClient,
     BlizzardError,
     CharacterNotFoundError,
     RateLimitedError,
 )
 from .config import settings
-from .icyveins import BisPageFetcher, IcyVeinsError, PageNotFoundError, ParseError, parse_bis_page
-from .models import AnalyzeRequest, AnalyzeResult
-from .recommend import analyze_gear, catchup_action
-from .specs import SPECS_BY_CLASS, slug_for
+from .models import CharacterResult, ScoreRequest
+from .scoring import scorer
+from .specs import detect_spec
 
-app = FastAPI(title="WowGearBis")
-
+app = FastAPI(title="WowGearBis Classic Era")
 blizzard = BlizzardClient(settings.blizzard_client_id, settings.blizzard_client_secret)
-bis_fetcher = BisPageFetcher(ttl_seconds=settings.icyveins_ttl_seconds)
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
-app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+if FRONTEND_DIR.is_dir():  # on Vercel the frontend is served as static files instead
+    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+REGIONS = {"us", "eu", "kr", "tw"}
 
 
 @app.get("/")
@@ -44,110 +40,65 @@ async def index() -> FileResponse:
 
 @app.get("/api/health")
 async def health() -> dict:
-    return {"status": "ok", "has_api_key": bool(settings.blizzard_client_id)}
+    return {"status": "ok", "game": "classic-era", "has_api_key": bool(settings.blizzard_client_id)}
 
 
-@app.get("/api/specs")
-async def specs() -> dict:
-    return SPECS_BY_CLASS
+def _region(value: str | None) -> str:
+    region = (value or settings.default_region).strip().lower()
+    if region not in REGIONS:
+        raise HTTPException(status_code=422, detail="Unknown region.")
+    return region
+
+
+def _raise_http(exc: BlizzardError):
+    if isinstance(exc, ApiKeyMissingError):
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    if isinstance(exc, CharacterNotFoundError):
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if isinstance(exc, RateLimitedError):
+        raise HTTPException(status_code=429, detail=str(exc)) from exc
+    if isinstance(exc, ApiKeyInvalidError):
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.get("/api/realms")
 async def realms(region: str = "eu") -> dict:
-    region = (region or settings.default_region).strip().lower()
+    region = _region(region)
     try:
-        data = await blizzard._get(region, "/data/wow/realm/index", namespace=f"dynamic-{region}")
+        return {"region": region, "realms": await blizzard.realms(region)}
     except BlizzardError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    realm_list = sorted(
-        (
-            {"slug": realm["slug"], "name": realm["name"]}
-            for realm in data.get("realms", [])
-            if realm.get("slug")
-        ),
-        key=lambda realm: realm["name"].lower(),
-    )
-    return {"region": region, "realms": realm_list}
+        _raise_http(exc)
 
 
-@app.post("/api/analyze")
-async def analyze(request: AnalyzeRequest) -> AnalyzeResult:
-    region = (request.region or settings.default_region).strip().lower()
-    realm = request.realm.strip().lower()
-    character = request.character.strip().lower()
-    if not realm or not character:
-        raise HTTPException(status_code=422, detail="realm and character are required")
-
+@app.get("/api/character")
+async def character(realm: str, name: str, region: str = "eu", spec: str | None = None) -> CharacterResult:
+    region = _region(region)
+    realm = realm.strip().lower()
+    name = name.strip().lower()
+    if not realm or not name:
+        raise HTTPException(status_code=422, detail="Realm and character name are required.")
     try:
-        summary = await blizzard.character_summary(region, realm, character)
-        equipped = await blizzard.equipment(region, realm, character)
-        source = "blizzard"
-    except (ApiKeyMissingError, ApiUnavailableError):
-        # Keyless fallback: scrape the public Armory page instead.
-        try:
-            page = await fetch_armory_page(region, realm, character)
-        except ArmoryCharacterNotFoundError as exc:
-            raise HTTPException(status_code=404, detail=str(exc)) from exc
-        except ArmoryError as exc:
-            raise HTTPException(status_code=502, detail=str(exc)) from exc
-        try:
-            summary, equipped = parse_armory_page(page, region)
-        except ArmoryParseError as exc:
-            raise HTTPException(status_code=502, detail=str(exc)) from exc
-        source = "armory"
-    except ApiKeyInvalidError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    except CharacterNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except RateLimitedError as exc:
-        raise HTTPException(status_code=429, detail=str(exc)) from exc
+        summary, equipped, talents = await blizzard.character(region, realm, name)
     except BlizzardError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        _raise_http(exc)
+    detected, reason = detect_spec(summary.class_id, summary.level, talents)
+    chosen = spec or detected
+    cls_id = str(summary.class_id) if summary.class_id else None
+    if chosen and cls_id and cls_id in scorer.classes and chosen in scorer.classes[cls_id]["specs"]:
+        for item in equipped.values():
+            item.score = scorer.score_for(str(item.item_id), cls_id, chosen, summary.level,
+                                          str(summary.race_id) if summary.race_id else None)
+    return CharacterResult(character=summary, equipped=equipped, talents=talents,
+                           spec=detected, spec_reason=reason)
 
-    slug = request.spec or slug_for(summary.class_name, summary.spec)
-    if not slug:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Could not detect a specialization for this character — "
-                "please select one in the UI."
-            ),
-        )
 
-    try:
-        page = await bis_fetcher.fetch(slug)
-    except PageNotFoundError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except IcyVeinsError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-
-    try:
-        bis_items, page_max_ilvl, farm_tips = parse_bis_page(page)
-    except ParseError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-
-    bis_max_ilvl = page_max_ilvl or settings.bis_max_ilvl
-    comparisons, actions = analyze_gear(
-        equipped, bis_items, bis_max_ilvl,
-        avg_ilvl=summary.average_item_level,
-    )
-
-    catchup = catchup_action(summary.average_item_level, bis_max_ilvl)
-    if catchup:
-        actions.append(catchup)
-    actions.sort(key=lambda action: action.urgency, reverse=True)
-    for rank, action in enumerate(actions[: settings.actions_limit], start=1):
-        action.rank = rank
-
-    spec_label = slug.replace("-gear-best-in-slot", "").replace("-", " ").title()
-
-    return AnalyzeResult(
-        character=summary,
-        comparisons=comparisons,
-        actions=actions[: settings.actions_limit],
-        farm_tips=farm_tips,
-        bis_url=f"https://www.icy-veins.com/wow/{slug}",
-        bis_max_ilvl=bis_max_ilvl,
-        spec_label=spec_label,
-        source=source,
-    )
+@app.post("/api/score")
+async def score(request: ScoreRequest) -> dict:
+    """Scores of items for a class/spec/level (used when the user changes spec)."""
+    cls_id = str(request.class_id)
+    if cls_id not in scorer.classes or request.spec not in scorer.classes[cls_id]["specs"]:
+        raise HTTPException(status_code=422, detail="Unknown class or spec.")
+    race = str(request.race_id) if request.race_id else None
+    return {"scores": {str(i): scorer.score_for(str(i), cls_id, request.spec, request.level, race)
+                       for i in request.item_ids[:40]}}

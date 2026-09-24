@@ -10,11 +10,6 @@ class Settings(BaseSettings):
 
     blizzard_client_id: str = ""
     blizzard_client_secret: str = ""
-
-    icyveins_ttl_seconds: int = 3600
-    bis_max_ilvl: int = 334
-    actions_limit: int = 10
-    locale: str = "en_US"
     default_region: str = "eu"
 
 
