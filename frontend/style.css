@@ -34,8 +34,8 @@
   --horde: #c8392f;
   --radius: 12px;
   --shadow: 0 10px 30px rgba(0, 0, 0, .35);
-  --scene-strength: .26;
-  --card-alpha: 88%;
+  --scene-strength: .6;
+  --card-alpha: 82%;
   color-scheme: dark;
 }
 
@@ -66,24 +66,24 @@
     --q-epic: #7b2fc0;
     --q-legendary: #c25e00;
     --shadow: 0 8px 24px rgba(80, 55, 20, .12);
-    --scene-strength: .16;
-    --card-alpha: 92%;
+    --scene-strength: .45;
+    --card-alpha: 86%;
     color-scheme: light;
   }
 }
 
-/* Background scene: two stacked layers cross-fade; a gradient keeps it quiet. */
+/* Background scene: two stacked layers cross-fade; a soft vignette keeps the edges quiet. */
 .scene { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .scene-layer {
   position: absolute; inset: -12px; background-size: cover; background-position: center 30%;
-  opacity: 0; transition: opacity 1.6s ease; filter: saturate(.75) blur(2px);
+  opacity: 0; transition: opacity 1.6s ease; filter: saturate(.9);
 }
 .scene-layer.on { opacity: var(--scene-strength); }
 .scene::after {
   content: ""; position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse at 50% 0%, transparent 0%, var(--bg) 85%),
-    linear-gradient(180deg, transparent 0%, var(--bg) 92%);
+    radial-gradient(ellipse at 50% 35%, transparent 45%, color-mix(in srgb, var(--bg) 70%, transparent) 100%),
+    linear-gradient(180deg, transparent 55%, color-mix(in srgb, var(--bg) 75%, transparent) 100%);
 }
 @media (prefers-reduced-motion: reduce) {
   :root, .scene-layer { transition: none; }
@@ -111,12 +111,12 @@ button, input, select { font: inherit; color: inherit; }
 }
 .wm-era { color: var(--accent); }
 .wm-sword { font-size: .8em; opacity: .8; }
-.tagline { margin: 6px auto 0; color: var(--muted); max-width: 640px; }
+.tagline { margin: 6px auto 0; color: var(--text); opacity: .85; max-width: 640px; text-shadow: 0 1px 6px var(--bg), 0 0 2px var(--bg); }
 
 main { max-width: 1180px; margin: 0 auto; padding: 8px 16px 32px; }
 .card {
   background: color-mix(in srgb, var(--card) var(--card-alpha), transparent);
-  backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: var(--radius);
+  backdrop-filter: blur(10px); border: 1px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow); padding: 16px;
 }
 .card h2 { font-family: "Cinzel", serif; font-size: 18px; margin: 0; color: var(--gold-2); }
@@ -274,4 +274,4 @@ input[type="range"] { width: 100%; accent-color: var(--gold); height: 28px; }
 .glossary dt { font-weight: 700; margin-top: 8px; }
 .glossary dd { margin: 0; color: var(--muted); }
 
-.site-footer { text-align: center; color: var(--muted); font-size: 13px; padding: 12px 16px 32px; max-width: 900px; margin: 0 auto; }
+.site-footer { text-align: center; color: var(--muted); font-size: 13px; padding: 12px 16px 32px; max-width: 900px; margin: 0 auto; text-shadow: 0 1px 6px var(--bg), 0 0 2px var(--bg); }
