@@ -1,15 +1,26 @@
 /* WowGear Classic — dark "old parchment and gold" theme with a light variant. */
+/* Race themes: each scene sets three base colours (--r-tint, --r-gold, --r-gold2,
+   --r-accent). They are registered so they animate, and every other colour is
+   mixed from them — so the whole page fades to the new scheme with the image. */
+@property --r-tint { syntax: "<color>"; inherits: true; initial-value: #7a5a30; }
+@property --r-gold { syntax: "<color>"; inherits: true; initial-value: #e0b453; }
+@property --r-gold2 { syntax: "<color>"; inherits: true; initial-value: #f3d58a; }
+@property --r-accent { syntax: "<color>"; inherits: true; initial-value: #c9853a; }
+
 :root {
-  --bg: #121016;
-  --bg-2: #1a1720;
-  --card: #1f1b25;
-  --card-2: #26212d;
-  --line: #3a3242;
+  --r-tint: #7a5a30; --r-gold: #e0b453; --r-gold2: #f3d58a; --r-accent: #c9853a;
+  transition: --r-tint 1.4s ease, --r-gold 1.4s ease, --r-gold2 1.4s ease, --r-accent 1.4s ease;
+
+  --bg: color-mix(in oklab, var(--r-tint) 10%, #0c0b0e);
+  --bg-2: color-mix(in oklab, var(--r-tint) 16%, #121015);
+  --card: color-mix(in oklab, var(--r-tint) 13%, #19171d);
+  --card-2: color-mix(in oklab, var(--r-tint) 18%, #211e26);
+  --line: color-mix(in oklab, var(--r-tint) 30%, #34303a);
   --text: #ece4d6;
   --muted: #a89c8b;
-  --gold: #e0b453;
-  --gold-2: #f3d58a;
-  --accent: #c9853a;
+  --gold: var(--r-gold);
+  --gold-2: var(--r-gold2);
+  --accent: var(--r-accent);
   --ok: #5fbf6a;
   --warn: #e3a63c;
   --bad: #e06a5a;
@@ -23,29 +34,59 @@
   --horde: #c8392f;
   --radius: 12px;
   --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  --scene-strength: .26;
+  --card-alpha: 88%;
   color-scheme: dark;
 }
 
+:root[data-race="human"]     { --r-tint: #4d6a3a; --r-gold: #e2c15a; --r-gold2: #f4dc8e; --r-accent: #6f9fcf; }
+:root[data-race="dwarf"]     { --r-tint: #3d6a80; --r-gold: #d9a65a; --r-gold2: #f0cf94; --r-accent: #5fb4e6; }
+:root[data-race="gnome"]     { --r-tint: #2f7078; --r-gold: #e0c060; --r-gold2: #f5e08f; --r-accent: #4fd0e0; }
+:root[data-race="night-elf"] { --r-tint: #5a3f8a; --r-gold: #c9b8f0; --r-gold2: #e6dcff; --r-accent: #9a7fe0; }
+:root[data-race="orc"]       { --r-tint: #8a3a22; --r-gold: #e89a5c; --r-gold2: #f6c38f; --r-accent: #d9533a; }
+:root[data-race="undead"]    { --r-tint: #3a5a48; --r-gold: #9fcf6a; --r-gold2: #cbe99e; --r-accent: #6fb06a; }
+:root[data-race="tauren"]    { --r-tint: #7a6a3a; --r-gold: #d8b46a; --r-gold2: #efd59b; --r-accent: #5cc6c8; }
+:root[data-race="troll"]     { --r-tint: #8a4a3a; --r-gold: #f0b27a; --r-gold2: #f9d2ac; --r-accent: #3fb3a8; }
+
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --bg: #f4ecdc;
-    --bg-2: #efe4cf;
-    --card: #fffaf0;
-    --card-2: #f6ecd9;
-    --line: #dccbaa;
+    --bg: color-mix(in oklab, var(--r-tint) 10%, #f4ecdc);
+    --bg-2: color-mix(in oklab, var(--r-tint) 14%, #efe4cf);
+    --card: color-mix(in oklab, var(--r-tint) 5%, #fffaf0);
+    --card-2: color-mix(in oklab, var(--r-tint) 10%, #f6ecd9);
+    --line: color-mix(in oklab, var(--r-tint) 25%, #dccbaa);
     --text: #2b2118;
     --muted: #6f604c;
-    --gold: #9a6b12;
-    --gold-2: #7a520a;
-    --accent: #a4561b;
+    --gold: color-mix(in oklab, var(--r-gold) 55%, #1a1208);
+    --gold-2: color-mix(in oklab, var(--r-gold) 45%, #1a1208);
+    --accent: color-mix(in oklab, var(--r-accent) 70%, #1a1208);
     --q-common: #2b2118;
     --q-uncommon: #1a8a00;
     --q-rare: #1466c4;
     --q-epic: #7b2fc0;
     --q-legendary: #c25e00;
     --shadow: 0 8px 24px rgba(80, 55, 20, .12);
+    --scene-strength: .16;
+    --card-alpha: 92%;
     color-scheme: light;
   }
+}
+
+/* Background scene: two stacked layers cross-fade; a gradient keeps it quiet. */
+.scene { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.scene-layer {
+  position: absolute; inset: -12px; background-size: cover; background-position: center 30%;
+  opacity: 0; transition: opacity 1.6s ease; filter: saturate(.75) blur(2px);
+}
+.scene-layer.on { opacity: var(--scene-strength); }
+.scene::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, transparent 0%, var(--bg) 85%),
+    linear-gradient(180deg, transparent 0%, var(--bg) 92%);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root, .scene-layer { transition: none; }
 }
 
 * { box-sizing: border-box; }
@@ -56,9 +97,6 @@ body {
   font-size: 15px;
   line-height: 1.5;
   color: var(--text);
-  background:
-    radial-gradient(1200px 600px at 50% -200px, rgba(224, 180, 83, .14), transparent 70%),
-    linear-gradient(180deg, var(--bg-2), var(--bg) 400px);
   background-color: var(--bg);
   min-height: 100vh;
 }
@@ -77,7 +115,8 @@ button, input, select { font: inherit; color: inherit; }
 
 main { max-width: 1180px; margin: 0 auto; padding: 8px 16px 32px; }
 .card {
-  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--card) var(--card-alpha), transparent);
+  backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow); padding: 16px;
 }
 .card h2 { font-family: "Cinzel", serif; font-size: 18px; margin: 0; color: var(--gold-2); }
