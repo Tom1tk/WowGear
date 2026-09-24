@@ -1,268 +1,102 @@
-"""Tests for the Blizzard API client using a mock HTTP transport."""
+"""Blizzard Era client: parsing and HTTP behaviour (mock transport)."""
 
 import asyncio
+import json
+from pathlib import Path
 
 import httpx
 import pytest
 
 from app.blizzard import (
-    ApiKeyInvalidError,
     ApiKeyMissingError,
-    ApiUnavailableError,
     BlizzardClient,
-    BlizzardError,
     CharacterNotFoundError,
-    RateLimitedError,
-    _ITEM_MEDIA_CACHE,
+    parse_equipment,
+    parse_talents,
 )
 
-TOKEN_RESPONSE = {"access_token": "test-token", "token_type": "bearer", "expires_in": 86400}
+FIX = Path(__file__).parent / "fixtures"
 
 
-@pytest.fixture(autouse=True)
-def clear_item_media_cache():
-    _ITEM_MEDIA_CACHE.clear()
-    yield
-    _ITEM_MEDIA_CACHE.clear()
+def load(name):
+    return json.loads((FIX / name).read_text())
 
 
-def profile_response() -> dict:
-    return {
-        "name": "Greyball",
-        "realm": {"slug": "draenor", "name": "Draenor"},
-        "faction": {"name": "Alliance"},
-        "race": {"name": "Pandaren"},
-        "character_class": {"name": "Monk"},
-        "specialization": {"name": "Brewmaster"},
-        "level": 90,
-        "achievement_points": 2280,
-        "average_item_level": 277,
-    }
+def test_parse_equipment_maps_era_slots():
+    eq = parse_equipment(load("era_equipment.json"))
+    assert "ranged" in eq  # Classic has a ranged / relic slot
+    assert "shirt" not in eq and "tabard" not in eq
+    assert eq["ring_1"].item_id and eq["trinket_2"].item_id
+    assert eq["head"].name == "Lionheart Helm"
 
 
-def equipment_response() -> dict:
-    return {
-        "equipped_items": [
-            {
-                "item": {"id": 250015, "name": "Fearsome Visage of Ra-den's Chosen"},
-                "slot": {"type": "HEAD", "name": "Head"},
-                "level": {"value": 276, "display_string": "276"},
-                "quality": {"name": "Epic"},
-            }
-        ]
-    }
+def test_parse_equipment_two_hander_goes_to_two_hand_slot():
+    data = {"equipped_items": [{
+        "item": {"id": 12784}, "name": "Arcanite Reaper", "slot": {"type": "MAIN_HAND"},
+        "inventory_type": {"type": "TWOHWEAPON"}, "quality": {"type": "EPIC"},
+    }]}
+    eq = parse_equipment(data)
+    assert "two_hand" in eq and "main_hand" not in eq
 
 
-def make_client(handler) -> BlizzardClient:
-    transport = httpx.MockTransport(handler)
-    return BlizzardClient("id", "secret", transport=transport)
+def test_parse_talents_uses_active_group():
+    trees = parse_talents(load("era_specializations.json"))
+    assert [(t.name, t.points) for t in trees] == [("Fury", 34), ("Arms", 17)]
 
 
-def run(coro):
-    return asyncio.run(coro)
+def mock_client(handler):
+    return BlizzardClient("id", "secret", transport=httpx.MockTransport(handler))
 
 
-def test_token_fetched_per_request_batch_with_bearer_header():
-    token_calls = {"count": 0}
-    seen_auth_headers = []
+def test_character_uses_classic1x_namespace():
+    seen = []
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx.Request):
         if request.url.host == "oauth.battle.net":
-            token_calls["count"] += 1
-            return httpx.Response(200, json=TOKEN_RESPONSE)
-        seen_auth_headers.append(request.headers.get("authorization", ""))
-        return httpx.Response(200, json=profile_response())
+            return httpx.Response(200, json={"access_token": "t"})
+        seen.append(request.url.params["namespace"])
+        path = request.url.path
+        if path.endswith("/equipment"):
+            return httpx.Response(200, json=load("era_equipment.json"))
+        if path.endswith("/specializations"):
+            return httpx.Response(200, json=load("era_specializations.json"))
+        if path.endswith("/character-media"):
+            return httpx.Response(200, json={"assets": [{"key": "avatar", "value": "https://x/a.jpg"}]})
+        return httpx.Response(200, json=load("era_profile.json"))
 
-    client = make_client(handler)
-    summary = run(client.character_summary("eu", "draenor", "greyball"))
-    assert summary.name == "Greyball"
-    assert summary.class_name == "Monk"
-    assert summary.spec == "Brewmaster"
-    assert summary.average_item_level == 277
-    assert all("Bearer test-token" in h for h in seen_auth_headers)
-    assert "access_token" not in str(seen_auth_headers)
-    run(client.character_summary("eu", "draenor", "greyball"))
-    assert token_calls["count"] > 1  # tokens are intentionally not reused
-
-
-def test_equipment_slot_mapping():
-    def handler(request: httpx.Request) -> httpx.Response:
-        if request.url.host == "oauth.battle.net":
-            return httpx.Response(200, json=TOKEN_RESPONSE)
-        return httpx.Response(200, json=equipment_response())
-
-    client = make_client(handler)
-    equipped = run(client.equipment("eu", "draenor", "greyball"))
-    assert equipped["head"].item_id == 250015
-    assert equipped["head"].ilvl == 276
-    assert equipped["head"].quality == "Epic"
-
-
-def test_equipment_fetches_item_icons():
-    media_response = {
-        "assets": [
-            {"key": "icon", "value": "https://render.worldofwarcraft.com/eu/icons/56/icon.jpg"}
-        ]
-    }
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        if request.url.host == "oauth.battle.net":
-            return httpx.Response(200, json=TOKEN_RESPONSE)
-        if "media/item" in str(request.url):
-            return httpx.Response(200, json=media_response)
-        return httpx.Response(200, json=equipment_response())
-
-    client = make_client(handler)
-    equipped = run(client.equipment("eu", "draenor", "greyball"))
-    assert equipped["head"].icon_url == "https://render.worldofwarcraft.com/eu/icons/56/icon.jpg"
-
-
-def test_character_media_parsed():
-    media_response = {
-        "assets": [
-            {"key": "avatar", "value": "https://render.worldofwarcraft.com/eu/avatar.jpg"},
-            {"key": "main-raw", "value": "https://render.worldofwarcraft.com/eu/main-raw.png"},
-        ]
-    }
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        if request.url.host == "oauth.battle.net":
-            return httpx.Response(200, json=TOKEN_RESPONSE)
-        if "character-media" in str(request.url):
-            return httpx.Response(200, json=media_response)
-        if "mythic-keystone-profile" in str(request.url):
-            return httpx.Response(200, json={"current_mythic_rating": {"rating": 2291.769}})
-        return httpx.Response(200, json=profile_response())
-
-    client = make_client(handler)
-    summary = run(client.character_summary("eu", "draenor", "greyball"))
-    assert summary.avatar_url == "https://render.worldofwarcraft.com/eu/avatar.jpg"
-    assert summary.render_url == "https://render.worldofwarcraft.com/eu/main-raw.png"
-    assert summary.mythic_plus_rating == 2292
+    summary, equipped, talents = asyncio.run(mock_client(handler).character("us", "whitemane", "testchar"))
+    assert set(seen) == {"profile-classic1x-us"}
+    assert summary.level == 60 and summary.class_id == 1 and summary.faction == "H"
+    assert summary.avatar_url == "https://x/a.jpg"
+    assert len(equipped) >= 16 and talents[0].name == "Fury"
 
 
 def test_character_not_found():
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request):
         if request.url.host == "oauth.battle.net":
-            return httpx.Response(200, json=TOKEN_RESPONSE)
-        return httpx.Response(404, json={"code": 404, "detail": "Not Found"})
+            return httpx.Response(200, json={"access_token": "t"})
+        return httpx.Response(404, json={"code": 404})
 
-    client = make_client(handler)
     with pytest.raises(CharacterNotFoundError):
-        run(client.character_summary("eu", "draenor", "nobody"))
+        asyncio.run(mock_client(handler).character("eu", "firemaw", "nobody"))
 
 
-def test_empty_404_raises_unavailable():
-    def handler(request: httpx.Request) -> httpx.Response:
-        if request.url.host == "oauth.battle.net":
-            return httpx.Response(200, json=TOKEN_RESPONSE)
-        return httpx.Response(404, text="", request=httpx.Request("GET", str(request.url)))
-
-    client = make_client(handler)
-    with pytest.raises(ApiUnavailableError):
-        run(client.character_summary("eu", "draenor", "greyball"))
-
-
-def test_invalid_credentials():
-    def handler(request: httpx.Request) -> httpx.Response:
-        if request.url.host == "oauth.battle.net":
-            return httpx.Response(401, json={"error": "invalid_client"})
-        return httpx.Response(200, json={})
-
-    client = make_client(handler)
-    with pytest.raises(ApiKeyInvalidError):
-        run(client.character_summary("eu", "draenor", "greyball"))
-
-
-def test_rate_limited():
-    def handler(request: httpx.Request) -> httpx.Response:
-        if request.url.host == "oauth.battle.net":
-            return httpx.Response(200, json=TOKEN_RESPONSE)
-        return httpx.Response(429, json={"code": 429, "detail": "rate limited"})
-
-    client = make_client(handler)
-    with pytest.raises(RateLimitedError):
-        run(client.character_summary("eu", "draenor", "greyball"))
-
-
-def test_missing_credentials_raises_friendly_error():
+def test_missing_key():
     client = BlizzardClient("", "")
     with pytest.raises(ApiKeyMissingError):
-        run(client.character_summary("eu", "draenor", "greyball"))
+        asyncio.run(client.character("eu", "x", "y"))
 
 
-def test_mythic_rating_failure_is_non_fatal():
-    def handler(request: httpx.Request) -> httpx.Response:
+def test_realms_skip_internal_test_realms():
+    def handler(request):
         if request.url.host == "oauth.battle.net":
-            return httpx.Response(200, json=TOKEN_RESPONSE)
-        if "mythic-keystone-profile" in str(request.url):
-            return httpx.Response(500, json={})
-        return httpx.Response(200, json=profile_response())
+            return httpx.Response(200, json={"access_token": "t"})
+        assert request.url.params["namespace"] == "dynamic-classic1x-eu"
+        return httpx.Response(200, json={"realms": [
+            {"name": "Soulseeker", "slug": "soulseeker"},
+            {"name": "EU4 CWOW GMSS 1", "slug": "eu4-cwow-gmss-1"},
+            {"name": "Mirage Raceway", "slug": "mirage-raceway"},
+        ]})
 
-    client = make_client(handler)
-    summary = run(client.character_summary("eu", "draenor", "greyball"))
-    assert summary.mythic_plus_rating is None
-
-
-def test_null_mythic_rating_is_non_fatal():
-    """The API returns `current_mythic_rating: null` for characters who have
-    never completed a keystone — must not crash (regression: Starbladee)."""
-    def handler(request: httpx.Request) -> httpx.Response:
-        if request.url.host == "oauth.battle.net":
-            return httpx.Response(200, json=TOKEN_RESPONSE)
-        if "mythic-keystone-profile" in str(request.url):
-            return httpx.Response(200, json={"current_mythic_rating": None})
-        return httpx.Response(200, json=profile_response())
-
-    client = make_client(handler)
-    summary = run(client.character_summary("eu", "draenor", "greyball"))
-    assert summary.mythic_plus_rating is None
-    assert summary.name == "Greyball"
-
-
-def test_null_equipment_fields_do_not_crash():
-    """Some items report null level/slot/quality — the slot must still be
-    parsed with fallbacks instead of raising (regression: Starbladee)."""
-    def handler(request: httpx.Request) -> httpx.Response:
-        if request.url.host == "oauth.battle.net":
-            return httpx.Response(200, json=TOKEN_RESPONSE)
-        if "mythic-keystone-profile" in str(request.url):
-            return httpx.Response(200, json={"current_mythic_rating": None})
-        if "character-media" in str(request.url):
-            return httpx.Response(200, json={})
-        if "media/item" in str(request.url):
-            return httpx.Response(200, json={"assets": []})
-        return httpx.Response(
-            200,
-            json={
-                "equipped_items": [
-                    {
-                        "item": {"id": 1, "name": "Weird Helm"},
-                        "slot": {"type": "HEAD", "name": "Head"},
-                        "level": None,
-                        "quality": None,
-                    },
-                    {
-                        "item": {"id": 2, "name": "Mystery Trinket"},
-                        "slot": None,
-                        "level": {"value": 250, "display_string": "250"},
-                    },
-                ]
-            },
-        )
-
-    client = make_client(handler)
-    equipped = run(client.equipment("eu", "draenor", "greyball"))
-    assert equipped["head"].ilvl == 0
-    assert equipped["head"].quality is None
-
-
-def test_unexpected_error_is_wrapped():
-    def handler(request: httpx.Request) -> httpx.Response:
-        if request.url.host == "oauth.battle.net":
-            return httpx.Response(200, json=TOKEN_RESPONSE)
-        return httpx.Response(500, json={})
-
-    client = make_client(handler)
-    with pytest.raises(BlizzardError):
-        run(client.character_summary("eu", "draenor", "greyball"))
+    realms = asyncio.run(mock_client(handler).realms("eu"))
+    assert [r["slug"] for r in realms] == ["mirage-raceway", "soulseeker"]

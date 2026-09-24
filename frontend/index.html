@@ -3,157 +3,161 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WowGearBis — Gear vs Best-in-Slot</title>
+  <title>WowGear Classic — Best gear for every level</title>
+  <meta name="description" content="Best-in-slot gear for every level from 10 to 60 in WoW Classic Era, for every class and spec, with where to get each item.">
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
+  <script>const whTooltips = { colorLinks: false, iconizeLinks: true, renameLinks: false, iconSize: "small" };</script>
+  <script src="https://wow.zamimg.com/js/tooltips.js" async></script>
 </head>
 <body>
-  <div class="page-bg" aria-hidden="true"></div>
-
-  <header>
-    <h1 class="wordmark"><span class="wm-sword" aria-hidden="true">⚔</span> WowGear<span class="wm-bis">Bis</span></h1>
-    <p class="tagline">Compare your equipped gear against the Icy Veins Best-in-Slot list and get a ranked plan to close the gap.</p>
+  <header class="site-header">
+    <h1 class="wordmark"><span class="wm-sword" aria-hidden="true">⚔</span> WowGear <span class="wm-era">Classic</span></h1>
+    <p class="tagline">The best gear for every level from 10 to 60 in WoW Classic Era — and where to get it.</p>
   </header>
 
-  <div id="top-bar" class="top-bar"></div>
-
   <main>
-    <form id="analyze-form" autocomplete="off">
-      <div class="field">
-        <label for="region">Region</label>
-        <select id="region" name="region">
-          <option value="eu" selected>EU</option>
-          <option value="us">US</option>
-          <option value="kr">KR</option>
-          <option value="tw">TW</option>
-        </select>
+    <section class="card input-card" aria-label="Your character">
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab" role="tab" id="tab-lookup" aria-selected="true" aria-controls="panel-lookup">Look up character</button>
+        <button type="button" class="tab" role="tab" id="tab-manual" aria-selected="false" aria-controls="panel-manual">Enter manually</button>
       </div>
-      <div class="field field-realm">
-        <label for="realm-trigger">Realm</label>
-        <div class="combo" id="realm-combo">
-          <button type="button" class="combo-trigger" id="realm-trigger" role="combobox"
-                  aria-expanded="false" aria-haspopup="listbox" aria-controls="realm-listbox" disabled>
-            <span class="combo-value" id="realm-label">Loading realms…</span>
-            <svg class="combo-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <path d="M5.5 7.5L10 12l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <div class="combo-popover" id="realm-popover" hidden>
-            <div class="combo-search">
-              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.6"/>
-                <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              </svg>
-              <input id="realm-search" type="text" placeholder="Search realms…" autocomplete="off">
-            </div>
-            <ul class="combo-list" id="realm-list" role="listbox" aria-label="Realms"></ul>
-            <p class="combo-empty" id="realm-empty" hidden>No realm matches your search.</p>
-          </div>
-          <input type="text" id="realm-fallback" class="realm-fallback" placeholder="Type a realm slug (e.g. draenor)" autocomplete="off" hidden>
-          <input type="hidden" id="realm" name="realm" value="">
-        </div>
-      </div>
-      <div class="field">
-        <label for="character">Character</label>
-        <input id="character" name="character" type="text" placeholder="Character name" autocomplete="off" required>
-      </div>
-      <div class="field field-spec">
-        <label for="spec">Specialization</label>
-        <select id="spec" name="spec">
-          <option value="">Auto-detect</option>
-        </select>
-      </div>
-      <button type="submit" id="analyze-btn">
-        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path d="M10 3a4 4 0 00-4 4c0 2 1 3 2 4.2.7.9 1 1.6 1 2.8h2c0-1.2.3-1.9 1-2.8C13 10 14 9 14 7a4 4 0 00-4-4z" stroke="currentColor" stroke-width="1.4"/>
-          <path d="M8.5 16.5h3M9 18h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        </svg>
-        Analyze gear
-      </button>
-    </form>
 
-    <div id="status" class="status" hidden></div>
+      <form id="panel-lookup" class="panel" role="tabpanel" aria-labelledby="tab-lookup" autocomplete="off">
+        <div class="field">
+          <label for="region">Region</label>
+          <select id="region">
+            <option value="eu" selected>EU</option>
+            <option value="us">US</option>
+            <option value="kr">KR</option>
+            <option value="tw">TW</option>
+          </select>
+        </div>
+        <div class="field field-realm">
+          <label for="realm-trigger">Realm</label>
+          <div class="combo" id="realm-combo">
+            <button type="button" class="combo-trigger" id="realm-trigger" role="combobox"
+                    aria-expanded="false" aria-haspopup="listbox" aria-controls="realm-list" disabled>
+              <span class="combo-value" id="realm-label">Loading realms…</span>
+              <svg class="combo-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5.5 7.5L10 12l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="combo-popover" id="realm-popover" hidden>
+              <div class="combo-search">
+                <input id="realm-search" type="text" placeholder="Search realms…" autocomplete="off" aria-label="Search realms">
+              </div>
+              <ul class="combo-list" id="realm-list" role="listbox" aria-label="Realms"></ul>
+              <p class="combo-empty" id="realm-empty" hidden>No realm matches your search.</p>
+            </div>
+            <input type="text" id="realm-fallback" class="realm-fallback" placeholder="Realm name (e.g. Soulseeker)" hidden>
+            <input type="hidden" id="realm" value="">
+          </div>
+        </div>
+        <div class="field">
+          <label for="character">Character</label>
+          <input id="character" type="text" placeholder="Character name" required>
+        </div>
+        <button type="submit" class="btn-primary" id="lookup-btn">Show my gear</button>
+      </form>
+
+      <form id="panel-manual" class="panel" role="tabpanel" aria-labelledby="tab-manual" hidden>
+        <div class="field">
+          <label for="m-race">Race</label>
+          <select id="m-race"></select>
+        </div>
+        <div class="field">
+          <label for="m-class">Class</label>
+          <select id="m-class"></select>
+        </div>
+        <div class="field">
+          <label for="m-spec">Spec</label>
+          <select id="m-spec"></select>
+        </div>
+        <div class="field field-narrow">
+          <label for="m-level">Level</label>
+          <input id="m-level" type="number" min="1" max="60" value="20">
+        </div>
+        <button type="submit" class="btn-primary">Show gear</button>
+      </form>
+      <p class="hint" id="input-hint">Classic Era realms only. No login needed.</p>
+    </section>
+
+    <div id="status" class="status" role="status" hidden></div>
 
     <section id="results" hidden>
-      <div id="skeletons" class="layout" hidden>
-        <section class="card sk-card">
-          <div class="sk sk-title"></div>
-          <div class="sk sk-sub"></div>
-          <div class="sk sk-pd"></div>
+      <div class="card char-bar" id="char-bar"></div>
+
+      <div class="card level-card">
+        <div class="level-head">
+          <label for="level-slider" class="level-label">Gear for level <output id="level-out">20</output></label>
+          <span class="level-note" id="level-note"></span>
+        </div>
+        <div class="slider-wrap">
+          <input type="range" id="level-slider" min="10" max="60" step="1" value="20" list="level-ticks" aria-describedby="level-note">
+          <datalist id="level-ticks">
+            <option value="10" label="10"></option><option value="20" label="20"></option>
+            <option value="30" label="30"></option><option value="40" label="40"></option>
+            <option value="50" label="50"></option><option value="60" label="60"></option>
+          </datalist>
+          <div class="ticks" aria-hidden="true"><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span></div>
+        </div>
+        <div class="tier-row" id="tier-row" hidden>
+          <span class="tier-label" id="tier-label">Level 60 content:</span>
+          <div class="segmented" id="tier-buttons" role="radiogroup" aria-labelledby="tier-label"></div>
+        </div>
+      </div>
+
+      <div class="layout">
+        <section class="card gear-card" aria-labelledby="gear-title">
+          <div class="card-head">
+            <h2 id="gear-title">Best gear</h2>
+            <span class="card-sub" id="gear-sub"></span>
+          </div>
+          <div id="weapon-note" class="weapon-note" hidden></div>
+          <ol id="slot-list" class="slot-list"></ol>
         </section>
-        <section class="card sk-card">
-          <div class="sk sk-title"></div>
-          <div class="sk sk-row"></div>
-          <div class="sk sk-row"></div>
-          <div class="sk sk-row"></div>
-          <div class="sk sk-row"></div>
-          <div class="sk sk-row"></div>
-        </section>
+
+        <aside class="side">
+          <section class="card todo-card" aria-labelledby="todo-title">
+            <h2 id="todo-title">What to do next</h2>
+            <p class="card-sub" id="todo-sub"></p>
+            <ol id="todo-list" class="todo-list"></ol>
+          </section>
+          <section class="card upcoming-card" aria-labelledby="upcoming-title">
+            <h2 id="upcoming-title">Coming up</h2>
+            <p class="card-sub">Levels where a better item becomes available.</p>
+            <ol id="upcoming-list" class="upcoming-list"></ol>
+          </section>
+          <details class="card glossary">
+            <summary>New to Classic? Words on this page</summary>
+            <dl>
+              <dt>BiS</dt><dd>"Best in slot": the best item for that equipment slot.</dd>
+              <dt>BoP / BoE</dt><dd>Binds when picked up (only you can use it) / binds when equipped (you can buy or sell it on the Auction House).</dd>
+              <dt>Elite</dt><dd>A strong monster (gold dragon on its portrait). Usually needs a group.</dd>
+              <dt>Instance / dungeon</dt><dd>A private area for your group of 5 (raids: 20 or 40 players).</dd>
+              <dt>Trash</dt><dd>The normal monsters in a dungeon, not the bosses.</dd>
+              <dt>Attunement</dt><dd>A quest or item you need before you can enter some raids.</dd>
+              <dt>Reputation</dt><dd>Your standing with a faction. Higher standing opens more rewards.</dd>
+              <dt>Pre-raid</dt><dd>Gear from level-60 dungeons, quests, crafting and reputation — before raiding.</dd>
+              <dt>Score</dt><dd>How good an item is for your spec, from stat weights. Higher is better. Compare only within one slot.</dd>
+            </dl>
+          </details>
+        </aside>
       </div>
-
-      <div class="layout" id="results-layout">
-        <div id="character-card" class="card char-card"></div>
-        <section class="card todo-panel">
-          <h2 class="card-title">Your to-do list</h2>
-          <ol id="action-list" class="action-list"></ol>
-        </section>
-      </div>
-
-      <div id="tooltip" class="tooltip" hidden></div>
-
-      <div class="section-head">
-        <h2>Gear comparison</h2>
-        <button type="button" id="sort-toggle" class="sort-toggle">Biggest Δ first</button>
-      </div>
-      <div class="table-wrap">
-        <table id="comparison-table">
-          <thead>
-            <tr>
-              <th>Slot</th>
-              <th>Equipped</th>
-              <th>ilvl</th>
-              <th>BiS</th>
-              <th>ilvl</th>
-              <th>Δ</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <h2>Icy Veins farm advice</h2>
-      <div id="farm-tips"></div>
-
-      <h2>Upgrading &amp; currencies (Midnight S2)</h2>
-      <div class="card upgrade-guide">
-        <ul>
-          <li><strong>Mistcrests</strong> upgrade gear along its track
-            (Adventurer → Veteran → Champion → Hero → Myth; Myth caps at ilvl 334).
-            Each rank costs 20 crests; the weekly cap starts low and rises by 100 per
-            week per tier. Visit the upgrade vendor <strong>Cuzolth</strong> in
-            Silvermoon City (48.6, 62); <strong>Vaskarn</strong> beside him trades
-            higher crests down a tier.</li>
-          <li><strong>Nebulous Voidcores</strong> are bonus rolls: a Great Vault
-            reward option when you fill 3+ slots (up to one per week), and one per
-            dungeon keystone or raid boss (1 Voidcore per raid roll in S2) for a
-            guaranteed Myth-track item from that loot pool.</li>
-          <li>Fill the <strong>Great Vault</strong> every week — Heroic-raid vault
-            rewards now roll <strong>Myth 1/6</strong> (ilvl 318) — and convert tier
-            pieces at the <strong>Catalyst</strong> (catalyzed pieces keep their stats
-            and cantrips). Myth-track gear comes from Mythic raid and +10 keystones.</li>
-        </ul>
-        <p class="source-link">Sources: <a href="https://www.icy-veins.com/wow/world-of-warcraft-gear-upgrading-guide" target="_blank" rel="noopener">Icy Veins Gear Upgrading Guide</a>,
-        <a href="https://www.icy-veins.com/wow/midnight-mythic-season-2-guide" target="_blank" rel="noopener">Icy Veins Mythic+ Season 2 Guide</a>,
-        <a href="https://www.icy-veins.com/wow/great-vault-guide" target="_blank" rel="noopener">Icy Veins Great Vault Guide</a>.</p>
-      </div>
-
-      <p class="source-link" id="source-link"></p>
     </section>
   </main>
 
-  <script src="/static/app.js"></script>
+  <footer class="site-footer">
+    <p>Data: Blizzard Game Data API (Classic Era), <a href="https://github.com/Questie/QuestieDB" target="_blank" rel="noopener">QuestieDB</a>,
+      <a href="https://github.com/cmangos/classic-db" target="_blank" rel="noopener">CMaNGOS</a>, VMaNGOS and
+      <a href="https://github.com/Hoizame/AtlasLootClassic" target="_blank" rel="noopener">AtlasLootClassic</a>.
+      Item tooltips by <a href="https://www.wowhead.com/classic" target="_blank" rel="noopener">Wowhead</a>.
+      Not affiliated with Blizzard Entertainment.</p>
+    <p><a id="report-link" href="https://github.com/Tom1tk/WowGear/issues/new" target="_blank" rel="noopener">Report a wrong item</a> · <span id="data-date"></span></p>
+  </footer>
+
+  <script src="/static/app.js" type="module"></script>
 </body>
 </html>

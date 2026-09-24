@@ -1,0 +1,153 @@
+{
+ "_about": "Hand-kept values for well-known special effects (procs and 'Use:' effects) that the stat parser cannot read. Values are rough averages over a fight (uptime x effect), in the same stats as weights.json. Items with other unknown effects are shown with a 'special effect' note and scored on their normal stats only. 'classes' limits an effect to some class ids (e.g. druid-only effects).",
+ "11815": {
+  "name": "Hand of Justice",
+  "stats": {
+   "ap": 20
+  },
+  "note": "2% chance on hit to gain an extra attack."
+ },
+ "21180": {
+  "name": "Earthstrike",
+  "stats": {
+   "ap": 45
+  },
+  "note": "Use: +280 attack power for 20 sec (2 min cooldown)."
+ },
+ "20130": {
+  "name": "Diamond Flask",
+  "stats": {
+   "str": 12
+  },
+  "note": "Use: +75 Strength for 60 sec (6 min cooldown)."
+ },
+ "13965": {
+  "name": "Blackhand's Breadth",
+  "stats": {},
+  "note": "Crit is read from the item text."
+ },
+ "11810": {
+  "name": "Force of Will",
+  "stats": {
+   "sta": 2
+  },
+  "note": "Defensive proc."
+ },
+ "19406": {
+  "name": "Drake Fang Talisman",
+  "stats": {},
+  "note": "Stats are read from the item text."
+ },
+ "23041": {
+  "name": "Slayer's Crest",
+  "stats": {
+   "ap": 40
+  },
+  "note": "Use: +260 attack power for 20 sec (2 min cooldown)."
+ },
+ "22954": {
+  "name": "Kiss of the Spider",
+  "stats": {
+   "crit": 1.0,
+   "hit": 1.0
+  },
+  "note": "Use: +20% attack speed for 15 sec (2 min cooldown)."
+ },
+ "19949": {
+  "name": "Zandalarian Hero Medallion",
+  "stats": {
+   "ap": 30
+  },
+  "note": "Use: stacking damage bonus (2 min cooldown)."
+ },
+ "12590": {
+  "name": "Felstriker",
+  "stats": {
+   "crit": 2.0,
+   "hit": 1.5
+  },
+  "note": "Chance on hit: 100% crit and hit for 3 sec."
+ },
+ "17075": {
+  "name": "Vis'kag the Bloodletter",
+  "stats": {
+   "ap": 25
+  },
+  "note": "Chance on hit: 240 damage."
+ },
+ "19019": {
+  "name": "Thunderfury, Blessed Blade of the Windseeker",
+  "stats": {
+   "ap": 40
+  },
+  "note": "Chance on hit: Nature damage and slow."
+ },
+ "11684": {
+  "name": "Ironfoe",
+  "stats": {
+   "ap": 45
+  },
+  "note": "Chance on hit: 2 extra attacks."
+ },
+ "18832": {
+  "name": "Brutality Blade",
+  "stats": {
+   "ap": 15
+  },
+  "note": "Chance on hit: extra attack."
+ },
+ "13209": {
+  "name": "Seal of the Dawn",
+  "stats": {
+   "ap": 25
+  },
+  "note": "+81 AP vs Undead only (Argent Dawn commission)."
+ },
+ "12798": {
+  "name": "Annihilator",
+  "stats": {
+   "ap": 20
+  },
+  "note": "Chance on hit: reduces target armor by 200 (stacks 3)."
+ },
+ "13204": {
+  "name": "Bashguuder",
+  "stats": {
+   "ap": 15
+  },
+  "note": "Chance on hit: armor reduction and damage."
+ },
+ "18203": {
+  "name": "Eskhandar's Right Claw",
+  "stats": {
+   "ap": 20
+  },
+  "note": "Chance on hit: +30% attack speed for 5 sec."
+ },
+ "8345": {
+  "name": "Wolfshead Helm",
+  "stats": {
+   "ap": 70
+  },
+  "classes": [
+   11
+  ],
+  "note": "Druids gain 20 energy when shifting into Cat Form (powershifting) or 5 rage into Bear Form."
+ },
+ "9449": {
+  "name": "Manual Crowd Pummeler",
+  "stats": {
+   "ap": 50
+  },
+  "note": "Use: +50% attack speed for 30 sec (3 charges). Feral druids keep the haste after shifting."
+ },
+ "17774": {
+  "name": "Mark of the Chosen",
+  "stats": {
+   "sta": 5,
+   "agi": 3,
+   "str": 3
+  },
+  "note": "2% chance when struck to gain +25 all stats for 1 min."
+ }
+}

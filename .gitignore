@@ -7,3 +7,7 @@ __pycache__/
 backend/app/item_icon_cache.json
 .vercel
 .env*
+data/raw/
+data/era/staging/
+node_modules/
+shots/

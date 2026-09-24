@@ -1,0 +1,1340 @@
+{
+ "_about": "Pre-raid BiS lists from wowtbc.gg (Classic), for validation only.",
+ "lists": {
+  "druid.balance": {
+   "items": [
+    {
+     "item": "Crimson Felt Hat",
+     "slot": "head"
+    },
+    {
+     "item": "Diana's Pearl Necklace",
+     "slot": "neck"
+    },
+    {
+     "item": "Burial Shawl",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Robes of the Royal Crown",
+     "slot": "chest"
+    },
+    {
+     "item": "Manacle Cuffs",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of Power",
+     "slot": "hands"
+    },
+    {
+     "item": "Ban'thok Sash",
+     "slot": "waist"
+    },
+    {
+     "item": "Skyshroud Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Omnicast Boots",
+     "slot": "feet"
+    },
+    {
+     "item": "Eye of Orgrimmar",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Cyclopean Band",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Eye of the Beast",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Witchblade",
+     "slot": "weapon"
+    },
+    {
+     "item": "Spirit of Aquementas",
+     "slot": "off_hand"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/balance-druid/"
+  },
+  "druid.feral_bear": {
+   "items": [
+    {
+     "item": "Mask of the Unforgiven",
+     "slot": "head"
+    },
+    {
+     "item": "Mark of Fordring",
+     "slot": "neck"
+    },
+    {
+     "item": "Truestrike Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Phantasmal Cloak",
+     "slot": "back"
+    },
+    {
+     "item": "Breastplate of Bloodthirst",
+     "slot": "chest"
+    },
+    {
+     "item": "Blackmist Armguards",
+     "slot": "wrist"
+    },
+    {
+     "item": "Devilsaur Gauntlets",
+     "slot": "hands"
+    },
+    {
+     "item": "Cloudrunner Girdle",
+     "slot": "waist"
+    },
+    {
+     "item": "Devilsaur Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Pads of the Dread Wolf",
+     "slot": "feet"
+    },
+    {
+     "item": "Thrall's Resolve",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Blackstone Ring",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Blackhand's Breadth",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Mark of the Chosen",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Manual Crowd Pummeler",
+     "slot": "weapon"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/feral-tank-druid/"
+  },
+  "druid.feral_cat": {
+   "items": [
+    {
+     "item": "Wolfshead Helm",
+     "slot": "head"
+    },
+    {
+     "item": "Mark of Fordring",
+     "slot": "neck"
+    },
+    {
+     "item": "Truestrike Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Cape of the Black Baron",
+     "slot": "back"
+    },
+    {
+     "item": "Cadaverous Armor",
+     "slot": "chest"
+    },
+    {
+     "item": "Blackmist Armguards",
+     "slot": "wrist"
+    },
+    {
+     "item": "Devilsaur Gauntlets",
+     "slot": "hands"
+    },
+    {
+     "item": "Cloudrunner Girdle",
+     "slot": "waist"
+    },
+    {
+     "item": "Devilsaur Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Swiftwalker Boots",
+     "slot": "feet"
+    },
+    {
+     "item": "Blackstone Ring",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Magma Forged Band",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Blackhand's Breadth",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Hand of Justice",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Manual Crowd Pummeler",
+     "slot": "weapon"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/feral-dps-druid/"
+  },
+  "druid.restoration": {
+   "items": [
+    {
+     "item": "Tribal War Feathers",
+     "slot": "head"
+    },
+    {
+     "item": "Animated Chain Necklace",
+     "slot": "neck"
+    },
+    {
+     "item": "Living Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Robes of the Exalted",
+     "slot": "chest"
+    },
+    {
+     "item": "Bleak Howler Armguards",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of the Exalted Herald",
+     "slot": "hands"
+    },
+    {
+     "item": "Thuzadin Sash",
+     "slot": "waist"
+    },
+    {
+     "item": "Senior Designer's Pantaloons",
+     "slot": "legs"
+    },
+    {
+     "item": "Verdant Footpads",
+     "slot": "feet"
+    },
+    {
+     "item": "Rosewine Circle",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Fordring's Seal",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Second Wind",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "The Hammer of Grace",
+     "slot": "weapon"
+    },
+    {
+     "item": "Thaurissan's Royal Scepter",
+     "slot": "off_hand"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/restoration-druid/"
+  },
+  "hunter.marksmanship": {
+   "items": [
+    {
+     "item": "Mask of the Unforgiven",
+     "slot": "head"
+    },
+    {
+     "item": "Mark of Fordring",
+     "slot": "neck"
+    },
+    {
+     "item": "Truestrike Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Cape of the Black Baron",
+     "slot": "back"
+    },
+    {
+     "item": "Savage Gladiator Chain",
+     "slot": "chest"
+    },
+    {
+     "item": "Slashclaw Bracers",
+     "slot": "wrist"
+    },
+    {
+     "item": "Devilsaur Gauntlets",
+     "slot": "hands"
+    },
+    {
+     "item": "Chiselbrand Girdle",
+     "slot": "waist"
+    },
+    {
+     "item": "Devilsaur Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Windreaver Greaves",
+     "slot": "feet"
+    },
+    {
+     "item": "Painweaver Band",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Blackstone Ring",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Blackhand's Breadth",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Hand of Justice",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Peacemaker",
+     "slot": "weapon"
+    },
+    {
+     "item": "Blackcrow",
+     "slot": "ranged"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/marksmanship-hunter/"
+  },
+  "mage.arcane": {
+   "items": [
+    {
+     "item": "Crimson Felt Hat",
+     "slot": "head"
+    },
+    {
+     "item": "Diana's Pearl Necklace",
+     "slot": "neck"
+    },
+    {
+     "item": "Boreal Mantle",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Robe of the Archmage",
+     "slot": "chest"
+    },
+    {
+     "item": "Manacle Cuffs",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of Power",
+     "slot": "hands"
+    },
+    {
+     "item": "Ban'thok Sash",
+     "slot": "waist"
+    },
+    {
+     "item": "Skyshroud Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Omnicast Boots",
+     "slot": "feet"
+    },
+    {
+     "item": "Eye of Orgrimmar",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Cyclopean Band",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Eye of the Beast",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Witchblade",
+     "slot": "weapon"
+    },
+    {
+     "item": "Spirit of Aquementas",
+     "slot": "off_hand"
+    },
+    {
+     "item": "Bonecreeper Stylus",
+     "slot": "ranged"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/arcane-mage/"
+  },
+  "mage.fire": {
+   "items": [
+    {
+     "item": "Crimson Felt Hat",
+     "slot": "head"
+    },
+    {
+     "item": "Diana's Pearl Necklace",
+     "slot": "neck"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Robe of the Archmage",
+     "slot": "chest"
+    },
+    {
+     "item": "Manacle Cuffs",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of Power",
+     "slot": "hands"
+    },
+    {
+     "item": "Ban'thok Sash",
+     "slot": "waist"
+    },
+    {
+     "item": "Skyshroud Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Omnicast Boots",
+     "slot": "feet"
+    },
+    {
+     "item": "Eye of Orgrimmar",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Cyclopean Band",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Eye of the Beast",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Witchblade",
+     "slot": "weapon"
+    },
+    {
+     "item": "Spirit of Aquementas",
+     "slot": "off_hand"
+    },
+    {
+     "item": "Bonecreeper Stylus",
+     "slot": "ranged"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/fire-mage/"
+  },
+  "mage.frost": {
+   "items": [
+    {
+     "item": "Crimson Felt Hat",
+     "slot": "head"
+    },
+    {
+     "item": "Diana's Pearl Necklace",
+     "slot": "neck"
+    },
+    {
+     "item": "Boreal Mantle",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Robe of the Archmage",
+     "slot": "chest"
+    },
+    {
+     "item": "Manacle Cuffs",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of Power",
+     "slot": "hands"
+    },
+    {
+     "item": "Ban'thok Sash",
+     "slot": "waist"
+    },
+    {
+     "item": "Skyshroud Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Omnicast Boots",
+     "slot": "feet"
+    },
+    {
+     "item": "Eye of Orgrimmar",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Cyclopean Band",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Eye of the Beast",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Witchblade",
+     "slot": "weapon"
+    },
+    {
+     "item": "Spirit of Aquementas",
+     "slot": "off_hand"
+    },
+    {
+     "item": "Bonecreeper Stylus",
+     "slot": "ranged"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/frost-mage/"
+  },
+  "paladin.holy": {
+   "items": [
+    {
+     "item": "Whitesoul Helm",
+     "slot": "head"
+    },
+    {
+     "item": "Animated Chain Necklace",
+     "slot": "neck"
+    },
+    {
+     "item": "Living Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Robes of the Exalted",
+     "slot": "chest"
+    },
+    {
+     "item": "Loomguard Armbraces",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of the Exalted Herald",
+     "slot": "hands"
+    },
+    {
+     "item": "Belt of the Ordained",
+     "slot": "waist"
+    },
+    {
+     "item": "Senior Designer's Pantaloons",
+     "slot": "legs"
+    },
+    {
+     "item": "Verdant Footpads",
+     "slot": "feet"
+    },
+    {
+     "item": "Fordring's Seal",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Rosewine Circle",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Second Wind",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "The Hammer of Grace",
+     "slot": "weapon"
+    },
+    {
+     "item": "Thaurissan's Royal Scepter",
+     "slot": "off_hand"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/holy-paladin/"
+  },
+  "paladin.retribution": {
+   "items": [
+    {
+     "item": "Eye of Rend",
+     "slot": "head"
+    },
+    {
+     "item": "Mark of Fordring",
+     "slot": "neck"
+    },
+    {
+     "item": "Truestrike Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Cape of the Black Baron",
+     "slot": "back"
+    },
+    {
+     "item": "Savage Gladiator Chain",
+     "slot": "chest"
+    },
+    {
+     "item": "Vambraces of the Sadist",
+     "slot": "wrist"
+    },
+    {
+     "item": "Devilsaur Gauntlets",
+     "slot": "hands"
+    },
+    {
+     "item": "Omokk's Girth Restrainer",
+     "slot": "waist"
+    },
+    {
+     "item": "Devilsaur Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Bloodmail Boots",
+     "slot": "feet"
+    },
+    {
+     "item": "Painweaver Band",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Blackstone Ring",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Blackhand's Breadth",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Hand of Justice",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Arcanite Reaper",
+     "slot": "human_weapon"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/retribution-paladin/"
+  },
+  "priest.holy": {
+   "items": [
+    {
+     "item": "Crimson Felt Hat",
+     "slot": "head"
+    },
+    {
+     "item": "Animated Chain Necklace",
+     "slot": "neck"
+    },
+    {
+     "item": "Burial Shawl",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Truefaith Vestments",
+     "slot": "chest"
+    },
+    {
+     "item": "Devout Bracers",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of the Exalted Herald",
+     "slot": "hands"
+    },
+    {
+     "item": "Thuzadin Sash",
+     "slot": "waist"
+    },
+    {
+     "item": "Senior Designer's Pantaloons",
+     "slot": "legs"
+    },
+    {
+     "item": "Omnicast Boots",
+     "slot": "feet"
+    },
+    {
+     "item": "Fordring's Seal",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Rosewine Circle",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Second Wind",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "The Hammer of Grace",
+     "slot": "weapon"
+    },
+    {
+     "item": "Thaurissan's Royal Scepter",
+     "slot": "off_hand"
+    },
+    {
+     "item": "Bonecreeper Stylus",
+     "slot": "ranged"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/holy-priest/"
+  },
+  "priest.shadow": {
+   "items": [
+    {
+     "item": "Crimson Felt Hat",
+     "slot": "head"
+    },
+    {
+     "item": "Dark Advisor's Pendant",
+     "slot": "neck"
+    },
+    {
+     "item": "Felcloth Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Robe of Winter Night",
+     "slot": "chest"
+    },
+    {
+     "item": "Shadowy Bracers",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of Power",
+     "slot": "hands"
+    },
+    {
+     "item": "Ban'thok Sash",
+     "slot": "waist"
+    },
+    {
+     "item": "Skyshroud Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Maleki's Footwraps",
+     "slot": "feet"
+    },
+    {
+     "item": "Eye of Orgrimmar",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Cyclopean Band",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Eye of the Beast",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Scepter of the Unholy",
+     "slot": "weapon"
+    },
+    {
+     "item": "Spirit of Aquementas",
+     "slot": "off_hand"
+    },
+    {
+     "item": "Skul's Ghastly Touch",
+     "slot": "ranged"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/shadow-priest/"
+  },
+  "rogue.combat": {
+   "items": [
+    {
+     "item": "Mask of the Unforgiven",
+     "slot": "head"
+    },
+    {
+     "item": "Mark of Fordring",
+     "slot": "neck"
+    },
+    {
+     "item": "Truestrike Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Cape of the Black Baron",
+     "slot": "back"
+    },
+    {
+     "item": "Cadaverous Armor",
+     "slot": "chest"
+    },
+    {
+     "item": "Shadowcraft Bracers",
+     "slot": "wrist"
+    },
+    {
+     "item": "Devilsaur Gauntlets",
+     "slot": "hands"
+    },
+    {
+     "item": "Cloudrunner Girdle",
+     "slot": "waist"
+    },
+    {
+     "item": "Devilsaur Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Swiftwalker Boots",
+     "slot": "feet"
+    },
+    {
+     "item": "Painweaver Band",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Blackstone Ring",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Hand of Justice",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Blackhand's Breadth",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Dal'Rend's Sacred Charge",
+     "slot": "weapon"
+    },
+    {
+     "item": "Dal'Rend's Tribal Guardian",
+     "slot": "off_hand"
+    },
+    {
+     "item": "Blackcrow",
+     "slot": "ranged"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/combat-rogue/"
+  },
+  "shaman.elemental": {
+   "items": [
+    {
+     "item": "Crimson Felt Hat",
+     "slot": "head"
+    },
+    {
+     "item": "Diana's Pearl Necklace",
+     "slot": "neck"
+    },
+    {
+     "item": "Burial Shawl",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Wildthorn Mail",
+     "slot": "chest"
+    },
+    {
+     "item": "Manacle Cuffs",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of Power",
+     "slot": "hands"
+    },
+    {
+     "item": "Ban'thok Sash",
+     "slot": "waist"
+    },
+    {
+     "item": "Skyshroud Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Verdant Footpads",
+     "slot": "feet"
+    },
+    {
+     "item": "Eye of Orgrimmar",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Cyclopean Band",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Eye of the Beast",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Witchblade",
+     "slot": "weapon"
+    },
+    {
+     "item": "Spirit of Aquementas",
+     "slot": "off_hand"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/elemental-shaman/"
+  },
+  "shaman.enhancement": {
+   "items": [
+    {
+     "item": "Eye of Rend",
+     "slot": "head"
+    },
+    {
+     "item": "Mark of Fordring",
+     "slot": "neck"
+    },
+    {
+     "item": "Truestrike Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Cape of the Black Baron",
+     "slot": "back"
+    },
+    {
+     "item": "Savage Gladiator Chain",
+     "slot": "chest"
+    },
+    {
+     "item": "Bracers of the Stone Princess",
+     "slot": "wrist"
+    },
+    {
+     "item": "Gargoyle Slashers",
+     "slot": "hands"
+    },
+    {
+     "item": "Cloudrunner Girdle",
+     "slot": "waist"
+    },
+    {
+     "item": "Devilsaur Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Pads of the Dread Wolf",
+     "slot": "feet"
+    },
+    {
+     "item": "Painweaver Band",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Blackstone Ring",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Blackhand's Breadth",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Hand of Justice",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Arcanite Reaper",
+     "slot": "orc_weapon"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/enhancement-shaman/"
+  },
+  "shaman.restoration": {
+   "items": [
+    {
+     "item": "Tribal War Feathers",
+     "slot": "head"
+    },
+    {
+     "item": "Animated Chain Necklace",
+     "slot": "neck"
+    },
+    {
+     "item": "Living Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Robes of the Exalted",
+     "slot": "chest"
+    },
+    {
+     "item": "Loomguard Armbraces",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of the Exalted Herald",
+     "slot": "hands"
+    },
+    {
+     "item": "Crystallized Girdle",
+     "slot": "waist"
+    },
+    {
+     "item": "Ghoul Skin Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Verdant Footpads",
+     "slot": "feet"
+    },
+    {
+     "item": "Rosewine Circle",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Fordring's Seal",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Second Wind",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "The Hammer of Grace",
+     "slot": "weapon"
+    },
+    {
+     "item": "Thaurissan's Royal Scepter",
+     "slot": "off_hand"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/restoration-shaman/"
+  },
+  "warlock.affliction": {
+   "items": [
+    {
+     "item": "Crimson Felt Hat",
+     "slot": "head"
+    },
+    {
+     "item": "Diana's Pearl Necklace",
+     "slot": "neck"
+    },
+    {
+     "item": "Felcloth Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Robe of the Void",
+     "slot": "chest"
+    },
+    {
+     "item": "Shadowy Bracers",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of Power",
+     "slot": "hands"
+    },
+    {
+     "item": "Ban'thok Sash",
+     "slot": "waist"
+    },
+    {
+     "item": "Skyshroud Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Maleki's Footwraps",
+     "slot": "feet"
+    },
+    {
+     "item": "Eye of Orgrimmar",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Cyclopean Band",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Eye of the Beast",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Witchblade",
+     "slot": "weapon"
+    },
+    {
+     "item": "Spirit of Aquementas",
+     "slot": "off_hand"
+    },
+    {
+     "item": "Skul's Ghastly Touch",
+     "slot": "ranged"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/affliction-warlock/"
+  },
+  "warlock.destruction": {
+   "items": [
+    {
+     "item": "Crimson Felt Hat",
+     "slot": "head"
+    },
+    {
+     "item": "Diana's Pearl Necklace",
+     "slot": "neck"
+    },
+    {
+     "item": "Felcloth Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Spritecaster Cape",
+     "slot": "back"
+    },
+    {
+     "item": "Robe of the Void",
+     "slot": "chest"
+    },
+    {
+     "item": "Shadowy Bracers",
+     "slot": "wrist"
+    },
+    {
+     "item": "Hands of Power",
+     "slot": "hands"
+    },
+    {
+     "item": "Ban'thok Sash",
+     "slot": "waist"
+    },
+    {
+     "item": "Skyshroud Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Maleki's Footwraps",
+     "slot": "feet"
+    },
+    {
+     "item": "Eye of Orgrimmar",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Cyclopean Band",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Briarwood Reed",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Eye of the Beast",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Witchblade",
+     "slot": "weapon"
+    },
+    {
+     "item": "Spirit of Aquementas",
+     "slot": "off_hand"
+    },
+    {
+     "item": "Skul's Ghastly Touch",
+     "slot": "ranged"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/destruction-warlock/"
+  },
+  "warrior.fury": {
+   "items": [
+    {
+     "item": "Lionheart Helm",
+     "slot": "head"
+    },
+    {
+     "item": "Mark of Fordring",
+     "slot": "neck"
+    },
+    {
+     "item": "Truestrike Shoulders",
+     "slot": "shoulder"
+    },
+    {
+     "item": "Cape of the Black Baron",
+     "slot": "back"
+    },
+    {
+     "item": "Savage Gladiator Chain",
+     "slot": "chest"
+    },
+    {
+     "item": "Vambraces of the Sadist",
+     "slot": "wrist"
+    },
+    {
+     "item": "Devilsaur Gauntlets",
+     "slot": "hands"
+    },
+    {
+     "item": "Omokk's Girth Restrainer",
+     "slot": "waist"
+    },
+    {
+     "item": "Devilsaur Leggings",
+     "slot": "legs"
+    },
+    {
+     "item": "Battlechaser's Greaves",
+     "slot": "feet"
+    },
+    {
+     "item": "Blackstone Ring",
+     "slot": "finger_1"
+    },
+    {
+     "item": "Painweaver Band",
+     "slot": "finger_2"
+    },
+    {
+     "item": "Hand of Justice",
+     "slot": "trinket_1"
+    },
+    {
+     "item": "Blackhand's Breadth",
+     "slot": "trinket_2"
+    },
+    {
+     "item": "Rivenspike",
+     "slot": "orc_weapon"
+    },
+    {
+     "item": "Bone Slicing Hatchet",
+     "slot": "orc_off_hand"
+    },
+    {
+     "item": "Dal'Rend's Sacred Charge",
+     "slot": "human_weapon"
+    },
+    {
+     "item": "Dal'Rend's Tribal Guardian",
+     "slot": "human_off_hand"
+    },
+    {
+     "item": "Riphook",
+     "slot": "ranged"
+    }
+   ],
+   "url": "https://wowtbc.gg/classic/bis-list/fury-warrior/"
+  }
+ }
+}

@@ -1,6 +1,7 @@
 # Plan: reshape WowGearBis for WoW Classic Era
 
-Status: DRAFT v2 — decisions from review applied. No code changes yet.
+Status: v3 — implemented on branch `classic-era` (see tasks/todo.md for progress).
+Change after review: levels use a **slider for every level 10–60** (owner request) instead of 10-level brackets.
 Date: 2026-09-24
 
 ## 0. Decisions (from review)
