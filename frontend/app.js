@@ -14,6 +14,8 @@ const SLOT_LABEL = {
   two_hand: "Two-hand", ranged: "Ranged", relic: "Relic",
 };
 const ARMOR_ORDER = ["head", "neck", "shoulders", "back", "chest", "wrist", "hands", "waist", "legs", "feet"];
+// Race id -> background scene (the race's home area) and colour theme.
+const RACE_SCENE = { 1: "human", 3: "dwarf", 4: "night-elf", 7: "gnome", 2: "orc", 5: "undead", 6: "tauren", 8: "troll" };
 const TIER_SHORT = { 0: "Pre-raid", 1: "MC / Ony", 2: "BWL / ZG", 3: "AQ", 4: "Naxx" };
 
 const state = {
@@ -39,6 +41,30 @@ function recall(key, fallback = null) {
     const raw = localStorage.getItem(`wowgear:${key}`);
     return raw ? JSON.parse(raw) : fallback;
   } catch { return fallback; }
+}
+
+// ---------------------------------------------------------------- scene
+let sceneKey = "default";
+let sceneToken = 0;
+
+// Cross-fade the background to a race's home area and switch the colour theme.
+function setScene(raceId) {
+  const key = RACE_SCENE[raceId] || "default";
+  if (key === sceneKey) return;
+  sceneKey = key;
+  const token = ++sceneToken;
+  const img = new Image();
+  img.onload = () => {
+    if (token !== sceneToken) return; // a newer choice won
+    const [a, b] = [$("scene-a"), $("scene-b")];
+    const [shown, hidden] = a.classList.contains("on") ? [a, b] : [b, a];
+    hidden.style.backgroundImage = `url('${img.src}')`;
+    hidden.classList.add("on");
+    shown.classList.remove("on");
+  };
+  img.src = `/static/bg/${key}.jpg`;
+  if (key === "default") delete document.documentElement.dataset.race;
+  else document.documentElement.dataset.race = key;
 }
 
 // ---------------------------------------------------------------- helpers
@@ -555,6 +581,7 @@ async function lookup(event) {
     if (!resp.ok) throw new Error(body.detail || `Lookup failed (HTTP ${resp.status}).`);
     state.mode = "lookup";
     state.char = body;
+    setScene(body.character.race_id);
     state.scores = {};
     const urlSpec = new URLSearchParams(location.search).get("spec");
     const cls = state.meta.classes[String(body.character.class_id)];
@@ -574,6 +601,7 @@ async function manualSubmit(event) {
   event?.preventDefault();
   const level = Math.max(1, Math.min(60, Number($("m-level").value) || 1));
   state.mode = "manual";
+  setScene(Number($("m-race").value));
   state.manual = { raceId: Number($("m-race").value), classId: Number($("m-class").value), spec: $("m-spec").value, level };
   state.spec = state.manual.spec;
   state.level = Math.max(10, level);
@@ -609,7 +637,7 @@ function fillManualForm(saved) {
     }
     specSel.value = cls.specs[prev] ? prev : cls.leveling_spec;
   };
-  raceSel.onchange = fillClasses;
+  raceSel.onchange = () => { fillClasses(); setScene(Number(raceSel.value)); };
   $("m-class").onchange = fillSpecs;
   fillClasses();
   if (saved?.level) $("m-level").value = saved.level;
@@ -625,6 +653,8 @@ function selectTab(mode) {
     ? "Classic Era realms only. No login needed."
     : "No character needed: pick race, class, spec and level, then tick the items you have.";
   store("tab", mode);
+  if (lookupOn) setScene(state.mode === "lookup" ? state.char?.character.race_id : null);
+  else setScene(Number($("m-race").value));
 }
 
 // ---------------------------------------------------------------- realm combobox
