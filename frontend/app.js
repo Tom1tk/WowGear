@@ -245,7 +245,7 @@ function pointAt(slot, level = state.level, tier = state.tier) {
 function nextFill(slot, index) {
   const target = state.level >= 60 && state.tier > 0 ? 60 + state.tier : state.level;
   for (const p of slotPoints(slot)) {
-    const ok = p.items.filter(([id]) => (state.gear.items[id].sources || []).some(srcOk));
+    const ok = p.items.filter(([id]) => itemOk(id));
     if (pointKey(p) > target && ok[index]) return { p, id: ok[index][0] };
   }
   return null;
@@ -321,8 +321,12 @@ function wornScoreFor(slot) {
 }
 
 // Table view state (not part of the URL): source filter, sort, slot group, opened rows.
-const ui = { sort: "slot", src: new Set(), slot: "all", open: new Set() };
+const ui = { sort: "slot", src: new Set(), slot: "all", open: new Set(), boe: recall("boe", true), epic: recall("epic", true) };
 const srcOk = (s) => !ui.src.size || catsOf(s).some((c) => ui.src.has(c));
+const narrowed = () => ui.src.size > 0 || !ui.boe || !ui.epic;
+// Source filter plus the BoE / epic toggles (quality 4 = epic, 5 = legendary).
+const itemOk = (id) => { const it = state.gear.items[id];
+  return (ui.boe || it.binding !== "ON_EQUIP") && (ui.epic || it.quality < 4) && (it.sources || []).some(srcOk); };
 // sources with the allowed ones first, so the shown source is one the filter lets through
 const orderedSrcs = (info) => { const all = info.sources || []; return [...all.filter(srcOk), ...all.filter((s) => !srcOk(s))]; };
 function effort(srcs) {
@@ -375,10 +379,10 @@ function buildRows() {
     const index = seen[slot] = (seen[slot] ?? -1) + 1;
     const pair = slot === "ring" || slot === "trinket";
     const cands = pointAt(slot)?.items || [];
-    // With a source filter on, look beyond the top picks: the whole slotPool.
-    const ok = (ui.src.size ? slotPool(slot) : cands).filter(([id]) => (state.gear.items[id].sources || []).some(srcOk));
+    // With a filter on, look beyond the top picks: the whole slotPool.
+    const ok = (narrowed() ? slotPool(slot) : cands).filter(([id]) => itemOk(id));
     const top = ok.slice(0, pair ? 2 : 1), pick = ok[pair ? index : 0] || null;
-    const row = { slot, order, index, pair, cands, pick, next: pick ? null : nextFill(slot, index), alts: cands.filter((c) => !top.includes(c)), gain: 0, filtered: !pick && ui.src.size > 0 && cands.length > 0,
+    const row = { slot, order, index, pair, cands, pick, next: pick ? null : nextFill(slot, index), alts: cands.filter((c) => !top.includes(c)), gain: 0, filtered: !pick && narrowed() && cands.length > 0,
       label: pair ? `${SLOT_LABEL[slot]} ${index + 1}` : SLOT_LABEL[slot] };
     if (pick) {
       row.srcs = orderedSrcs(state.gear.items[pick[0]]);
@@ -455,7 +459,7 @@ function renderRows(rows) {
     const main = el("div", { class: "row-main" }, el("span", { class: "slot" }, r.label));
     ol.append(li);
     if (!r.pick) {
-      const none = r.filtered ? `No pick from these sources at level ${state.level}.` : `Nothing with useful stats at level ${state.level}.`;
+      const none = r.filtered ? `No pick with these filters at level ${state.level}.` : `Nothing with useful stats at level ${state.level}.`;
       const n = r.next, nInfo = n && state.gear.items[n.id], nSrc = n && describeSource(orderedSrcs(nInfo)[0]);
       main.append(el("span", { class: "item muted nopick" }, none, ...(n ? [" Next: ", itemLink(n.id, nInfo), ` at ${n.p.tier > 0 ? `raid tier ${n.p.tier}` : `level ${n.p.level}`}${nSrc ? ` (${nSrc.label})` : ""}.`] : [])));
       li.append(main);
@@ -847,6 +851,11 @@ function setupControls() {
   document.addEventListener("click", (e) => { if (pick.open && !pick.contains(e.target)) pick.open = false; });
   pick.addEventListener("keydown", (e) => { if (e.key === "Escape") { pick.open = false; pick.querySelector("summary").focus(); } });
   $("sort").addEventListener("change", (e) => { ui.sort = e.target.value; render(); });
+  for (const k of ["boe", "epic"]) {
+    const box = $(`${k}-ok`);
+    box.checked = ui[k];
+    box.addEventListener("change", () => { ui[k] = box.checked; store(k, box.checked); render(); });
+  }
 }
 
 const itemLookup = setupLookup({ state, $, el, itemLink, slotPoints, pointAt, SLOT_LABEL, describeSource, pinBtn, reasonsOf, uncBadge, extrasOf, wornScoreFor, tierShort, fmtGain, refreshTooltips });

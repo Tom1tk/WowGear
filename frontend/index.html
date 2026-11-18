@@ -23,7 +23,7 @@
   <button type="button" class="tbtn" id="menu" aria-expanded="false" aria-controls="side"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Menu</button></div>
 <div class="app">
 <aside class="side" id="side">
-  <h1 class="logo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 17 14 6l3-3 .5 2.5L15 8 4.5 18.5 3 17Zm0 0-1.5 1.5M12 4l4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>WowGear <span>Forever</span></h1>
+  <h1 class="logo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M18 2l-.8 3.6-7.4 7.4-2.8-2.8L14.4 2.8Z" fill="currentColor"/><path d="M4.6 9.6l5.8 5.8M7.6 12.4l-3.9 3.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="3" cy="17" r="1.4" fill="currentColor"/></svg>WowGear <span>Forever</span></h1>
   <section class="char" id="char-bar" hidden></section>
   <div class="hr" id="hr-char" hidden></div>
   <div class="disc" id="lvl-disc" hidden>
@@ -100,6 +100,8 @@
           <label><input type="checkbox" value="dq"> Dungeon quests<span class="n"></span></label>
         </div>
       </details>
+      <label class="tog" title="Bind on Equip items: can be bought on the Auction House or traded."><input type="checkbox" id="boe-ok" checked> BoE</label>
+      <label class="tog" title="Epic and legendary items."><input type="checkbox" id="epic-ok" checked> Epics</label>
       <label class="sort"><span class="muted">Sort</span><select id="sort" title="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop." aria-description="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop.">
         <option value="slot">Slot order</option><option value="gain">Biggest upgrade</option><option value="easy">Easiest to get</option></select></label>
     </div>

@@ -1,0 +1,316 @@
+{
+ "_about": "MythicSim simmed EP per point (per rating point for hit/crit/haste/expertise), level 60 vs level 63 boss, 10,000 iterations. Engine a667dce84, client 1.60.1, pinned 2026-11-18. Copied by hand from https://mythicsim.com/wow-forever/stat-priority/<page>.",
+ "specs": {
+  "warrior.fury": {
+   "page": "warrior",
+   "build": "Fury 17/32/2",
+   "ep": {
+    "Expertise": 1.53,
+    "Hit": 1.33,
+    "Crit": 1.02,
+    "Strength": 1.0,
+    "Haste": 0.87,
+    "Agility": 0.8,
+    "Attack power": 0.45,
+    "Armor penetration": 0.19
+   }
+  },
+  "warrior.arms": {
+   "page": "arms-warrior",
+   "build": "Arms 32/17/2",
+   "ep": {
+    "Hit": 1.12,
+    "Crit": 1.08,
+    "Expertise": 1.04,
+    "Strength": 1.0,
+    "Agility": 0.84,
+    "Haste": 0.83,
+    "Attack power": 0.45,
+    "Armor penetration": 0.2
+   }
+  },
+  "paladin.retribution": {
+   "page": "retribution-paladin",
+   "build": "Retribution 12/8/31",
+   "ep": {
+    "Expertise": 2.86,
+    "Spell damage": 2.11,
+    "Crit": 1.73,
+    "Intellect": 1.6,
+    "Haste": 1.48,
+    "Agility": 1.36,
+    "Strength": 1.0,
+    "Attack power": 0.41,
+    "Armor penetration": 0.1,
+    "Mana": 0.0
+   }
+  },
+  "hunter.beast_mastery": {
+   "page": "hunter",
+   "build": "Beast Mastery 31/20/0 (weave)",
+   "ep": {
+    "Hit": 1.41,
+    "Agility": 1.0,
+    "Crit": 0.91,
+    "Expertise": 0.73,
+    "Intellect": 0.59,
+    "Haste": 0.4,
+    "Ranged attack power": 0.29,
+    "Mana per 5": 0.26,
+    "Armor penetration": 0.13,
+    "Strength": 0.1,
+    "Attack power": 0.09,
+    "Weapon damage": 1.2
+   }
+  },
+  "hunter.marksmanship": {
+   "page": "marksmanship-hunter",
+   "build": "Marksmanship 5/31/15 (Surefooted, weave)",
+   "ep": {
+    "Hit": 1.11,
+    "Agility": 1.0,
+    "Crit": 0.84,
+    "Intellect": 0.58,
+    "Haste": 0.38,
+    "Expertise": 0.31,
+    "Ranged attack power": 0.3,
+    "Mana per 5": 0.21,
+    "Armor penetration": 0.13,
+    "Strength": 0.11,
+    "Attack power": 0.1,
+    "Weapon damage": 1.4
+   }
+  },
+  "hunter.survival": {
+   "page": "survival-hunter",
+   "build": "Survival 0/20/31 (light weave)",
+   "ep": {
+    "Agility": 1.0,
+    "Crit": 0.77,
+    "Intellect": 0.67,
+    "Expertise": 0.62,
+    "Haste": 0.41,
+    "Mana per 5": 0.39,
+    "Ranged attack power": 0.2,
+    "Strength": 0.17,
+    "Attack power": 0.16,
+    "Armor penetration": 0.13,
+    "Weapon damage": 1.25
+   }
+  },
+  "rogue.assassination": {
+   "page": "assassination-rogue",
+   "build": "Mutilate 31/20/0",
+   "ep": {
+    "Expertise": 2.99,
+    "Agility": 2.05,
+    "Hit": 1.9,
+    "Crit": 1.83,
+    "Haste": 1.36,
+    "Strength": 1.1,
+    "Attack power": 1.0,
+    "Armor penetration": 0.42,
+    "Weapon damage": 8.92
+   }
+  },
+  "rogue.combat": {
+   "page": "combat-rogue",
+   "build": "Combat Maces 21/30/0",
+   "ep": {
+    "Expertise": 2.8,
+    "Hit": 2.28,
+    "Agility": 1.81,
+    "Haste": 1.6,
+    "Crit": 1.34,
+    "Strength": 1.1,
+    "Attack power": 1.0,
+    "Armor penetration": 0.35,
+    "Weapon damage": 7.48
+   }
+  },
+  "rogue.subtlety": {
+   "page": "subtlety-rogue",
+   "build": "Hemorrhage 12/8/31",
+   "ep": {
+    "Expertise": 2.56,
+    "Hit": 2.15,
+    "Agility": 1.93,
+    "Crit": 1.55,
+    "Haste": 1.54,
+    "Strength": 1.1,
+    "Attack power": 1.0,
+    "Armor penetration": 0.26,
+    "Weapon damage": 5.89
+   }
+  },
+  "priest.shadow": {
+   "page": "shadow-priest",
+   "build": "Shadow 17/0/34",
+   "ep": {
+    "Spell hit": 1.19,
+    "Spell damage": 1.0,
+    "Spell crit": 0.91,
+    "Spell haste": 0.65,
+    "Intellect": 0.26,
+    "Shadow spell damage": 1.0
+   }
+  },
+  "shaman.elemental": {
+   "page": "elemental-shaman",
+   "build": "Elemental 31/11/9",
+   "ep": {
+    "Spell hit": 1.32,
+    "Spell damage": 1.0,
+    "Spell haste": 0.96,
+    "Spell crit": 0.69,
+    "Intellect": 0.19,
+    "Nature spell damage": 0.88
+   }
+  },
+  "shaman.enhancement": {
+   "page": "enhancement-shaman",
+   "build": "Enhancement 17/31/3 (Elemental Focus, Windfury Weapon)",
+   "ep": {
+    "Expertise": 4.06,
+    "Strength": 2.2,
+    "Haste": 2.15,
+    "Spell hit": 2.08,
+    "Intellect": 1.96,
+    "Crit": 1.84,
+    "Agility": 1.43,
+    "Spell damage": 1.37,
+    "Attack power": 1.0,
+    "Spell crit": 0.82,
+    "Armor penetration": 0.35,
+    "Nature spell damage": 0.63
+   }
+  },
+  "mage.arcane": {
+   "page": "arcane-mage",
+   "build": "Arc Fire 32/16/3",
+   "ep": {
+    "Spell hit": 1.79,
+    "Spell damage": 1.0,
+    "Intellect": 0.99,
+    "Spell crit": 0.8,
+    "Spell haste": 0.66,
+    "Mana per 5": 0.43,
+    "Spirit": 0.27,
+    "Spell penetration": 4.28,
+    "Arcane spell damage": 0.56,
+    "Fire spell damage": 0.44,
+    "Mana": 0.02
+   }
+  },
+  "mage.fire": {
+   "page": "fire-mage",
+   "build": "Fire Arcane Blast 16/32/3",
+   "ep": {
+    "Spell hit": 1.53,
+    "Spell damage": 1.0,
+    "Spell crit": 0.76,
+    "Intellect": 0.47,
+    "Mana per 5": 0.25,
+    "Spirit": 0.11,
+    "Spell haste": -0.04,
+    "Spell penetration": 3.86,
+    "Fire spell damage": 0.88,
+    "Arcane spell damage": 0.12,
+    "Mana": 0.01
+   }
+  },
+  "mage.frost": {
+   "page": "frost-mage",
+   "build": "Missile Barrage 14/5/32",
+   "ep": {
+    "Spell hit": 1.64,
+    "Spell haste": 1.09,
+    "Spell damage": 1.0,
+    "Spell crit": 0.65,
+    "Intellect": 0.18,
+    "Mana per 5": 0.02,
+    "Spirit": 0.01,
+    "Spell penetration": 3.93,
+    "Frost spell damage": 0.85,
+    "Arcane spell damage": 0.15,
+    "Fire spell damage": 0.0,
+    "Mana": -0.0
+   }
+  },
+  "warlock.affliction": {
+   "page": "affliction-warlock",
+   "build": "Affliction 35/11/5 (Wrack)",
+   "ep": {
+    "Spell damage": 1.0,
+    "Spell crit": 0.69,
+    "Spell hit": 0.52,
+    "Spell haste": 0.22,
+    "Intellect": 0.17,
+    "Mana per 5": 0.0,
+    "Spell penetration": 2.59,
+    "Shadow spell damage": 1.0
+   }
+  },
+  "warlock.demonology": {
+   "page": "demonology-warlock",
+   "build": "Demonic Pact 2/31/18",
+   "ep": {
+    "Spell hit": 1.29,
+    "Spell damage": 1.0,
+    "Spell haste": 0.87,
+    "Spell crit": 0.77,
+    "Intellect": 0.45,
+    "Mana per 5": 0.28,
+    "Spell penetration": 2.26,
+    "Shadow spell damage": 0.79,
+    "Fire spell damage": 0.18
+   }
+  },
+  "warlock.destruction": {
+   "page": "destruction-warlock",
+   "build": "Shadow Bolt 20/0/31",
+   "ep": {
+    "Spell hit": 1.14,
+    "Spell damage": 1.0,
+    "Spell crit": 0.84,
+    "Spell haste": 0.79,
+    "Intellect": 0.5,
+    "Mana per 5": 0.3,
+    "Spell penetration": 2.52,
+    "Shadow spell damage": 0.77,
+    "Fire spell damage": 0.21
+   }
+  },
+  "druid.balance": {
+   "page": "balance-druid",
+   "build": "Moonkin 41/0/10",
+   "ep": {
+    "Spell hit": 1.12,
+    "Spell damage": 1.0,
+    "Spell haste": 0.84,
+    "Spell crit": 0.67,
+    "Intellect": 0.28,
+    "Mana per 5": 0.14,
+    "Spirit": 0.0,
+    "Arcane spell damage": 0.64,
+    "Nature spell damage": 0.36
+   }
+  },
+  "druid.feral_cat": {
+   "page": "feral-druid",
+   "build": "Feral 9/32/10 (Naturalist)",
+   "ep": {
+    "Agility": 1.0,
+    "Strength": 0.89,
+    "Crit": 0.78,
+    "Hit": 0.69,
+    "Expertise": 0.67,
+    "Haste": 0.55,
+    "Attack power": 0.36,
+    "Armor penetration": 0.12,
+    "Weapon damage": 3.31,
+    "Feral attack power": 0.36
+   }
+  }
+ }
+}

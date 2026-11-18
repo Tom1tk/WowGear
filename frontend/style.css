@@ -247,6 +247,8 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .srcmenu label:hover { background: color-mix(in oklab, var(--gold) 10%, transparent); }
 .srcmenu input { accent-color: var(--gold); margin: 0; }
 .srcmenu .n { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tog { display: flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; }
+.tog input { accent-color: var(--gold); margin: 0; }
 .sort { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 .sort select { height: 26px; font-size: 12.5px; }
 .nopick { font-size: 13px; display: block; grid-column: 2 / -1; }
@@ -328,7 +330,7 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 #lk-out p, #lk-out ul { margin: 2px 0; }
 #lk-out ul { padding-left: 18px; }
 .lk-name { font-size: 14px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-@media (max-width: 900px) { #lk-in { font-size: 16px; height: 38px; } }
+@media (max-width: 900px) { #lk-in { font-size: 16px; height: 38px; } .toolbar { flex-wrap: wrap; } }
 
 /* map-pin button: zone + coordinates; click copies a chat command */
 .pin { font: inherit; font-size: .85em; color: var(--muted); background: none; border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); border-radius: 999px; padding: 0 .5em; cursor: pointer; white-space: nowrap; position: relative; }

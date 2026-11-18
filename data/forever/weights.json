@@ -11,24 +11,24 @@
  "profiles": {
   "warrior.arms": {
    "leveling": {
-    "str": 2.0,
-    "agi": 1.0,
+    "str": 2.22,
+    "agi": 1.87,
     "ap": 1.0,
-    "crit": 18,
-    "hit": 15,
-    "haste": 10,
-    "expertise": 10,
+    "crit": 33.6,
+    "hit": 20.74,
+    "haste": 18.44,
+    "expertise": 23.11,
     "sta": 0.3,
     "armor": 0.01
    },
    "endgame": {
-    "str": 2.0,
-    "agi": 1.0,
+    "str": 2.22,
+    "agi": 1.87,
     "ap": 1.0,
-    "crit": 18,
-    "hit": 18,
-    "haste": 10,
-    "expertise": 10,
+    "crit": 33.6,
+    "hit": 24.89,
+    "haste": 18.44,
+    "expertise": 23.11,
     "sta": 0.1,
     "armor": 0.01
    },
@@ -39,29 +39,30 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Arms: two-hander, weapon DPS counts for the main hit; Str 1 = 2 AP."
+    "Arms: two-hander, weapon DPS counts for the main hit; Str 1 = 2 AP.",
+    "https://mythicsim.com/wow-forever/stat-priority/arms-warrior (simmed EP, Arms 32/17/2, 2026-11-18)"
    ]
   },
   "warrior.fury": {
    "leveling": {
-    "str": 2.0,
-    "agi": 1.0,
+    "str": 2.22,
+    "agi": 1.78,
     "ap": 1.0,
-    "crit": 18,
-    "hit": 15,
-    "haste": 10,
-    "expertise": 10,
+    "crit": 31.73,
+    "hit": 24.63,
+    "haste": 19.33,
+    "expertise": 28.33,
     "sta": 0.3,
     "armor": 0.01
    },
    "endgame": {
-    "str": 2.0,
-    "agi": 1.0,
+    "str": 2.22,
+    "agi": 1.78,
     "ap": 1.0,
-    "crit": 18,
-    "hit": 18,
-    "haste": 10,
-    "expertise": 12,
+    "crit": 31.73,
+    "hit": 29.56,
+    "haste": 19.33,
+    "expertise": 34.0,
     "sta": 0.1,
     "armor": 0.01
    },
@@ -72,7 +73,8 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Fury: dual wield, weapon DPS split main/off hand."
+    "Fury: dual wield, weapon DPS split main/off hand.",
+    "https://mythicsim.com/wow-forever/stat-priority/warrior (simmed EP, Fury 17/32/2, 2026-11-18)"
    ]
   },
   "warrior.protection": {
@@ -115,30 +117,30 @@
   },
   "paladin.retribution": {
    "leveling": {
-    "str": 2.0,
-    "agi": 1.0,
+    "str": 2.44,
+    "agi": 3.32,
     "ap": 1.0,
-    "crit": 18,
-    "hit": 15,
-    "haste": 10,
-    "expertise": 10,
+    "crit": 59.07,
+    "hit": 15.0,
+    "haste": 36.1,
+    "expertise": 69.76,
     "sta": 0.3,
     "armor": 0.01,
-    "sp": 0.4,
-    "int": 0.2
+    "sp": 5.15,
+    "int": 3.9
    },
    "endgame": {
-    "str": 2.0,
-    "agi": 1.0,
+    "str": 2.44,
+    "agi": 3.32,
     "ap": 1.0,
-    "crit": 18,
+    "crit": 59.07,
     "hit": 15,
-    "haste": 10,
-    "expertise": 10,
+    "haste": 36.1,
+    "expertise": 69.76,
     "sta": 0.1,
     "armor": 0.01,
-    "sp": 0.4,
-    "int": 0.2
+    "sp": 5.15,
+    "int": 3.9
    },
    "weapon": {
     "dps": 9,
@@ -147,7 +149,8 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Retribution: Str main stat, some Spell Power for seals/Judgement."
+    "Retribution: Str main stat, some Spell Power for seals/Judgement.",
+    "https://mythicsim.com/wow-forever/stat-priority/retribution-paladin (simmed EP, Retribution 12/8/31, 2026-11-18)"
    ]
   },
   "paladin.holy": {
@@ -224,29 +227,30 @@
   },
   "hunter.beast_mastery": {
    "leveling": {
-    "agi": 2.0,
+    "agi": 3.45,
     "rap": 1.0,
-    "ap": 1.0,
-    "str": 1.0,
-    "int": 0.3,
-    "crit": 20,
-    "hit": 16,
-    "haste": 10,
-    "expertise": 4,
+    "ap": 0.31,
+    "str": 0.34,
+    "int": 2.03,
+    "crit": 39.94,
+    "hit": 43.22,
+    "haste": 11.49,
+    "expertise": 25.17,
     "sta": 0.4,
-    "armor": 0.01
+    "mp5": 0.9
    },
    "endgame": {
-    "agi": 2.0,
+    "agi": 3.45,
     "rap": 1.0,
-    "ap": 1.0,
-    "str": 1.0,
-    "int": 0.3,
-    "crit": 22,
-    "hit": 18,
-    "haste": 12,
-    "expertise": 4,
-    "sta": 0.1
+    "ap": 0.31,
+    "str": 0.34,
+    "int": 2.03,
+    "crit": 43.93,
+    "hit": 48.62,
+    "haste": 13.79,
+    "expertise": 25.17,
+    "sta": 0.1,
+    "mp5": 0.9
    },
    "weapon": {
     "dps": 0.5,
@@ -255,34 +259,36 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Hunter: ranged weapon DPS dominates; Agility to RAP and crit."
+    "Hunter: ranged weapon DPS dominates; Agility to RAP and crit.",
+    "https://mythicsim.com/wow-forever/stat-priority/hunter (simmed EP, Beast Mastery 31/20/0 (weave), 2026-11-18)"
    ]
   },
   "hunter.marksmanship": {
    "leveling": {
-    "agi": 2.0,
+    "agi": 3.33,
     "rap": 1.0,
-    "ap": 1.0,
-    "str": 1.0,
-    "int": 0.3,
-    "crit": 20,
-    "hit": 16,
-    "haste": 10,
-    "expertise": 4,
+    "ap": 0.33,
+    "str": 0.37,
+    "int": 1.93,
+    "crit": 35.64,
+    "hit": 32.89,
+    "haste": 10.56,
+    "expertise": 10.33,
     "sta": 0.4,
-    "armor": 0.01
+    "mp5": 0.7
    },
    "endgame": {
-    "agi": 2.0,
+    "agi": 3.33,
     "rap": 1.0,
-    "ap": 1.0,
-    "str": 1.0,
-    "int": 0.3,
-    "crit": 22,
-    "hit": 18,
-    "haste": 12,
-    "expertise": 4,
-    "sta": 0.1
+    "ap": 0.33,
+    "str": 0.37,
+    "int": 1.93,
+    "crit": 39.2,
+    "hit": 37.0,
+    "haste": 12.67,
+    "expertise": 10.33,
+    "sta": 0.1,
+    "mp5": 0.7
    },
    "weapon": {
     "dps": 0.5,
@@ -291,34 +297,36 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Marksmanship: same stats, more weight on the ranged weapon."
+    "Marksmanship: same stats, more weight on the ranged weapon.",
+    "https://mythicsim.com/wow-forever/stat-priority/marksmanship-hunter (simmed EP, Marksmanship 5/31/15 (Surefooted, weave), 2026-11-18)"
    ]
   },
   "hunter.survival": {
    "leveling": {
-    "agi": 2.4,
+    "agi": 5.0,
     "rap": 1.0,
-    "ap": 1.0,
-    "str": 1.0,
-    "int": 0.3,
-    "crit": 20,
-    "hit": 16,
-    "haste": 10,
-    "expertise": 4,
+    "ap": 0.8,
+    "str": 0.85,
+    "int": 3.35,
+    "crit": 49.0,
+    "hit": 16.0,
+    "haste": 17.08,
+    "expertise": 31.0,
     "sta": 0.6,
-    "armor": 0.01
+    "mp5": 1.95
    },
    "endgame": {
-    "agi": 2.4,
+    "agi": 5.0,
     "rap": 1.0,
-    "ap": 1.0,
-    "str": 1.0,
-    "int": 0.3,
-    "crit": 22,
+    "ap": 0.8,
+    "str": 0.85,
+    "int": 3.35,
+    "crit": 53.9,
     "hit": 18,
-    "haste": 12,
-    "expertise": 4,
-    "sta": 0.1
+    "haste": 20.5,
+    "expertise": 31.0,
+    "sta": 0.1,
+    "mp5": 1.95
    },
    "weapon": {
     "dps": 0.5,
@@ -327,29 +335,30 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Survival: Agility-heavy."
+    "Survival: Agility-heavy.",
+    "https://mythicsim.com/wow-forever/stat-priority/survival-hunter (simmed EP, Survival 0/20/31 (light weave), 2026-11-18)"
    ]
   },
   "rogue.assassination": {
    "leveling": {
-    "str": 1.0,
-    "agi": 2.0,
+    "str": 1.1,
+    "agi": 2.05,
     "ap": 1.0,
-    "crit": 22,
-    "hit": 20,
-    "haste": 10,
-    "expertise": 12,
+    "crit": 25.62,
+    "hit": 17.27,
+    "haste": 13.6,
+    "expertise": 29.9,
     "sta": 0.3,
     "armor": 0.01
    },
    "endgame": {
-    "str": 1.0,
-    "agi": 2.0,
+    "str": 1.1,
+    "agi": 2.05,
     "ap": 1.0,
-    "crit": 22,
-    "hit": 22,
-    "haste": 10,
-    "expertise": 12,
+    "crit": 25.62,
+    "hit": 19.0,
+    "haste": 13.6,
+    "expertise": 29.9,
     "sta": 0.1,
     "armor": 0.01
    },
@@ -360,29 +369,30 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Assassination: poisons scale with AP in Forever (2x AP per Blizzard class notes); dagger speed matters little."
+    "Assassination: poisons scale with AP in Forever (2x AP per Blizzard class notes); dagger speed matters little.",
+    "https://mythicsim.com/wow-forever/stat-priority/assassination-rogue (simmed EP, Mutilate 31/20/0, 2026-11-18)"
    ]
   },
   "rogue.combat": {
    "leveling": {
-    "str": 1.0,
-    "agi": 2.0,
+    "str": 1.1,
+    "agi": 1.81,
     "ap": 1.0,
-    "crit": 22,
-    "hit": 20,
-    "haste": 10,
-    "expertise": 12,
+    "crit": 18.76,
+    "hit": 20.73,
+    "haste": 16.0,
+    "expertise": 28.0,
     "sta": 0.3,
     "armor": 0.01
    },
    "endgame": {
-    "str": 1.0,
-    "agi": 2.0,
+    "str": 1.1,
+    "agi": 1.81,
     "ap": 1.0,
-    "crit": 22,
-    "hit": 22,
-    "haste": 10,
-    "expertise": 12,
+    "crit": 18.76,
+    "hit": 22.8,
+    "haste": 16.0,
+    "expertise": 28.0,
     "sta": 0.1,
     "armor": 0.01
    },
@@ -393,29 +403,30 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Combat: weapon DPS matters most."
+    "Combat: weapon DPS matters most.",
+    "https://mythicsim.com/wow-forever/stat-priority/combat-rogue (simmed EP, Combat Maces 21/30/0, 2026-11-18)"
    ]
   },
   "rogue.subtlety": {
    "leveling": {
-    "str": 1.0,
-    "agi": 2.0,
+    "str": 1.1,
+    "agi": 1.93,
     "ap": 1.0,
-    "crit": 22,
-    "hit": 20,
-    "haste": 10,
-    "expertise": 12,
+    "crit": 21.7,
+    "hit": 19.55,
+    "haste": 15.4,
+    "expertise": 25.6,
     "sta": 0.3,
     "armor": 0.01
    },
    "endgame": {
-    "str": 1.0,
-    "agi": 2.0,
+    "str": 1.1,
+    "agi": 1.93,
     "ap": 1.0,
-    "crit": 22,
-    "hit": 22,
-    "haste": 10,
-    "expertise": 12,
+    "crit": 21.7,
+    "hit": 21.5,
+    "haste": 15.4,
+    "expertise": 25.6,
     "sta": 0.1,
     "armor": 0.01
    },
@@ -426,7 +437,8 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Subtlety: Agility/crit."
+    "Subtlety: Agility/crit.",
+    "https://mythicsim.com/wow-forever/stat-priority/subtlety-rogue (simmed EP, Hemorrhage 12/8/31, 2026-11-18)"
    ]
   },
   "priest.discipline": {
@@ -492,10 +504,10 @@
   "priest.shadow": {
    "leveling": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 20,
-    "haste": 10,
+    "int": 0.26,
+    "crit": 12.74,
+    "hit": 10.82,
+    "haste": 6.5,
     "sta": 0.1,
     "spi": 0.3,
     "mp5": 0.5,
@@ -503,10 +515,10 @@
    },
    "endgame": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 22,
-    "haste": 10,
+    "int": 0.26,
+    "crit": 12.74,
+    "hit": 11.9,
+    "haste": 6.5,
     "sta": 0.1,
     "spi": 0.3,
     "mp5": 0.5,
@@ -518,32 +530,33 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Shadow: Shadow damage, Hit to cap."
+    "Shadow: Shadow damage, Hit to cap.",
+    "https://mythicsim.com/wow-forever/stat-priority/shadow-priest (simmed EP, Shadow 17/0/34, 2026-11-18)"
    ]
   },
   "shaman.elemental": {
    "leveling": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 20,
-    "haste": 10,
+    "int": 0.19,
+    "crit": 9.66,
+    "hit": 12.0,
+    "haste": 9.6,
     "sta": 0.1,
     "spi": 0.1,
     "mp5": 0.5,
-    "sp_nature": 1.0,
+    "sp_nature": 0.88,
     "sp_fire": 0.5
    },
    "endgame": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 22,
-    "haste": 10,
+    "int": 0.19,
+    "crit": 9.66,
+    "hit": 13.2,
+    "haste": 9.6,
     "sta": 0.1,
     "spi": 0.1,
     "mp5": 0.5,
-    "sp_nature": 1.0,
+    "sp_nature": 0.88,
     "sp_fire": 0.5
    },
    "weapon": {
@@ -552,37 +565,40 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Elemental: Lightning/Chain Lightning, Spell Power, Hit."
+    "Elemental: Lightning/Chain Lightning, Spell Power, Hit.",
+    "https://mythicsim.com/wow-forever/stat-priority/elemental-shaman (simmed EP, Elemental 31/11/9, 2026-11-18)"
    ]
   },
   "shaman.enhancement": {
    "leveling": {
     "str": 2.2,
-    "agi": 1.2,
+    "agi": 1.43,
     "ap": 1.0,
-    "crit": 18,
-    "hit": 15,
-    "haste": 10,
-    "expertise": 10,
+    "crit": 37.24,
+    "hit": 20.8,
+    "haste": 21.5,
+    "expertise": 40.6,
     "sta": 0.3,
     "armor": 0.01,
-    "sp": 0.8,
-    "int": 0.5,
-    "mp5": 0.5
+    "sp": 1.37,
+    "int": 1.96,
+    "mp5": 0.5,
+    "sp_nature": 0.63
    },
    "endgame": {
     "str": 2.2,
-    "agi": 1.2,
+    "agi": 1.43,
     "ap": 1.0,
-    "crit": 18,
-    "hit": 15,
-    "haste": 10,
-    "expertise": 10,
+    "crit": 37.24,
+    "hit": 20.8,
+    "haste": 21.5,
+    "expertise": 40.6,
     "sta": 0.1,
     "armor": 0.01,
-    "sp": 0.8,
-    "int": 0.5,
-    "mp5": 0.3
+    "sp": 1.37,
+    "int": 1.96,
+    "mp5": 0.3,
+    "sp_nature": 0.63
    },
    "weapon": {
     "dps": 7,
@@ -591,7 +607,8 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Enhancement: Strength strongest stat (Nov 2026 tuning), Spell Power and Intellect from Lightning/imbue scaling."
+    "Enhancement: Strength strongest stat (Nov 2026 tuning), Spell Power and Intellect from Lightning/imbue scaling.",
+    "https://mythicsim.com/wow-forever/stat-priority/enhancement-shaman (simmed EP, Enhancement 17/31/3 (Elemental Focus, Windfury Weapon), 2026-11-18)"
    ]
   },
   "shaman.restoration": {
@@ -627,25 +644,27 @@
   "mage.arcane": {
    "leveling": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 20,
-    "haste": 10,
+    "int": 0.99,
+    "crit": 11.2,
+    "hit": 16.27,
+    "haste": 6.6,
     "sta": 0.1,
     "spi": 0.1,
     "mp5": 0.5,
-    "sp_arcane": 1.0
+    "sp_arcane": 0.56,
+    "sp_fire": 0.44
    },
    "endgame": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 22,
-    "haste": 10,
+    "int": 0.99,
+    "crit": 11.2,
+    "hit": 17.9,
+    "haste": 6.6,
     "sta": 0.1,
-    "spi": 0.1,
-    "mp5": 0.5,
-    "sp_arcane": 1.0
+    "spi": 0.27,
+    "mp5": 0.43,
+    "sp_arcane": 0.56,
+    "sp_fire": 0.44
    },
    "weapon": {
     "dps": 0
@@ -653,31 +672,34 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Arcane: Arcane damage, Intellect for mana."
+    "Arcane: Arcane damage, Intellect for mana.",
+    "https://mythicsim.com/wow-forever/stat-priority/arcane-mage (simmed EP, Arc Fire 32/16/3, 2026-11-18)"
    ]
   },
   "mage.fire": {
    "leveling": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 20,
-    "haste": 10,
+    "int": 0.47,
+    "crit": 10.64,
+    "hit": 13.91,
+    "haste": 0.0,
     "sta": 0.1,
     "spi": 0.1,
     "mp5": 0.5,
-    "sp_fire": 1.0
+    "sp_fire": 0.88,
+    "sp_arcane": 0.12
    },
    "endgame": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 22,
-    "haste": 10,
+    "int": 0.47,
+    "crit": 10.64,
+    "hit": 15.3,
+    "haste": 0.0,
     "sta": 0.1,
-    "spi": 0.1,
-    "mp5": 0.5,
-    "sp_fire": 1.0
+    "spi": 0.11,
+    "mp5": 0.25,
+    "sp_fire": 0.88,
+    "sp_arcane": 0.12
    },
    "weapon": {
     "dps": 0
@@ -685,31 +707,36 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Fire: Fire damage, crit."
+    "Fire: Fire damage, crit.",
+    "https://mythicsim.com/wow-forever/stat-priority/fire-mage (simmed EP, Fire Arcane Blast 16/32/3, 2026-11-18)"
    ]
   },
   "mage.frost": {
    "leveling": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 20,
-    "haste": 10,
+    "int": 0.18,
+    "crit": 9.1,
+    "hit": 14.91,
+    "haste": 10.9,
     "sta": 0.1,
     "spi": 0.1,
     "mp5": 0.5,
-    "sp_frost": 1.0
+    "sp_frost": 0.85,
+    "sp_arcane": 0.15,
+    "sp_fire": 0.0
    },
    "endgame": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 22,
-    "haste": 10,
+    "int": 0.18,
+    "crit": 9.1,
+    "hit": 16.4,
+    "haste": 10.9,
     "sta": 0.1,
-    "spi": 0.1,
-    "mp5": 0.5,
-    "sp_frost": 1.0
+    "spi": 0.01,
+    "mp5": 0.02,
+    "sp_frost": 0.85,
+    "sp_arcane": 0.15,
+    "sp_fire": 0.0
    },
    "weapon": {
     "dps": 0
@@ -717,16 +744,17 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Frost: Frost damage, Hit."
+    "Frost: Frost damage, Hit.",
+    "https://mythicsim.com/wow-forever/stat-priority/frost-mage (simmed EP, Missile Barrage 14/5/32, 2026-11-18)"
    ]
   },
   "warlock.affliction": {
    "leveling": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 20,
-    "haste": 10,
+    "int": 0.17,
+    "crit": 9.66,
+    "hit": 4.73,
+    "haste": 2.2,
     "sta": 0.3,
     "spi": 0.1,
     "mp5": 0.5,
@@ -734,13 +762,13 @@
    },
    "endgame": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 22,
-    "haste": 10,
+    "int": 0.17,
+    "crit": 9.66,
+    "hit": 5.2,
+    "haste": 2.2,
     "sta": 0.1,
     "spi": 0.1,
-    "mp5": 0.5,
+    "mp5": 0.0,
     "sp_shadow": 1.0
    },
    "weapon": {
@@ -749,33 +777,34 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Affliction: Shadow damage, Hit; DoTs worth casting alongside Wrack (Nov 2026 tuning)."
+    "Affliction: Shadow damage, Hit; DoTs worth casting alongside Wrack (Nov 2026 tuning).",
+    "https://mythicsim.com/wow-forever/stat-priority/affliction-warlock (simmed EP, Affliction 35/11/5 (Wrack), 2026-11-18)"
    ]
   },
   "warlock.demonology": {
    "leveling": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 20,
-    "haste": 10,
+    "int": 0.45,
+    "crit": 10.78,
+    "hit": 11.73,
+    "haste": 8.7,
     "sta": 0.4,
     "spi": 0.1,
     "mp5": 0.5,
-    "sp_shadow": 0.8,
-    "sp_fire": 0.4
+    "sp_shadow": 0.79,
+    "sp_fire": 0.18
    },
    "endgame": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 22,
-    "haste": 10,
+    "int": 0.45,
+    "crit": 10.78,
+    "hit": 12.9,
+    "haste": 8.7,
     "sta": 0.1,
     "spi": 0.1,
-    "mp5": 0.5,
-    "sp_shadow": 0.8,
-    "sp_fire": 0.4
+    "mp5": 0.28,
+    "sp_shadow": 0.79,
+    "sp_fire": 0.18
    },
    "weapon": {
     "dps": 0
@@ -783,31 +812,34 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Demonology: pet-heavy; Stamina and Spell Power."
+    "Demonology: pet-heavy; Stamina and Spell Power.",
+    "https://mythicsim.com/wow-forever/stat-priority/demonology-warlock (simmed EP, Demonic Pact 2/31/18, 2026-11-18)"
    ]
   },
   "warlock.destruction": {
    "leveling": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 20,
-    "haste": 10,
+    "int": 0.5,
+    "crit": 9.15,
+    "hit": 10.36,
+    "haste": 7.9,
     "sta": 0.3,
     "spi": 0.1,
     "mp5": 0.5,
-    "sp_fire": 1.0
+    "sp_fire": 0.21,
+    "sp_shadow": 0.77
    },
    "endgame": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 18,
-    "hit": 22,
-    "haste": 10,
+    "int": 0.5,
+    "crit": 11.76,
+    "hit": 11.4,
+    "haste": 7.9,
     "sta": 0.1,
     "spi": 0.1,
-    "mp5": 0.5,
-    "sp_fire": 1.0
+    "mp5": 0.3,
+    "sp_fire": 0.21,
+    "sp_shadow": 0.77
    },
    "weapon": {
     "dps": 0
@@ -815,33 +847,34 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Destruction: Fire damage, crit."
+    "Destruction: Fire damage, crit.",
+    "https://mythicsim.com/wow-forever/stat-priority/destruction-warlock (simmed EP, Shadow Bolt 20/0/31, 2026-11-18)"
    ]
   },
   "druid.balance": {
    "leveling": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 20,
-    "haste": 10,
+    "int": 0.28,
+    "crit": 9.38,
+    "hit": 10.18,
+    "haste": 8.4,
     "sta": 0.1,
     "spi": 0.1,
     "mp5": 0.5,
-    "sp_nature": 1.0,
-    "sp_arcane": 1.0
+    "sp_nature": 0.36,
+    "sp_arcane": 0.64
    },
    "endgame": {
     "sp": 1.0,
-    "int": 0.6,
-    "crit": 14,
-    "hit": 22,
-    "haste": 10,
+    "int": 0.28,
+    "crit": 9.38,
+    "hit": 11.2,
+    "haste": 8.4,
     "sta": 0.1,
-    "spi": 0.1,
-    "mp5": 0.5,
-    "sp_nature": 1.0,
-    "sp_arcane": 1.0
+    "spi": 0.0,
+    "mp5": 0.14,
+    "sp_nature": 0.36,
+    "sp_arcane": 0.64
    },
    "weapon": {
     "dps": 0
@@ -849,30 +882,31 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Balance: Icy Veins order Hit (to 17%), Crit, Spell Power, Intellect."
+    "Balance: Icy Veins order Hit (to 17%), Crit, Spell Power, Intellect.",
+    "https://mythicsim.com/wow-forever/stat-priority/balance-druid (simmed EP, Moonkin 41/0/10, 2026-11-18)"
    ]
   },
   "druid.feral_cat": {
    "leveling": {
-    "str": 2.0,
-    "agi": 2.0,
+    "str": 2.47,
+    "agi": 2.78,
     "ap": 1.0,
-    "crit": 20,
-    "hit": 16,
-    "haste": 10,
-    "expertise": 8,
+    "crit": 27.57,
+    "hit": 17.04,
+    "haste": 15.28,
+    "expertise": 18.61,
     "sta": 0.3,
     "armor": 0.01,
     "feral_ap": 1.0
    },
    "endgame": {
-    "str": 2.0,
-    "agi": 2.0,
+    "str": 2.47,
+    "agi": 2.78,
     "ap": 1.0,
-    "crit": 22,
-    "hit": 18,
-    "haste": 10,
-    "expertise": 8,
+    "crit": 30.33,
+    "hit": 19.17,
+    "haste": 15.28,
+    "expertise": 18.61,
     "sta": 0.1,
     "armor": 0.01,
     "feral_ap": 1.0
@@ -884,7 +918,8 @@
    "sources": [
     "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
     "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
-    "Feral cat: Shred 200% in Forever; Str/Agi both 1:1 AP-ish."
+    "Feral cat: Shred 200% in Forever; Str/Agi both 1:1 AP-ish.",
+    "https://mythicsim.com/wow-forever/stat-priority/feral-druid (simmed EP, Feral 9/32/10 (Naturalist), 2026-11-18)"
    ]
   },
   "druid.feral_bear": {

@@ -1,1 +1,14 @@
-{"_about": "Items hidden by hand (id -> reason). Empty: nothing excluded yet."}
+{
+ "_about": "Items hidden by hand (id -> reason).",
+ "288900": "Earthshaker: end-of-beta Super Hogger event loot (level 1 copy of a raid epic), not in the release. Only warcraftdb lists it.",
+ "288926": "Choker of the Fire Lord: end-of-beta Super Hogger event loot (level 1 copy of a raid epic), not in the release. Only warcraftdb lists it.",
+ "288927": "Quick Strike Ring: end-of-beta Super Hogger event loot (level 1 copy of a raid epic), not in the release. Only warcraftdb lists it.",
+ "288928": "Heavy Dark Iron Ring: end-of-beta Super Hogger event loot (level 1 copy of a raid epic), not in the release. Only warcraftdb lists it.",
+ "288929": "Band of Sulfuras: end-of-beta Super Hogger event loot (level 1 copy of a raid epic), not in the release. Only warcraftdb lists it.",
+ "288930": "Cauterizing Band: end-of-beta Super Hogger event loot (level 1 copy of a raid epic), not in the release. Only warcraftdb lists it.",
+ "288931": "Ring of Spell Power: end-of-beta Super Hogger event loot (level 1 copy of a raid epic), not in the release. Only warcraftdb lists it.",
+ "289294": "Thunderfury, Blessed Blade of the Windseeker: end-of-beta Super Hogger event loot (level 1 copy of a raid epic), not in the release. Only warcraftdb lists it.",
+ "289295": "Sulfuras, Hand of Ragnaros: end-of-beta Super Hogger event loot (level 1 copy of a raid epic), not in the release. Only warcraftdb lists it.",
+ "289296": "Benediction: end-of-beta Super Hogger event loot (level 1 copy of a raid epic), not in the release. Only warcraftdb lists it.",
+ "289303": "Rhok'delar, Longbow of the Ancient Keepers: end-of-beta Super Hogger event loot (level 1 copy of a raid epic), not in the release. Only warcraftdb lists it."
+}
