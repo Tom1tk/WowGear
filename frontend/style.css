@@ -273,7 +273,7 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .g-kind .ico { width: 12px; height: 12px; color: var(--muted); transition: transform .15s; }
 .group:not([open]) .g-kind .ico { transform: rotate(-90deg); }
 .g-head::-webkit-details-marker { display: none; }
-.g-title { grid-column: 1 / -1; font-weight: 600; font-size: var(--fs-base); }
+.g-title { display: block; margin-top: 2px; font-weight: 600; font-size: var(--fs-base); }
 .g-gain { display: inline-flex; align-items: center; gap: 4px; color: var(--gold-2); font-weight: 700; white-space: nowrap; font-size: var(--fs-md); }
 .g-list { list-style: none; margin: 6px 0 0; padding: 0; }
 .g-list li { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; font-size: var(--fs-md); line-height: 1.5; }
@@ -351,7 +351,7 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .pin:hover, .pin:focus-visible { color: var(--text); border-color: var(--accent); }
 .pin[data-done]::after { content: attr(data-done); position: absolute; left: 0; top: 120%; background: var(--bg); color: var(--text); padding: .2em .5em; border-radius: 4px; z-index: 5; animation: pop-in .18s ease-out; }
 .pin[data-done] { border-color: var(--ok); color: var(--ok); }
-.g-head .pin { grid-column: 1 / -1; justify-self: start; font-weight: 400; margin-top: 2px; }
+.group > .pin { margin-top: 4px; }
 .map-pop { position: fixed; z-index: 50; display: none; pointer-events: none; background: var(--bg); border: 1px solid var(--gold); border-radius: var(--r-md); padding: 4px; box-shadow: 0 6px 24px rgb(0 0 0 / .6); }
 .map-box { position: relative; aspect-ratio: 3 / 2; background: #000; border-radius: calc(var(--r-md) - 4px); overflow: hidden; }
 .map-box img { width: 100%; height: 100%; display: block; }
