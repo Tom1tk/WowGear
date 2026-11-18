@@ -1,0 +1,889 @@
+{
+ "_about": "Hand-kept WoW Forever instance table (launched 4 Nov 2026). levels = [recommended low, high]. tier: 0 dungeon, 1 first raid tier (opens 9 Dec 2026). ids.warcraftdb_zone_id = overworld zone (forever.warcraftdb.com /api/data/node/zone/{id}) containing the entrance; warcraftdb has no instance zone ids (dungeon NPCs carry no zone, quests carry zone name only) so ids.warcraftdb_zone_name is the quest 'zone' string. See reports/hand-tables.md.",
+ "ragefire_chasm": {
+  "name": "Ragefire Chasm",
+  "zone": "Orgrimmar",
+  "levels": [
+   13,
+   18
+  ],
+  "side": "H",
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1454,
+   "warcraftdb_zone_name": "Ragefire Chasm"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 13-18); 1 Forever source",
+   "Side: location based (Stormwind / Orgrimmar); Forever sources do not state a restriction"
+  ]
+ },
+ "wailing_caverns": {
+  "name": "Wailing Caverns",
+  "zone": "The Barrens",
+  "levels": [
+   15,
+   24
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1413,
+   "warcraftdb_zone_name": "Wailing Caverns"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: Warcraft Tavern Forever table 15-24, Classic Era table 17-24; no second Forever source with the same scale (Gameleap/Wowhead uses hard/at-level/easy bands)"
+  ]
+ },
+ "the_deadmines": {
+  "name": "The Deadmines",
+  "zone": "Westfall",
+  "levels": [
+   17,
+   26
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1436,
+   "warcraftdb_zone_name": "The Deadmines"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 17-26); 1 Forever source"
+  ]
+ },
+ "shadowfang_keep": {
+  "name": "Shadowfang Keep",
+  "zone": "Silverpine Forest",
+  "levels": [
+   20,
+   30
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1421,
+   "warcraftdb_zone_name": "Shadowfang Keep"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: Warcraft Tavern Forever table 20-30, Classic Era table 22-30; no second Forever source with the same scale (Gameleap/Wowhead uses hard/at-level/easy bands)"
+  ]
+ },
+ "blackfathom_deeps": {
+  "name": "Blackfathom Deeps",
+  "zone": "Ashenvale",
+  "levels": [
+   24,
+   32
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1440,
+   "warcraftdb_zone_name": "Blackfathom Deeps"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 24-32); 1 Forever source"
+  ]
+ },
+ "the_stockade": {
+  "name": "The Stockade",
+  "zone": "Stormwind City",
+  "levels": [
+   24,
+   32
+  ],
+  "side": "A",
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1453,
+   "warcraftdb_zone_name": "The Stockade"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 24-32); 1 Forever source",
+   "Side: location based (Stormwind / Orgrimmar); Forever sources do not state a restriction"
+  ]
+ },
+ "gnomeregan": {
+  "name": "Gnomeregan",
+  "zone": "Dun Morogh",
+  "levels": [
+   29,
+   38
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1426,
+   "warcraftdb_zone_name": "Gnomeregan"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 29-38); 1 Forever source"
+  ]
+ },
+ "razorfen_kraul": {
+  "name": "Razorfen Kraul",
+  "zone": "The Barrens",
+  "levels": [
+   29,
+   38
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1413,
+   "warcraftdb_zone_name": "Razorfen Kraul"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 29-38); 1 Forever source"
+  ]
+ },
+ "sm_graveyard": {
+  "name": "Scarlet Monastery: Graveyard",
+  "zone": "Tirisfal Glades",
+  "levels": [
+   30,
+   38
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Scarlet Key or Lockpicking 175 for Scarlet Monastery (Gameleap).",
+  "ids": {
+   "warcraftdb_zone_id": 1420,
+   "warcraftdb_zone_name": "Scarlet Monastery: Graveyard"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: Warcraft Tavern Forever table 30-38, Classic Era table 26-36; no second Forever source with the same scale (Gameleap/Wowhead uses hard/at-level/easy bands)"
+  ]
+ },
+ "sm_library": {
+  "name": "Scarlet Monastery: Library",
+  "zone": "Tirisfal Glades",
+  "levels": [
+   33,
+   41
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1420,
+   "warcraftdb_zone_name": "Scarlet Monastery: Library"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: Warcraft Tavern Forever table 33-41, Classic Era table 29-39; no second Forever source with the same scale (Gameleap/Wowhead uses hard/at-level/easy bands)"
+  ]
+ },
+ "sm_armory": {
+  "name": "Scarlet Monastery: Armory",
+  "zone": "Tirisfal Glades",
+  "levels": [
+   36,
+   44
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1420,
+   "warcraftdb_zone_name": "Scarlet Monastery: Armory"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: Warcraft Tavern Forever table 36-44, Classic Era table 32-42; no second Forever source with the same scale (Gameleap/Wowhead uses hard/at-level/easy bands)"
+  ]
+ },
+ "sm_cathedral": {
+  "name": "Scarlet Monastery: Cathedral",
+  "zone": "Tirisfal Glades",
+  "levels": [
+   38,
+   46
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1420,
+   "warcraftdb_zone_name": "Scarlet Monastery: Cathedral"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: Warcraft Tavern Forever table 38-46, Classic Era table 35-45; no second Forever source with the same scale (Gameleap/Wowhead uses hard/at-level/easy bands)"
+  ]
+ },
+ "razorfen_downs": {
+  "name": "Razorfen Downs",
+  "zone": "The Barrens",
+  "levels": [
+   37,
+   46
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1413,
+   "warcraftdb_zone_name": "Razorfen Downs"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 37-46); 1 Forever source"
+  ]
+ },
+ "uldaman": {
+  "name": "Uldaman",
+  "zone": "Badlands",
+  "levels": [
+   41,
+   51
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1418,
+   "warcraftdb_zone_name": "Uldaman"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 41-51); 1 Forever source"
+  ]
+ },
+ "zulfarrak": {
+  "name": "Zul'Farrak",
+  "zone": "Tanaris",
+  "levels": [
+   44,
+   54
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1446,
+   "warcraftdb_zone_name": "Zul'Farrak"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 44-54); 1 Forever source"
+  ]
+ },
+ "maraudon": {
+  "name": "Maraudon",
+  "zone": "Desolace",
+  "levels": [
+   46,
+   55
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1443,
+   "warcraftdb_zone_name": "Maraudon"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 46-55); 1 Forever source"
+  ]
+ },
+ "sunken_temple": {
+  "name": "The Temple of Atal'Hakkar (Sunken Temple)",
+  "zone": "Swamp of Sorrows",
+  "levels": [
+   50,
+   60
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1435,
+   "warcraftdb_zone_name": "The Temple of Atal'Hakkar (Sunken Temple)"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 50-60); 1 Forever source"
+  ]
+ },
+ "blackrock_depths": {
+  "name": "Blackrock Depths",
+  "zone": "Blackrock Mountain",
+  "levels": [
+   52,
+   60
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Shadowforge Key or Lockpicking 280 opens the Shadowforge Gate (Gameleap).",
+  "ids": {
+   "warcraftdb_zone_id": null,
+   "warcraftdb_zone_name": "Blackrock Depths"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 52-60); 1 Forever source"
+  ]
+ },
+ "lower_blackrock_spire": {
+  "name": "Lower Blackrock Spire",
+  "zone": "Blackrock Mountain",
+  "levels": [
+   55,
+   60
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": null,
+   "warcraftdb_zone_name": "Lower Blackrock Spire"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 55-60); 1 Forever source"
+  ]
+ },
+ "upper_blackrock_spire": {
+  "name": "Upper Blackrock Spire",
+  "zone": "Blackrock Mountain",
+  "levels": [
+   59,
+   60
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Seal of Ascension needed (Gameleap citing Wowhead guide).",
+  "ids": {
+   "warcraftdb_zone_id": null,
+   "warcraftdb_zone_name": "Upper Blackrock Spire"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: Warcraft Tavern Forever table 59-60, Classic Era table 55-60; no second Forever source with the same scale (Gameleap/Wowhead uses hard/at-level/easy bands)",
+   "Group size: Classic was 10-player; Forever size not confirmed by any source"
+  ]
+ },
+ "dire_maul_east": {
+  "name": "Dire Maul: East",
+  "zone": "Feralas",
+  "levels": [
+   54,
+   60
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "",
+  "ids": {
+   "warcraftdb_zone_id": 1444,
+   "warcraftdb_zone_name": "Dire Maul: East"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: Warcraft Tavern Forever table 54-60, Classic Era table 55-60; no second Forever source with the same scale (Gameleap/Wowhead uses hard/at-level/easy bands)"
+  ]
+ },
+ "dire_maul_west": {
+  "name": "Dire Maul: West",
+  "zone": "Feralas",
+  "levels": [
+   56,
+   60
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Crescent Key or Lockpicking 300 (Gameleap).",
+  "ids": {
+   "warcraftdb_zone_id": 1444,
+   "warcraftdb_zone_name": "Dire Maul: West"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: Warcraft Tavern Forever table 56-60, Classic Era table 57-60; no second Forever source with the same scale (Gameleap/Wowhead uses hard/at-level/easy bands)"
+  ]
+ },
+ "dire_maul_north": {
+  "name": "Dire Maul: North",
+  "zone": "Feralas",
+  "levels": [
+   56,
+   60
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Crescent Key or Lockpicking 300 (Gameleap).",
+  "ids": {
+   "warcraftdb_zone_id": 1444,
+   "warcraftdb_zone_name": "Dire Maul: North"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: Warcraft Tavern Forever table 56-60, Classic Era table 57-60; no second Forever source with the same scale (Gameleap/Wowhead uses hard/at-level/easy bands)"
+  ]
+ },
+ "scholomance": {
+  "name": "Scholomance",
+  "zone": "Western Plaguelands",
+  "levels": [
+   58,
+   60
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Skeleton Key opens the front door (Gameleap).",
+  "ids": {
+   "warcraftdb_zone_id": 1422,
+   "warcraftdb_zone_name": "Scholomance"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 58-60); 1 Forever source"
+  ]
+ },
+ "stratholme": {
+  "name": "Stratholme",
+  "zone": "Eastern Plaguelands",
+  "levels": [
+   58,
+   60
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Two gates (Main Gate, Service Gate) share one instance here; Warcraft Tavern lists them separately with the same levels.",
+  "ids": {
+   "warcraftdb_zone_id": 1423,
+   "warcraftdb_zone_name": "Stratholme"
+  },
+  "sources": [
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.gameleap.com/articles/wow-forever-dungeon-list-by-level"
+  ],
+  "uncertain": [
+   "Level range: only Warcraft Tavern gives Forever values (matches Classic Era 58-60); 1 Forever source"
+  ]
+ },
+ "hall_of_thanes": {
+  "name": "Hall of Thanes",
+  "zone": "Ironforge (Dun Morogh)",
+  "levels": [
+   13,
+   18
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Beneath Ironforge. Blizzard: Alliance reach the entrance easily from Ironforge; no hard faction lock stated.",
+  "ids": {
+   "warcraftdb_zone_id": 1455,
+   "warcraftdb_zone_name": "Hall of Thanes"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24301455",
+   "https://eu.forums.blizzard.com/en/wow/t/628618/1",
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.icy-veins.com/wow-forever/news/all-9-new-wow-forever-dungeons-previewed-how-to-access-level-ranges-locations-and-more/",
+   "https://www.warcrafttavern.com/news/nine-new-dungeons-coming-to-world-of-warcraft-forever/"
+  ],
+  "uncertain": [
+   "Level range: Blizzard news and forum post 13-18, Warcraft Tavern dungeon table 13-20",
+   "Side: Blizzard says Alliance reach it easily, no restriction stated, so side left null"
+  ]
+ },
+ "ruins_of_lordaeron": {
+  "name": "Ruins of Lordaeron",
+  "zone": "Tirisfal Glades",
+  "levels": [
+   15,
+   20
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Ruined city above the Undercity. Blizzard: Horde reach the entrance easily from the Undercity; no hard faction lock stated.",
+  "ids": {
+   "warcraftdb_zone_id": 1420,
+   "warcraftdb_zone_name": "Ruins of Lordaeron"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24301455",
+   "https://eu.forums.blizzard.com/en/wow/t/628618/1",
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.icy-veins.com/wow-forever/news/all-9-new-wow-forever-dungeons-previewed-how-to-access-level-ranges-locations-and-more/",
+   "https://www.warcrafttavern.com/news/nine-new-dungeons-coming-to-world-of-warcraft-forever/"
+  ],
+  "uncertain": [
+   "Level range: Blizzard news and forum post 15-20, Warcraft Tavern dungeon table 15-22",
+   "Side: Blizzard says Horde reach it easily, no restriction stated, so side left null"
+  ]
+ },
+ "excavation_site_wetlands": {
+  "name": "Excavation Site: Wetlands",
+  "zone": "Wetlands",
+  "levels": [
+   24,
+   29
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Near Thelgen Rock and Dun Algaz. Some quests start from a Titan Relic.",
+  "ids": {
+   "warcraftdb_zone_id": 1437,
+   "warcraftdb_zone_name": "Excavation Site"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24301455",
+   "https://eu.forums.blizzard.com/en/wow/t/628618/1",
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.icy-veins.com/wow-forever/news/all-9-new-wow-forever-dungeons-previewed-how-to-access-level-ranges-locations-and-more/",
+   "https://www.warcrafttavern.com/news/nine-new-dungeons-coming-to-world-of-warcraft-forever/"
+  ],
+  "uncertain": [
+   "Level range: Blizzard news and forum post 24-29, Warcraft Tavern dungeon table 26-33"
+  ]
+ },
+ "city_of_dalaran": {
+  "name": "City of Dalaran",
+  "zone": "Alterac Mountains",
+  "levels": [
+   28,
+   33
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Entered through the sewers. Quest starts: Southshore (A, 'An Alarming Request'), Tarren Mill (H, 'Key to the City').",
+  "ids": {
+   "warcraftdb_zone_id": 1416,
+   "warcraftdb_zone_name": "City of Dalaran"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24301455",
+   "https://eu.forums.blizzard.com/en/wow/t/628618/1",
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.icy-veins.com/wow-forever/news/all-9-new-wow-forever-dungeons-previewed-how-to-access-level-ranges-locations-and-more/",
+   "https://www.warcrafttavern.com/news/nine-new-dungeons-coming-to-world-of-warcraft-forever/"
+  ],
+  "uncertain": [
+   "Level range: Blizzard news and forum post 28-33, Warcraft Tavern dungeon table 28-35"
+  ]
+ },
+ "the_drowned_city": {
+  "name": "The Drowned City",
+  "zone": "Stranglethorn Vale",
+  "levels": [
+   35,
+   40
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Underwater entrance off the STV coast, west of Grom'gol.",
+  "ids": {
+   "warcraftdb_zone_id": 1434,
+   "warcraftdb_zone_name": "The Drowned City"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24301455",
+   "https://eu.forums.blizzard.com/en/wow/t/628618/1",
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.icy-veins.com/wow-forever/news/all-9-new-wow-forever-dungeons-previewed-how-to-access-level-ranges-locations-and-more/",
+   "https://www.warcrafttavern.com/news/nine-new-dungeons-coming-to-world-of-warcraft-forever/"
+  ],
+  "uncertain": [
+   "Level range: Blizzard news and forum post 35-40, Warcraft Tavern dungeon table 35-42",
+   "Level range: Mobalytics (via search snippet) lists 35-50"
+  ]
+ },
+ "kroldok_stronghold": {
+  "name": "Krol'dok Stronghold",
+  "zone": "Riverglades",
+  "levels": [
+   40,
+   45
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Riverglades (new zone). Blizzard corrected BlizzCon's 40-55 to 40-45.",
+  "ids": {
+   "warcraftdb_zone_id": 2548,
+   "warcraftdb_zone_name": "Krol'dok Stronghold"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24301455",
+   "https://eu.forums.blizzard.com/en/wow/t/628618/1",
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.icy-veins.com/wow-forever/news/all-9-new-wow-forever-dungeons-previewed-how-to-access-level-ranges-locations-and-more/",
+   "https://www.warcrafttavern.com/news/nine-new-dungeons-coming-to-world-of-warcraft-forever/"
+  ],
+  "uncertain": [
+   "Level range: Blizzard news and forum post 40-45, Warcraft Tavern dungeon table 40-47",
+   "Level range: BlizzCon listing 40-55 (corrected), Mobalytics 40-55 in snippet"
+  ]
+ },
+ "alcaz_prison": {
+  "name": "Alcaz Prison",
+  "zone": "Dustwallow Marsh",
+  "levels": [
+   48,
+   53
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Alcaz Island, Dustwallow Marsh.",
+  "ids": {
+   "warcraftdb_zone_id": 1445,
+   "warcraftdb_zone_name": "Alcaz Prison"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24301455",
+   "https://eu.forums.blizzard.com/en/wow/t/628618/1",
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.icy-veins.com/wow-forever/news/all-9-new-wow-forever-dungeons-previewed-how-to-access-level-ranges-locations-and-more/",
+   "https://www.warcrafttavern.com/news/nine-new-dungeons-coming-to-world-of-warcraft-forever/"
+  ],
+  "uncertain": [
+   "Level range: Blizzard news and forum post 48-53, Warcraft Tavern dungeon table 48-55",
+   "Name: Gameleap calls it 'Alcaz Island Prison'"
+  ]
+ },
+ "blackmaw_hold": {
+  "name": "Blackmaw Hold",
+  "zone": "Azshara",
+  "levels": [
+   55,
+   60
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Behind the Furbolg Gates in northern Azshara. One Barrow Deeps entrance is here.",
+  "ids": {
+   "warcraftdb_zone_id": 1447,
+   "warcraftdb_zone_name": "Blackmaw Hold"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24301455",
+   "https://eu.forums.blizzard.com/en/wow/t/628618/1",
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.icy-veins.com/wow-forever/news/all-9-new-wow-forever-dungeons-previewed-how-to-access-level-ranges-locations-and-more/",
+   "https://www.warcrafttavern.com/news/nine-new-dungeons-coming-to-world-of-warcraft-forever/"
+  ],
+  "uncertain": []
+ },
+ "shapers_terrace": {
+  "name": "Shaper's Terrace",
+  "zone": "Un'Goro Crater",
+  "levels": [
+   58,
+   60
+  ],
+  "side": null,
+  "tier": 0,
+  "type": "dungeon",
+  "note": "Northern hills of Un'Goro Crater.",
+  "ids": {
+   "warcraftdb_zone_id": 1449,
+   "warcraftdb_zone_name": "Shaper's Terrace"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24301455",
+   "https://eu.forums.blizzard.com/en/wow/t/628618/1",
+   "https://www.warcrafttavern.com/forever/guides/dungeons/",
+   "https://www.icy-veins.com/wow-forever/news/all-9-new-wow-forever-dungeons-previewed-how-to-access-level-ranges-locations-and-more/",
+   "https://www.warcrafttavern.com/news/nine-new-dungeons-coming-to-world-of-warcraft-forever/"
+  ],
+  "uncertain": []
+ },
+ "barrow_deeps": {
+  "name": "The Barrow Deeps",
+  "zone": "Mount Hyjal",
+  "levels": [
+   60,
+   60
+  ],
+  "side": null,
+  "tier": 1,
+  "type": "raid10",
+  "note": "10-player, 8 bosses, no attunement. Entrances via Mount Hyjal, Winterspring and Blackmaw Hold.",
+  "ids": {
+   "warcraftdb_zone_id": 2482,
+   "warcraftdb_zone_name": "The Barrow Deeps"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24303009/",
+   "https://www.warcrafttavern.com/forever/guides/raids/",
+   "https://www.playnews.gg/dates-de-sortie/wow-forever-les-trois-premiers-raids-ouvrent-le-9-decembre-2026"
+  ],
+  "uncertain": [
+   "Opens 9 Dec 2026: loot and boss data are datamined/unreleased; warcraftdb has no boss NPCs for this raid yet"
+  ]
+ },
+ "hyjal_summit": {
+  "name": "Hyjal Summit",
+  "zone": "Mount Hyjal",
+  "levels": [
+   60,
+   60
+  ],
+  "side": null,
+  "tier": 1,
+  "type": "raid20",
+  "note": "20-player, 13 bosses, no attunement. Summit of Mount Hyjal near Nordrassil.",
+  "ids": {
+   "warcraftdb_zone_id": 2482,
+   "warcraftdb_zone_name": "Hyjal Summit"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24303009/",
+   "https://www.warcrafttavern.com/forever/guides/raids/",
+   "https://www.playnews.gg/dates-de-sortie/wow-forever-les-trois-premiers-raids-ouvrent-le-9-decembre-2026"
+  ],
+  "uncertain": [
+   "Opens 9 Dec 2026: loot and boss data are datamined/unreleased; warcraftdb has no boss NPCs for this raid yet"
+  ]
+ },
+ "onyxias_lair": {
+  "name": "Onyxia's Lair",
+  "zone": "Dustwallow Marsh",
+  "levels": [
+   60,
+   60
+  ],
+  "side": null,
+  "tier": 1,
+  "type": "raid40",
+  "note": "40-player. Attunement: Drakefire Amulet in inventory (faction questlines: A from Burning Steppes, H from Badlands).",
+  "ids": {
+   "warcraftdb_zone_id": 1445,
+   "warcraftdb_zone_name": "Onyxia's Lair"
+  },
+  "sources": [
+   "https://news.blizzard.com/en-us/article/24303009/",
+   "https://www.warcrafttavern.com/forever/guides/raids/",
+   "https://www.playnews.gg/dates-de-sortie/wow-forever-les-trois-premiers-raids-ouvrent-le-9-decembre-2026"
+  ],
+  "uncertain": [
+   "Blizzard's written recap omits Onyxia's Lair in one article; roadmap slide and raid overview include it",
+   "Opens 9 Dec 2026: loot and boss data are datamined/unreleased; warcraftdb has no boss NPCs for this raid yet"
+  ]
+ }
+}
