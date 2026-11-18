@@ -5,6 +5,8 @@ the repo's LICENSE). Output:
   quests: {id: {"name", "level", "zone" (area id or null), "chain" (see build_chains, only when in a chain)}}
   npcs:   {id: {"name", "title", "side" ("A"/"H"/"AH"/None), "zone" (area id), "spot": [x, y] (first spawn)}}
   zones:  {area id: {"name", "map" (uiMapId, for in-game map pins)}} from support/Forever/Zones/uiMapIdToAreaId.lua
+  drops:  {item id: [npc ids]} from QuestieTrace (src/corrections/Forever/traces, aggregated player traces);
+          trace-only NPCs are added to npcs
 
     python scripts/data/parse_questie.py
 """
@@ -23,6 +25,7 @@ Q_START = 2
 Q_NAME, Q_LEVEL, Q_REQ, Q_PRE_GROUP, Q_PRE_SINGLE, Q_ZONE, Q_NEXT = 1, 5, 4, 12, 13, 17, 22
 N_NAME, N_SPAWNS, N_ZONE, N_SIDE, N_TITLE = 1, 7, 9, 13, 14
 ZONES = RAW / "git" / "QuestieDB" / "support" / "Forever" / "Zones" / "uiMapIdToAreaId.lua"
+TRACES = RAW / "git" / "QuestieDB" / "src" / "corrections" / "Forever" / "traces"
 DUNGEONS = RAW / "git" / "QuestieDB" / "support" / "Forever" / "Zones" / "dungeons.lua"
 
 
@@ -44,6 +47,13 @@ def read_entrances(zones: dict[int, dict]) -> dict[str, dict]:
         if z:
             out.setdefault(m.group(1), {"zone": z["name"], "x": float(m.group(3)), "y": float(m.group(4)), "map": z["map"]})
     return out
+
+
+def read_traces(name: str, keys: str) -> dict[int, dict]:
+    """'[12] = {\n [itemKeys.npcDrops_add] = {3,4},' -> {12: {"npcDrops_add": [3, 4]}}."""
+    text = (TRACES / name).read_text(encoding="utf-8")
+    body = re.sub(rf"\[{keys}\.(\w+)\]", r"\1", text[text.index("return {") + len("return "):])
+    return lua_value(body)[0]
 
 
 def npc_record(row: list) -> dict:
@@ -131,10 +141,19 @@ def main() -> None:
             rec["chain"] = chains[qid]
         out_q[qid] = rec
     npcs = {nid: npc_record(row) for nid, row in read_rows(DB / "foreverNpcDB.lua").items()}
+    for nid, t in read_traces("foreverNpcTraces.lua", "npcKeys").items():
+        if nid not in npcs and t.get("name"):  # row layout as in foreverNpcDB.lua
+            row = [None] * N_TITLE
+            row[N_NAME - 1], row[N_SPAWNS - 1], row[N_ZONE - 1] = t["name"], t.get("spawns"), t.get("zoneID")
+            row[N_SIDE - 1] = t.get("friendlyToFaction")
+            npcs[nid] = npc_record(row)
+    drops = {iid: t["npcDrops_add"] for iid, t in read_traces("foreverItemTraces.lua", "itemKeys").items()
+             if t.get("npcDrops_add")}
     zones = read_zones()
-    write_json(STAGING / "questie.json", {"quests": out_q, "npcs": npcs, "zones": zones, "entrances": read_entrances(zones)},
+    write_json(STAGING / "questie.json", {"quests": out_q, "npcs": npcs, "zones": zones, "entrances": read_entrances(zones),
+                                    "drops": drops},
                compact=True)
-    print(f"{len(out_q)} quests ({len(chains)} in a chain), {len(npcs)} npcs")
+    print(f"{len(out_q)} quests ({len(chains)} in a chain), {len(npcs)} npcs, {len(drops)} traced drop items")
 
 
 if __name__ == "__main__":

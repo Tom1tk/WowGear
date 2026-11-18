@@ -1,6 +1,7 @@
 """Cross-reference warcraftdb, Blizzard and ForeverDB into the data files the build reads.
 
-Inputs (data/forever/staging/, made by parse_warcraftdb.py, parse_blizzard.py, parse_foreverdb.py)
+Inputs (data/forever/staging/, made by parse_warcraftdb.py, parse_blizzard.py, parse_foreverdb.py, parse_questie.py;
+QuestieTrace drops become a fourth drop source)
 plus hand tables data/forever/instances.json, exclude.json, rep_vendors.json and the ForeverDB boss lists (Loot.lua).
 Outputs: data/forever/items.json, sources.json, reports/conflicts.md.
 
@@ -126,6 +127,7 @@ class Merger:
         q = STAGING / "questie.json"
         qd = read_json(q) if q.exists() else {"quests": {}, "npcs": {}, "zones": {}}
         self.quests, self.npcs, self.zones = qd["quests"], qd["npcs"], qd.get("zones", {})
+        self.traced_drops = qd.get("drops", {})
         fs = STAGING / "foreverdb_sets.json"
         self.f_sets = read_json(fs) if fs.exists() else {}
         fv = STAGING / "foreverdb_vendors.json"
@@ -370,6 +372,10 @@ class Merger:
                 add("foreverdb", "object", p[1].lower(), name=p[1], chance=p[2])
             elif g == "x":
                 add("foreverdb", "container", p[2].lower(), id=int(p[1]), name=p[2])
+        for nid in self.traced_drops.get(iid, []):  # QuestieTrace: NPCs players were seen looting the item from
+            npc = self.npcs.get(str(nid)) or {}
+            name = npc.get("name") or f"NPC {nid}"
+            add("questietrace", "drop", name.lower(), id=nid, name=name, instance=self.loot["npc"].get(nid))
         out = []
         for (kind, _key), r in found.items():
             r["found_in"] = sorted(r["found_in"])
