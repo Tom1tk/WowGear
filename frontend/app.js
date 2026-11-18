@@ -583,7 +583,7 @@ function renderTodo(rows) {
   box.replaceChildren();
   const sugg = suggestions(rows);
   if (sugg.length) box.append(el("h3", { class: "g-sec" }, "Suggested"), ...sugg.map((g) => groupEl(g, `s:${g.kind}`)),
-    el("h3", { class: "g-sec" }, "Best picks by place"));
+    el("h3", { class: "g-sec" }, "Your Best gear list, by where to get it"));
   for (const g of sorted) box.append(groupEl({ ...g, items: g.items.map(({ r, d }) => ({ label: r.label, id: r.pick[0], gain: r.gain, d })) }, `p:${g.key}`));
   if (!sorted.length) box.append(el("p", { class: "muted" }, state.mode === "manual" ? "Tick the items you have. Then this list shows where to go for the rest." : "Nothing to do at this level: your gear matches the list. Try the next levels on the slider."));
 }
