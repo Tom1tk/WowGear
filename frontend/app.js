@@ -572,7 +572,7 @@ function groupEl(g, key) {
     el("summary", { class: "g-head" }, el("span", { class: "g-kind" }, g.kind),
       el("span", { class: "g-gain", title: "Slots to upgrade here" }, `${n} upgrade${n > 1 ? "s" : ""}`),
       el("strong", { class: "g-title" }, g.label.replace(/^(Run |Buy from |Craft with |Kill |Quest: )/, "")), pinBtn(g.src)), ul);
-  box.querySelector(".g-gain").insertAdjacentHTML("beforeend", ICON_CHEV);
+  box.querySelector(".g-kind").insertAdjacentHTML("afterbegin", ICON_CHEV);
   box.addEventListener("toggle", () => {
     if (box.open) ui.shut.delete(key); else ui.shut.add(key);
     store("shut-groups", [...ui.shut]);
