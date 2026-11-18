@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>const whTooltips = { colorLinks: false, iconizeLinks: true, renameLinks: false, iconSize: "small" };</script>
+<script src="https://wow.zamimg.com/js/tooltips.js" async></script>
 <style>
 :root {
   /* Tauren race theme, copied from frontend/style.css */
@@ -148,6 +150,21 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .one-src { font-size: 12px; color: var(--muted); }
 .ext { font-size: 12px; color: var(--muted); }
 
+/* table toolbar: source chips + sort */
+.toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 6px; font-size: 12.5px; }
+.chips { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.chips button { height: 24px; padding: 0 9px; border-radius: 99px; border: 1px solid var(--line); background: var(--card-2); cursor: pointer; font-size: 12.5px; white-space: nowrap; }
+.chips button:hover { border-color: var(--gold); }
+.chips button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-2); font-weight: 600; background: color-mix(in oklab, var(--gold) 14%, var(--card-2)); }
+.chips .n { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: 4px; font-weight: 400; }
+.sort { display: flex; align-items: center; gap: 6px; }
+.sort select { height: 26px; font-size: 12.5px; }
+.nopick { font-size: 13px; }
+/* Wowhead icon (iconizeLinks): keep it inside the one-line, ellipsised link */
+.item-link ins, .worn-name a ins, .g-it a ins { vertical-align: middle; }
+.item-link, .g-it a, .up-list a, .worn-name a { display: inline-block; max-width: 100%; vertical-align: middle; }
+.item-link.iconsmall, .iconsmall { line-height: 18px; }
+
 /* rail */
 .rail { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .group { padding: 8px 0; border-top: 1px solid var(--line); }
@@ -265,6 +282,20 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
   <section class="panel" aria-labelledby="gear-t">
     <div class="sec-head"><h2 id="gear-t">Best gear at level 29</h2><p>Feral (Cat) Druid · Horde. Click a row for where to get it and alternatives.</p></div>
     <p class="legend"><span class="badge badge-unc"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Uncertain</span> our data sources disagree; open the row to see why. The gold bar is the score gained over what you wear.</p>
+    <div class="toolbar">
+      <div class="chips" id="chips" role="group" aria-label="Where to get it">
+        <span class="muted">Get it from</span>
+        <button type="button" aria-pressed="true" data-c="all">All</button>
+        <button type="button" aria-pressed="false" data-c="vendor">Vendor / AH<span class="n"></span></button>
+        <button type="button" aria-pressed="false" data-c="ddrop">Dungeon drops<span class="n"></span></button>
+        <button type="button" aria-pressed="false" data-c="wdrop">World drops<span class="n"></span></button>
+        <button type="button" aria-pressed="false" data-c="craft">Crafted<span class="n"></span></button>
+        <button type="button" aria-pressed="false" data-c="wq">World quests<span class="n"></span></button>
+        <button type="button" aria-pressed="false" data-c="dq">Dungeon quests<span class="n"></span></button>
+      </div>
+      <label class="sort"><span class="muted">Sort</span><select id="sort" title="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop." aria-description="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop.">
+        <option value="slot">Slot order</option><option value="gain">Biggest upgrade</option><option value="easy">Easiest to get</option></select></label>
+    </div>
     <div class="cols" aria-hidden="true"><span>Slot</span><span>Best item</span><span style="text-align:right">Score</span><span>Where to get it</span><span>You wear / gain</span><span></span></div>
     <ol class="rows" id="rows"></ol>
   </section>
@@ -295,7 +326,14 @@ const ICON_CHEV = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path
 // Worn items we invent: slots where the sample character wears something with no fixed score.
 const UNKNOWN_WORN = { waist: "Frayed Sash of the Whale", wrist: "Weathered Bracers of the Monkey", shoulders: "Patchwork Pauldrons of the Eagle" };
 
-let meta, gear;
+let meta, gear, base;
+
+function render() {
+  const rows = buildRows(base);
+  $("rows").replaceChildren(); $("todo").replaceChildren();
+  renderRows(rows); renderTodo(rows);
+  refreshTooltips();
+}
 
 function el(tag, attrs = {}, ...kids) {
   const n = document.createElement(tag);
@@ -304,7 +342,31 @@ function el(tag, attrs = {}, ...kids) {
   return n;
 }
 function link(id, name, quality) {
-  return el("a", { class: `item-link q-${QUALITY[quality] || "common"}`, href: WOWHEAD + id, target: "_blank", rel: "noopener" }, name || `Item ${id}`);
+  return el("a", { class: `item-link q-${QUALITY[quality] || "common"}`, href: WOWHEAD + id, "data-wowhead": `item=${id}&domain=forever`, target: "_blank", rel: "noopener", "data-wh-icon-size": "small" }, name || `Item ${id}`);
+}
+function refreshTooltips() { try { window.$WowheadPower?.refreshLinks(); } catch { /* tooltips are optional */ } }
+
+// source categories for the filter and the "easiest" sort
+const CATS = { vendor: "Vendor / AH", ddrop: "Dungeon drops", wdrop: "World drops", craft: "Crafted", wq: "World quests", dq: "Dungeon quests" };
+const EFFORT = { vendor: 1, craft: 2, wq: 3, wdrop: 4, dq: 5, ddrop: 6 };
+function catsOf(src) {
+  switch (src.type) {
+    case "vendor": return ["vendor"];
+    case "craft": return ["craft"];
+    case "world_drop": return ["wdrop", "vendor"]; // BoE: also on the Auction House
+    case "quest": return [src.instance ? "dq" : "wq"];
+    default: return [src.instance ? "ddrop" : "wdrop"]; // drop, boss, instance_trash, object, container
+  }
+}
+const state = { sort: "slot", src: new Set(), slot: "all" };
+const srcOk = (s) => !state.src.size || catsOf(s).some((c) => state.src.has(c));
+// sources with the allowed ones first, so the shown source is one the filter lets through
+const orderedSrcs = (info) => { const all = info.sources || []; return [...all.filter(srcOk), ...all.filter((s) => !srcOk(s))]; };
+function effort(info, srcs) {
+  const ok = srcs.filter(srcOk);
+  const rank = Math.min(...ok.map((s) => Math.min(...catsOf(s).filter((c) => !state.src.size || state.src.has(c)).map((c) => EFFORT[c]))));
+  const chance = Math.max(0, ...ok.filter((s) => Math.min(...catsOf(s).map((c) => EFFORT[c])) === rank).map((s) => s.chance || 0));
+  return { rank, chance };
 }
 
 // ---- copied from frontend/app.js
@@ -358,34 +420,59 @@ function sourceReasons(src) {
 }
 const reasonsOf = (info) => [...(info.uncertain || []), ...(info.sources?.[0] ? sourceReasons(info.sources[0]) : [])];
 
-function buildRows() {
+function slotPool(slot) {
+  const best = new Map();
+  for (const p of gear.slots[slot] || []) if (p.tier === 0 && p.level <= LEVEL) for (const [id, sc] of p.items) best.set(id, sc);
+  return [...best].sort((a, b) => b[1] - a[1]);
+}
+
+function baseRows() {
   const two = pointAt("two_hand", LEVEL)?.items[0], mh = pointAt("main_hand", LEVEL)?.items[0], oh = pointAt("off_hand", LEVEL)?.items[0];
   const useTwo = two && two[1] >= (mh?.[1] || 0) + (oh?.[1] || 0);
   const slots = [...ARMOR_ORDER, "ring", "ring", "trinket", "trinket", ...(useTwo ? ["two_hand"] : ["main_hand", "off_hand"])];
   const seen = {};
-  return slots.filter((s) => gear.slots[s]).map((slot) => {
+  return slots.filter((s) => gear.slots[s]).map((slot, order) => {
     const index = seen[slot] = (seen[slot] ?? -1) + 1;
     const pair = slot === "ring" || slot === "trinket";
-    const items = pointAt(slot, LEVEL)?.items || [], worn = pointAt(slot, 18)?.items || [];
-    const pick = items[pair ? index : 0] || null;
-    const w = worn[pair ? index : 0] || null;
-    const row = { slot, label: pair ? `${SLOT_LABEL[slot]} ${index + 1}` : SLOT_LABEL[slot], pick, alts: items.slice(pair ? 2 : 1), worn: null, gain: 0 };
-    if (UNKNOWN_WORN[slot] && !pair) row.worn = { unknown: UNKNOWN_WORN[slot] };
-    else if (w) row.worn = { id: w[0], score: w[1] };
-    if (pick) row.gain = !row.worn ? pick[1] : row.worn.unknown ? 0 : Math.max(0, Math.round((pick[1] - row.worn.score) * 10) / 10);
+    const w = (pointAt(slot, 18)?.items || [])[pair ? index : 0] || null;
+    const worn = UNKNOWN_WORN[slot] && !pair ? { unknown: UNKNOWN_WORN[slot] } : w ? { id: w[0], score: w[1] } : null;
+    return { slot, order, index, pair, cands: pointAt(slot, LEVEL)?.items || [], worn, label: pair ? `${SLOT_LABEL[slot]} ${index + 1}` : SLOT_LABEL[slot] };
+  });
+}
+
+// Best pick per slot under the current source filter, then sorted.
+function buildRows(base) {
+  const rows = base.map((b) => {
+    // With a source filter on, look beyond the top 3: every item that was ever best for this slot up to this level.
+    const ok = (state.src.size ? slotPool(b.slot) : b.cands).filter(([id]) => (gear.items[id].sources || []).some(srcOk));
+    const top = ok.slice(0, b.pair ? 2 : 1), pick = ok[b.pair ? b.index : 0] || null;
+    const row = { ...b, pick, alts: b.cands.filter((c) => !top.includes(c)), gain: 0, filtered: !pick && b.cands.length > 0 };
+    if (pick) {
+      const info = gear.items[pick[0]];
+      row.srcs = orderedSrcs(info);
+      row.effort = effort(info, row.srcs);
+      row.gain = !b.worn ? pick[1] : b.worn.unknown ? 0 : Math.max(0, Math.round((pick[1] - b.worn.score) * 10) / 10);
+    }
     return row;
   });
+  const gainRank = (r) => (!r.pick ? 3 : r.gain > 0 ? 0 : r.worn?.unknown ? 1 : 2); // gains, can't score, no gain, no pick
+  const cmp = {
+    slot: (a, b) => a.order - b.order,
+    gain: (a, b) => gainRank(a) - gainRank(b) || b.gain - a.gain,
+    easy: (a, b) => !a.pick - !b.pick || (a.pick && (a.effort.rank - b.effort.rank || gear.items[a.pick[0]].required_level - gear.items[b.pick[0]].required_level || b.effort.chance - a.effort.chance)),
+  }[state.sort];
+  return rows.sort((a, b) => cmp(a, b) || a.order - b.order);
 }
 
 function renderRows(rows) {
   const CAP = 30; // bars cap at +30 so one outlier (real data: +263) does not flatten the rest
   const ol = $("rows");
   for (const r of rows) {
-    const li = el("li", { class: "row", "data-g": GROUP[r.slot] || "armour" });
+    const li = el("li", { class: "row", "data-g": GROUP[r.slot] || "armour", hidden: state.slot !== "all" && (GROUP[r.slot] || "armour") !== state.slot });
     const main = el("div", { class: "row-main" });
     main.append(el("span", { class: "slot" }, r.label));
     if (!r.pick) {
-      main.append(el("span", { class: "item muted" }, "No known item at this level."), el("span"), el("span"), el("span"), el("span"));
+      main.append(el("span", { class: "item muted nopick" }, r.filtered ? "No pick from these sources at level 29" : "No known item at this level."), el("span"), el("span"), el("span"), el("span"));
       li.append(main); ol.append(li); continue;
     }
     const [iid, score] = r.pick, info = gear.items[iid], seen = firstSeen(r.slot, iid);
@@ -397,7 +484,7 @@ function renderRows(rows) {
       info.binding === "ON_ACQUIRE" ? el("span", { class: "badge badge-bop", title: "Binds when picked up" }, "BoP") : el("span", { class: "badge", title: "Binds when equipped" }, "BoE"),
       reasons.length ? Object.assign(el("span", { class: "badge badge-unc", title: reasons.join("\n") }), { innerHTML: `${ICON_WARN}Uncertain` }) : null);
     main.append(item, el("span", { class: "score" }, String(score)));
-    const srcs = info.sources || [];
+    const srcs = r.srcs;
     const d = srcs[0] ? describeSource(srcs[0]) : null;
     main.append(el("span", { class: "src", title: d ? `${d.label}. ${d.text}` : "" }, d ? d.label : "Source unknown"));
     // worn + inline gain bar
@@ -438,7 +525,7 @@ function renderTodo(rows) {
   const groups = new Map();
   for (const r of rows) {
     if (!r.pick || r.gain <= 0) continue;
-    const info = gear.items[r.pick[0]], src = info.sources?.[0];
+    const info = gear.items[r.pick[0]], src = r.srcs[0];
     if (!src) continue;
     const d = describeSource(src);
     const g = groups.get(d.label) || { label: d.label, gain: 0, items: [] };
@@ -483,9 +570,21 @@ function setupControls(rows) {
   $("n-all").textContent = rows.length;
   for (const g of ["armour", "weapons", "jewellery"]) $("n-" + g).textContent = rows.filter((r) => grp(r) === g).length;
   document.querySelectorAll(".filters button").forEach((b) => b.addEventListener("click", () => {
+    state.slot = b.dataset.f;
     document.querySelectorAll(".filters button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-    document.querySelectorAll("#rows .row").forEach((li) => { li.hidden = b.dataset.f !== "all" && li.dataset.g !== b.dataset.f; });
+    document.querySelectorAll("#rows .row").forEach((li) => { li.hidden = state.slot !== "all" && li.dataset.g !== state.slot; });
   }));
+  // source chips: how many slots could use each category
+  const chips = [...document.querySelectorAll("#chips button")];
+  for (const b of chips) if (b.dataset.c !== "all") b.querySelector(".n").textContent = rows.filter((r) => slotPool(r.slot).some(([id]) => (gear.items[id].sources || []).some((s) => catsOf(s).includes(b.dataset.c)))).length;
+  chips.forEach((b) => b.addEventListener("click", () => {
+    const c = b.dataset.c, next = new Set(state.src);
+    if (c === "all") next.clear(); else if (next.has(c)) next.delete(c); else next.add(c);
+    state.src = next; // empty set = All
+    chips.forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.c === "all" ? !next.size : next.has(x.dataset.c))));
+    render();
+  }));
+  $("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
 }
 
 function renderSpec() {
@@ -497,10 +596,11 @@ function renderSpec() {
     [meta, gear] = await Promise.all([fetch("../data/meta.json").then((r) => r.json()), fetch("../data/gear/druid.feral_cat.H.json").then((r) => r.json())]);
   } catch (e) { $("status").textContent = "Could not load the gear data."; console.error(e); return; }
   renderSpec();
-  const rows = buildRows();
-  setupControls(rows);
-  renderRows(rows); renderTodo(rows); renderUpcoming();
+  base = baseRows();
+  setupControls(buildRows(base));
+  render(); renderUpcoming();
   $("status").hidden = true; $("work").hidden = false;
+  refreshTooltips();
 })();
 </script>
 </body>
