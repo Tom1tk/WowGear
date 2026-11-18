@@ -57,7 +57,12 @@ def test_class_limited_effect_is_ignored_for_other_classes(monkeypatch):
 
 def test_unified_hit_and_crit_rating_aliases():
     ring = {"class": 4, "subclass": 0, "inventory_type": "FINGER", "stats": {"hit_rating": 10, "spell_crit": 5}}
-    assert scorer.score(ring, "900002", {"hit": 2, "crit": 3}, {}, "ring", None, ROGUE) == 35
+    assert scorer.score(ring, "900002", {"hit": 2, "crit": 3}, {}, "ring", None, ROGUE) == 17  # 10 hit rating = 1% hit
+
+
+def test_crit_rating_scores_as_percent():
+    gloves = {"class": 4, "subclass": 2, "inventory_type": "HAND", "stats": {"crit_rating": 14, "parry_rating": -15}}
+    assert scorer.score(gloves, "900004", {"crit": 20, "parry": 5}, {}, "hands", None, DRUID) == 15  # +1% crit, -1% parry
 
 
 def test_strength_scores_for_enhancement_not_for_mage(monkeypatch):

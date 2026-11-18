@@ -32,6 +32,12 @@ STAT_ALIAS = {"bonus_armor": "armor", "hit_rating": "hit", "crit_rating": "crit"
               "block_rating": "block", "spell_hit": "hit", "spell_crit": "crit", "sp_damage": "sp", "haste_rating": "haste", "expertise_rating": "expertise", "def_rating": "def"}
 
 
+# Blizzard's Forever API gives these as ratings at a fixed level-60 scale (e.g. Theramore Pauldrons: 14 crit
+# rating = warcraftdb "+1% crit"; 11 expertise = "-1% dodged/parried"). Weights are per 1%, so divide.
+RATING_PER_PCT = {"hit_rating": 10, "crit_rating": 14, "dodge_rating": 12, "parry_rating": 15,
+                  "block_rating": 5, "haste_rating": 10, "expertise_rating": 10}
+
+
 def _strip_meta(data: dict) -> dict:
     return {k: v for k, v in data.items() if not k.startswith("_")}
 
@@ -151,7 +157,8 @@ class Scorer:
             if key.startswith("wskill_"):
                 total += value * weights.get("wskill", 0) * 0.5
             else:
-                total += value * weights.get(key, weights.get(STAT_ALIAS.get(key, ""), 0))
+                pct = value / RATING_PER_PCT.get(key, 1)
+                total += pct * weights.get(key, weights.get(STAT_ALIAS.get(key, ""), 0))
         wpn = item.get("weapon")
         if wpn and slot in WEAPON_SLOTS:
             per = weapon_w.get("offhand_dps", 0) if slot == "off_hand" else weapon_w.get("dps", 0)
