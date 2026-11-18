@@ -136,8 +136,8 @@ p, dd, li { text-wrap: pretty; }
 /* ---------- sidebar ---------- */
 .app { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
 .side { position: sticky; top: 0; height: 100vh; overflow: auto; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(8px); border-right: 1px solid var(--line); padding: var(--s-4) 14px; display: flex; flex-direction: column; gap: var(--s-2); scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
-.logo { font: 800 19px "Cinzel", serif; color: var(--gold-2); margin: 0; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-.logo svg { flex: none; width: 20px; height: 20px; color: var(--gold); }
+.logo { font: 800 19px "Cinzel", serif; color: var(--gold-2); margin: 0; display: flex; align-items: center; gap: .45em; white-space: nowrap; }
+.logo svg { flex: none; width: .9em; height: .9em; color: var(--gold); }
 .logo span { color: var(--accent); }
 .char h2 { font: 700 18px/1.2 "Cinzel", serif; color: var(--text); }
 .char .sub { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--muted); margin: 4px 0 10px; }
@@ -296,7 +296,7 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .foot > :not(.glossary) { grid-column: 1; }
 
 /* narrower desktop */
-@media (max-width: 1700px) { .app { grid-template-columns: 220px minmax(0, 1fr); } .logo { font-size: 17px; } .work, .foot { grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; padding: 12px 14px 8px; } .foot { gap: 6px 14px; padding-bottom: 24px; } .cols, .row-main { grid-template-columns: 64px minmax(0, 1.4fr) 40px minmax(0, 1fr) minmax(0, .9fr) 36px 80px 20px; gap: 8px; } }
+@media (max-width: 1700px) { .app { grid-template-columns: 220px minmax(0, 1fr); } .logo { font-size: 15.5px; } .work, .foot { grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; padding: 12px 14px 8px; } .foot { gap: 6px 14px; padding-bottom: 24px; } .cols, .row-main { grid-template-columns: 64px minmax(0, 1.4fr) 40px minmax(0, 1fr) minmax(0, .9fr) 36px 80px 20px; gap: 8px; } }
 /* mobile */
 @media (max-width: 900px) {
   .app { display: block; }
