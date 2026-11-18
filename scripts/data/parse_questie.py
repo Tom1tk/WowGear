@@ -23,6 +23,7 @@ Q_START = 2
 Q_NAME, Q_LEVEL, Q_REQ, Q_PRE_GROUP, Q_PRE_SINGLE, Q_ZONE, Q_NEXT = 1, 5, 4, 12, 13, 17, 22
 N_NAME, N_SPAWNS, N_ZONE, N_SIDE, N_TITLE = 1, 7, 9, 13, 14
 ZONES = RAW / "git" / "QuestieDB" / "support" / "Forever" / "Zones" / "uiMapIdToAreaId.lua"
+DUNGEONS = RAW / "git" / "QuestieDB" / "support" / "Forever" / "Zones" / "dungeons.lua"
 
 
 def read_zones() -> dict[int, dict]:
@@ -30,6 +31,18 @@ def read_zones() -> dict[int, dict]:
     out = {}
     for m in re.finditer(r"^\s*\[(\d+)\] = (\d+), -- (.+?)\s*$", ZONES.read_text(encoding="utf-8"), re.M):
         out.setdefault(int(m.group(2)), {"name": m.group(3), "map": int(m.group(1))})
+    return out
+
+
+def read_entrances(zones: dict[int, dict]) -> dict[str, dict]:
+    """Dungeon entrances (first listed, Forever coordinates): '[491] = {"Razorfen Kraul",{1717},17,{{17, 42.9, 90.2}}}'
+    -> {"Razorfen Kraul": {"zone": "The Barrens", "x": 42.9, "y": 90.2, "map": 1413}}."""
+    out = {}
+    pat = r'^\s*\[\d+\] = \{"([^"]+)",(?:nil|\{[^}]*\}),\d+,\{\{(\d+),\s*([\d.]+),\s*([\d.]+)\}'
+    for m in re.finditer(pat, DUNGEONS.read_text(encoding="utf-8"), re.M):
+        z = zones.get(int(m.group(2)))
+        if z:
+            out.setdefault(m.group(1), {"zone": z["name"], "x": float(m.group(3)), "y": float(m.group(4)), "map": z["map"]})
     return out
 
 
@@ -118,7 +131,9 @@ def main() -> None:
             rec["chain"] = chains[qid]
         out_q[qid] = rec
     npcs = {nid: npc_record(row) for nid, row in read_rows(DB / "foreverNpcDB.lua").items()}
-    write_json(STAGING / "questie.json", {"quests": out_q, "npcs": npcs, "zones": read_zones()}, compact=True)
+    zones = read_zones()
+    write_json(STAGING / "questie.json", {"quests": out_q, "npcs": npcs, "zones": zones, "entrances": read_entrances(zones)},
+               compact=True)
     print(f"{len(out_q)} quests ({len(chains)} in a chain), {len(npcs)} npcs")
 
 

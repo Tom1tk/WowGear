@@ -20,7 +20,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from _common import FOREVER, ROOT, read_json, write_json  # noqa: E402
+from _common import FOREVER, ROOT, STAGING, read_json, write_json  # noqa: E402
 
 sys.path.insert(0, str(ROOT))
 from backend.app.scoring import Scorer  # noqa: E402
@@ -58,6 +58,7 @@ class Builder:
         self.items = self.scorer.items
         self.sources = read_json(FOREVER / "sources.json")
         self.instances = {k: v for k, v in read_json(FOREVER / "instances.json").items() if not k.startswith("_")}
+        self.entrances = read_json(STAGING / "questie.json").get("entrances", {})
         self.classes = self.scorer.classes
         self.races = self.scorer.races
         self.profiles = self.scorer.weights["profiles"]
@@ -267,6 +268,16 @@ class Builder:
         self.write_meta()
         print(f"wrote {count} gear files + meta.json")
 
+    def entrance(self, key: str, name: str) -> dict | None:
+        """Dungeon entrance from QuestieDB Forever. Only the original dungeons: Questie's Forever-new ones are missing,
+        and its 'Hyjal Summit' is the Caverns of Time raid, not Forever's Mount Hyjal one."""
+        if self.instances[key].get("zone") == "Mount Hyjal":
+            return None
+        wing = {"sm_": "Scarlet Monastery", "dire_maul_": "Dire Maul", "lower_blackrock": "Blackrock Spire",
+                "upper_blackrock": "Blackrock Spire", "sunken_temple": "The Temple of Atal'Hakkar"}
+        name = next((v for k, v in wing.items() if key.startswith(k)), name)
+        return self.entrances.get(name)
+
     def write_meta(self):
         """Small lookup file for the frontend: classes, specs, races, instances, tiers."""
         import datetime
@@ -281,7 +292,8 @@ class Builder:
                             "faction": r["faction"], "classes": r["classes"]} for rid, r in self.races.items()},
             "instances": {k: {"name": v["name"], "type": v["type"], "levels": v["levels"],
                               "zone": v.get("zone"), "tier": v.get("tier", 0), "note": v.get("note"),
-                              "side": v.get("side"), "uncertain": v.get("uncertain", [])}
+                              "side": v.get("side"), "uncertain": v.get("uncertain", []),
+                              "entrance": self.entrance(k, v["name"])}
                           for k, v in self.instances.items()},
             "tiers": {str(t): f"Raid tier {t}: " + ", ".join(
                           re.sub(r"^The ", "", v["name"]) for v in self.instances.values() if v.get("tier") == t)

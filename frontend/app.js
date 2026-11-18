@@ -133,7 +133,7 @@ function initSettings() {
 
 // Map-pin button for a source with a known spot: hover shows where, click copies a chat command for the game.
 function pinBtn(src) {
-  const l = src?.loc;
+  const l = src?.loc ?? state.meta.instances[src?.instance]?.entrance; // dungeon sources: pin the entrance
   if (!l) return null;
   const img = mapImage(l.zone);
   const b = el("button", { type: "button", class: "pin", title: img ? null : `${locText(l)}. Click to copy a map-pin command, then paste it into game chat.` }, `📍 ${locText(l)}`);

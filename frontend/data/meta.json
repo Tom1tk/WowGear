@@ -96,6 +96,7 @@
  "game": "forever",
  "instances": {
   "alcaz_prison": {
+   "entrance": null,
    "levels": [
     48,
     53
@@ -112,6 +113,7 @@
    "zone": "Dustwallow Marsh"
   },
   "barrow_deeps": {
+   "entrance": null,
    "levels": [
     60,
     60
@@ -127,6 +129,12 @@
    "zone": "Mount Hyjal"
   },
   "blackfathom_deeps": {
+   "entrance": {
+    "map": 1440,
+    "x": 14.5,
+    "y": 14.2,
+    "zone": "Ashenvale"
+   },
    "levels": [
     24,
     32
@@ -142,6 +150,7 @@
    "zone": "Ashenvale"
   },
   "blackmaw_hold": {
+   "entrance": null,
    "levels": [
     55,
     60
@@ -155,6 +164,12 @@
    "zone": "Azshara"
   },
   "blackrock_depths": {
+   "entrance": {
+    "map": 1427,
+    "x": 34.8,
+    "y": 85.3,
+    "zone": "Searing Gorge"
+   },
    "levels": [
     52,
     60
@@ -170,6 +185,12 @@
    "zone": "Blackrock Mountain"
   },
   "city_of_dalaran": {
+   "entrance": {
+    "map": 1416,
+    "x": 8.46,
+    "y": 59.21,
+    "zone": "Alterac Mountains"
+   },
    "levels": [
     28,
     33
@@ -185,6 +206,12 @@
    "zone": "Alterac Mountains"
   },
   "dire_maul_east": {
+   "entrance": {
+    "map": 1444,
+    "x": 59.2,
+    "y": 45.1,
+    "zone": "Feralas"
+   },
    "levels": [
     54,
     60
@@ -200,6 +227,12 @@
    "zone": "Feralas"
   },
   "dire_maul_north": {
+   "entrance": {
+    "map": 1444,
+    "x": 59.2,
+    "y": 45.1,
+    "zone": "Feralas"
+   },
    "levels": [
     56,
     60
@@ -215,6 +248,12 @@
    "zone": "Feralas"
   },
   "dire_maul_west": {
+   "entrance": {
+    "map": 1444,
+    "x": 59.2,
+    "y": 45.1,
+    "zone": "Feralas"
+   },
    "levels": [
     56,
     60
@@ -230,6 +269,12 @@
    "zone": "Feralas"
   },
   "excavation_site_wetlands": {
+   "entrance": {
+    "map": 1437,
+    "x": 47.79,
+    "y": 56.16,
+    "zone": "Wetlands"
+   },
    "levels": [
     24,
     29
@@ -245,6 +290,12 @@
    "zone": "Wetlands"
   },
   "gnomeregan": {
+   "entrance": {
+    "map": 1426,
+    "x": 24.3,
+    "y": 39.8,
+    "zone": "Dun Morogh"
+   },
    "levels": [
     29,
     38
@@ -260,6 +311,7 @@
    "zone": "Dun Morogh"
   },
   "hall_of_thanes": {
+   "entrance": null,
    "levels": [
     13,
     18
@@ -276,6 +328,7 @@
    "zone": "Ironforge (Dun Morogh)"
   },
   "hyjal_summit": {
+   "entrance": null,
    "levels": [
     60,
     60
@@ -291,6 +344,7 @@
    "zone": "Mount Hyjal"
   },
   "kroldok_stronghold": {
+   "entrance": null,
    "levels": [
     40,
     45
@@ -307,6 +361,12 @@
    "zone": "Riverglades"
   },
   "lower_blackrock_spire": {
+   "entrance": {
+    "map": 1427,
+    "x": 34.8,
+    "y": 85.3,
+    "zone": "Searing Gorge"
+   },
    "levels": [
     55,
     60
@@ -322,6 +382,12 @@
    "zone": "Blackrock Mountain"
   },
   "maraudon": {
+   "entrance": {
+    "map": 1443,
+    "x": 29.1,
+    "y": 62.5,
+    "zone": "Desolace"
+   },
    "levels": [
     46,
     55
@@ -337,6 +403,12 @@
    "zone": "Desolace"
   },
   "onyxias_lair": {
+   "entrance": {
+    "map": 1445,
+    "x": 52.6,
+    "y": 76.8,
+    "zone": "Dustwallow Marsh"
+   },
    "levels": [
     60,
     60
@@ -353,6 +425,12 @@
    "zone": "Dustwallow Marsh"
   },
   "ragefire_chasm": {
+   "entrance": {
+    "map": 1454,
+    "x": 52.6,
+    "y": 49.0,
+    "zone": "Orgrimmar"
+   },
    "levels": [
     13,
     18
@@ -369,6 +447,12 @@
    "zone": "Orgrimmar"
   },
   "razorfen_downs": {
+   "entrance": {
+    "map": 1413,
+    "x": 49.0,
+    "y": 93.9,
+    "zone": "The Barrens"
+   },
    "levels": [
     37,
     46
@@ -384,6 +468,12 @@
    "zone": "The Barrens"
   },
   "razorfen_kraul": {
+   "entrance": {
+    "map": 1413,
+    "x": 42.9,
+    "y": 90.2,
+    "zone": "The Barrens"
+   },
    "levels": [
     29,
     38
@@ -399,6 +489,12 @@
    "zone": "The Barrens"
   },
   "ruins_of_lordaeron": {
+   "entrance": {
+    "map": 1458,
+    "x": 72.41,
+    "y": 11.37,
+    "zone": "Undercity"
+   },
    "levels": [
     15,
     20
@@ -415,6 +511,12 @@
    "zone": "Tirisfal Glades"
   },
   "scholomance": {
+   "entrance": {
+    "map": 1422,
+    "x": 69.7,
+    "y": 73.2,
+    "zone": "Western Plaguelands"
+   },
    "levels": [
     58,
     60
@@ -430,6 +532,12 @@
    "zone": "Western Plaguelands"
   },
   "shadowfang_keep": {
+   "entrance": {
+    "map": 1421,
+    "x": 44.8,
+    "y": 67.8,
+    "zone": "Silverpine Forest"
+   },
    "levels": [
     20,
     30
@@ -445,6 +553,7 @@
    "zone": "Silverpine Forest"
   },
   "shapers_terrace": {
+   "entrance": null,
    "levels": [
     58,
     60
@@ -458,6 +567,12 @@
    "zone": "Un'Goro Crater"
   },
   "sm_armory": {
+   "entrance": {
+    "map": 1420,
+    "x": 82.6,
+    "y": 33.8,
+    "zone": "Tirisfal Glades"
+   },
    "levels": [
     36,
     44
@@ -473,6 +588,12 @@
    "zone": "Tirisfal Glades"
   },
   "sm_cathedral": {
+   "entrance": {
+    "map": 1420,
+    "x": 82.6,
+    "y": 33.8,
+    "zone": "Tirisfal Glades"
+   },
    "levels": [
     38,
     46
@@ -488,6 +609,12 @@
    "zone": "Tirisfal Glades"
   },
   "sm_graveyard": {
+   "entrance": {
+    "map": 1420,
+    "x": 82.6,
+    "y": 33.8,
+    "zone": "Tirisfal Glades"
+   },
    "levels": [
     30,
     38
@@ -503,6 +630,12 @@
    "zone": "Tirisfal Glades"
   },
   "sm_library": {
+   "entrance": {
+    "map": 1420,
+    "x": 82.6,
+    "y": 33.8,
+    "zone": "Tirisfal Glades"
+   },
    "levels": [
     33,
     41
@@ -518,6 +651,12 @@
    "zone": "Tirisfal Glades"
   },
   "stratholme": {
+   "entrance": {
+    "map": 1423,
+    "x": 26.52,
+    "y": 10.36,
+    "zone": "Eastern Plaguelands"
+   },
    "levels": [
     58,
     60
@@ -533,6 +672,12 @@
    "zone": "Eastern Plaguelands"
   },
   "sunken_temple": {
+   "entrance": {
+    "map": 1435,
+    "x": 69.9,
+    "y": 53.5,
+    "zone": "Swamp of Sorrows"
+   },
    "levels": [
     50,
     60
@@ -548,6 +693,12 @@
    "zone": "Swamp of Sorrows"
   },
   "the_deadmines": {
+   "entrance": {
+    "map": 1436,
+    "x": 42.5,
+    "y": 71.7,
+    "zone": "Westfall"
+   },
    "levels": [
     17,
     26
@@ -563,6 +714,7 @@
    "zone": "Westfall"
   },
   "the_drowned_city": {
+   "entrance": null,
    "levels": [
     35,
     40
@@ -579,6 +731,12 @@
    "zone": "Stranglethorn Vale"
   },
   "the_stockade": {
+   "entrance": {
+    "map": 1453,
+    "x": 52.41,
+    "y": 70.01,
+    "zone": "Stormwind City"
+   },
    "levels": [
     24,
     32
@@ -595,6 +753,12 @@
    "zone": "Stormwind City"
   },
   "uldaman": {
+   "entrance": {
+    "map": 1418,
+    "x": 44.6,
+    "y": 12.1,
+    "zone": "Badlands"
+   },
    "levels": [
     41,
     51
@@ -610,6 +774,12 @@
    "zone": "Badlands"
   },
   "upper_blackrock_spire": {
+   "entrance": {
+    "map": 1427,
+    "x": 34.8,
+    "y": 85.3,
+    "zone": "Searing Gorge"
+   },
    "levels": [
     59,
     60
@@ -626,6 +796,12 @@
    "zone": "Blackrock Mountain"
   },
   "wailing_caverns": {
+   "entrance": {
+    "map": 1413,
+    "x": 46.0,
+    "y": 36.5,
+    "zone": "The Barrens"
+   },
    "levels": [
     15,
     24
@@ -641,6 +817,12 @@
    "zone": "The Barrens"
   },
   "zulfarrak": {
+   "entrance": {
+    "map": 1446,
+    "x": 38.7,
+    "y": 20.1,
+    "zone": "Tanaris"
+   },
    "levels": [
     44,
     54
