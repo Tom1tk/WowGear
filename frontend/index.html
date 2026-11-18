@@ -25,7 +25,6 @@
 <aside class="side" id="side">
   <h1 class="logo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M18 2l-.8 3.6-7.4 7.4-2.8-2.8L14.4 2.8Z" fill="currentColor"/><path d="M4.6 9.6l5.8 5.8M7.6 12.4l-3.9 3.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="3" cy="17" r="1.4" fill="currentColor"/></svg>WowGear <span>Forever</span></h1>
   <section class="char" id="char-bar" hidden></section>
-  <div class="hr" id="hr-char" hidden></div>
   <div class="disc" id="lvl-disc" hidden>
     <button type="button" class="tbtn" id="lvl-btn" aria-expanded="false" aria-controls="lvl-drop"><span class="l"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 12h12M2 12V9m4 3V7m4 5V5m4 7V3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Level <b id="lvl-btn-n">20</b></span><svg class="ico chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="drop lvl-wrap" id="lvl-drop" hidden>
@@ -58,10 +57,9 @@
         <div class="field"><label for="m-level">Level</label><input id="m-level" type="number" min="1" max="60" value="20"></div>
         <button class="btn-primary" type="submit">Show gear</button>
       </form>
-      <p class="hint" id="input-hint">First name and surname, no realm.</p>
+      <p class="hint" id="input-hint"></p>
     </div>
   </div>
-  <div class="hr"></div>
   <nav class="filters" id="slot-filters" aria-label="Slot filter" hidden>
     <h3>Slots</h3>
     <button type="button" aria-pressed="true" data-f="all">All <span class="n" id="n-all"></span></button>
@@ -69,7 +67,6 @@
     <button type="button" aria-pressed="false" data-f="weapons">Weapons <span class="n" id="n-weapons"></span></button>
     <button type="button" aria-pressed="false" data-f="jewellery">Jewellery <span class="n" id="n-jewellery"></span></button>
   </nav>
-  <div class="hr"></div>
   <div class="disc">
     <button type="button" class="tbtn" id="set-btn" aria-expanded="false" aria-controls="set-drop"><span class="l"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.5v2m0 9v2M1.5 8h2m9 0h2M3.4 3.4l1.4 1.4m6.4 6.4 1.4 1.4M3.4 12.6l1.4-1.4m6.4-6.4 1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Settings</span><svg class="ico chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="drop form" id="set-drop" hidden>
@@ -81,7 +78,7 @@
   </div>
 </aside>
 <div class="stage">
-<div id="status" class="status" role="status" hidden></div>
+<div id="status" class="status busy" role="status">Loading gear data…</div>
 <main class="work" id="results" hidden>
   <section class="panel" aria-labelledby="gear-t">
     <div class="sec-head"><h2 id="gear-title">Best gear</h2><p id="gear-sub"></p></div>
@@ -111,24 +108,24 @@
   </section>
   <aside class="rail" aria-label="Next steps">
     <section class="panel" aria-labelledby="todo-t">
-      <div class="sec-head"><h2 id="todo-t">What to do next</h2><p id="todo-sub"></p></div>
+      <div class="sec-head"><h2 id="todo-t">Where to go next</h2><p id="todo-sub"></p></div>
       <div id="todo-list"></div>
     </section>
     <section class="panel" id="lookup" aria-labelledby="lk-t">
-      <div class="sec-head"><h2 id="lk-t">Item lookup</h2></div>
+      <div class="sec-head"><h2 id="lk-t">Find an item</h2></div>
       <input id="lk-in" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lk-list" aria-label="Search for an item by name" placeholder="Search an item by name" autocomplete="off" spellcheck="false">
       <ul id="lk-list" role="listbox" aria-label="Matching items" hidden></ul>
       <div id="lk-out" aria-live="polite"></div>
     </section>
     <section class="panel" aria-labelledby="up-t">
-      <div class="sec-head"><h2 id="up-t">Coming up</h2></div>
+      <div class="sec-head"><h2 id="up-t">Upgrades at your next levels</h2></div>
       <ol class="up-list" id="upcoming-list"></ol>
     </section>
   </aside>
 </main>
 <footer class="foot">
 <details class="glossary">
-            <summary>New to Forever? Words on this page</summary>
+            <summary><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Glossary of terms on this page</summary>
             <dl>
               <dt>BiS</dt><dd>"Best in slot": the best item for that equipment slot.</dd>
               <dt>BoP / BoE</dt><dd>Binds when picked up (only you can use it) / binds when equipped (you can buy or sell it on the Auction House).</dd>

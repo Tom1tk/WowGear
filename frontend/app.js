@@ -23,6 +23,7 @@ const ARMOR_ORDER = ["head", "neck", "shoulders", "back", "chest", "wrist", "han
 const WOWHEAD = "https://www.wowhead.com/forever/item=";
 const ICON_CHEV = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const WARCRAFTDB = "https://forever.warcraftdb.com/data/item/";
+const ICON_PIN = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.5s4.5-4.2 4.5-7.8a4.5 4.5 0 0 0-9 0c0 3.6 4.5 7.8 4.5 7.8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="8" cy="6.6" r="1.6" fill="currentColor"/></svg>';
 const ICON_WARN = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 
 const state = {
@@ -136,7 +137,8 @@ function pinBtn(src) {
   const l = src?.loc ?? state.meta.instances[src?.instance]?.entrance; // dungeon sources: pin the entrance
   if (!l) return null;
   const img = mapImage(l.zone);
-  const b = el("button", { type: "button", class: "pin", title: img ? null : `${locText(l)}. Click to copy a map-pin command, then paste it into game chat.` }, `📍 ${locText(l)}`);
+  const b = el("button", { type: "button", class: "pin", title: img ? null : `${locText(l)}. Click to copy a map-pin command, then paste it into game chat.` }, locText(l));
+  b.insertAdjacentHTML("afterbegin", ICON_PIN);
   b.addEventListener("click", async (e) => {
     e.stopPropagation();
     const cmd = pinCommand(l, recall("pin", "tomtom"));
@@ -184,10 +186,11 @@ function el(tag, attrs = {}, ...children) {
   return node;
 }
 
-function showStatus(message, isError = false) {
+function showStatus(message, isError = false, busy = false) {
   const s = $("status");
   s.textContent = message;
   s.classList.toggle("error", isError);
+  s.classList.toggle("busy", busy);
   s.hidden = false;
 }
 function hideStatus() { $("status").hidden = true; }
@@ -268,13 +271,6 @@ function nextFill(slot, index) {
   for (const p of slotPoints(slot)) {
     const ok = p.items.filter(([id]) => itemOk(id));
     if (pointKey(p) > target && ok[index]) return { p, id: ok[index][0] };
-  }
-  return null;
-}
-
-function firstSeen(slot, iid) {
-  for (const p of slotPoints(slot)) {
-    if (p.items.some(([id]) => id === iid)) return p;
   }
   return null;
 }
@@ -488,13 +484,11 @@ function renderRows(rows) {
       li.append(main);
       continue;
     }
-    const [iid, score] = r.pick, info = state.gear.items[iid], seen = firstSeen(r.slot, iid);
+    const [iid, score] = r.pick, info = state.gear.items[iid];
     const reasons = reasonsOf(info);
     main.append(
       el("span", { class: "item" }, itemLink(iid, info),
-        seen && seen.tier === 0 && seen.level > 10 ? el("span", { class: "badge", title: `Appears in the list from level ${seen.level}` }, `lvl ${seen.level}`) : null,
-        info.binding === "ON_ACQUIRE" ? el("span", { class: "badge badge-bop", title: "Binds when picked up" }, "BoP") : el("span", { class: "badge", title: "Binds when equipped" }, "BoE"),
-        info.special ? el("span", { class: "badge badge-fx", title: info.special }, "special") : null,
+        info.binding === "ON_ACQUIRE" ? null : el("span", { class: "badge", title: "Binds when equipped: you can buy or trade it" }, "BoE"),
         reasons.length ? Object.assign(uncBadge(), { title: reasons.join("\n") }) : null),
       scoreCell(score, info));
     const d = r.srcs[0] ? describeSource(r.srcs[0]) : null;
@@ -517,7 +511,8 @@ function renderRows(rows) {
 
 function scoreCell(score, info) {
   const un = info.unscored?.length;
-  return el("span", { class: "score", title: un ? `Score for your spec. Not counted: ${info.unscored.join("; ")}` : "Score for your spec (compare within a slot)" }, String(score), un ? "*" : null);
+  const tip = un ? `Score for your spec. Not counted: ${info.unscored.join("; ")}` : "Score for your spec (compare within a slot)";
+  return el("span", { class: "score", title: info.special ? `${tip}\n${info.special}` : tip }, String(score), un ? el("span", { class: "ast" }, "*") : null);
 }
 
 // Extra facts from the data: unscored stats, random-enchant note, set bonuses.
@@ -537,10 +532,10 @@ function wornCell(r, iid) {
   if (state.mode === "manual") {
     cell.append(el("input", { type: "checkbox", class: "own-box", checked: ownedSet().has(iid), title: "I have this", "aria-label": `I have ${state.gear.items[iid].name || iid}`, onchange: (e) => toggleOwned(iid, e.target.checked) }));
   }
-  if (!w.id) cell.append(el("span", { class: "worn-name muted" }, state.mode === "manual" ? "Not ticked" : "Empty slot"));
+  if (!w.id) cell.append(el("span", { class: "worn-name muted" }, state.mode === "manual" ? "" : "Empty slot"));
   else cell.append(el("span", { class: "worn-name" }, itemLink(w.id, w)), ...(w.score != null ? [el("span", { class: "score" }, String(w.score))] : []));
-  cell.append(r.gain >= UP
-    ? el("span", { class: "delta", title: r.gain === Infinity ? "Nothing useful worn here" : `Upgrade ${fmtGain(r.gain)} over what you wear` }, el("span", { class: "bar", style: `width:${Math.max(4, Math.round(Math.min(r.gain, BAR_CAP) / BAR_CAP * 34))}px` }), el("span", { class: "gain" }, fmtGain(r.gain)))
+  cell.append(r.gain === Infinity ? el("span", { class: "delta", title: "Nothing useful worn here" }, el("span", { class: "gain" }, fmtGain(r.gain)))
+    : r.gain >= UP ? el("span", { class: "delta", title: `Upgrade ${fmtGain(r.gain)} over what you wear` }, el("span", { class: "bar", style: `width:${Math.max(4, Math.round(Math.min(r.gain, BAR_CAP) / BAR_CAP * 34))}px` }), el("span", { class: "gain" }, fmtGain(r.gain)))
     : el("span", { class: "delta" }, el("span", { class: "none" }, w.tag || "none")));
   return cell;
 }
@@ -584,7 +579,7 @@ function groupEl(g, key) {
   }));
   const n = g.items.length;
   const box = el("details", { class: "group", open: !ui.shut.has(key) },
-    el("summary", { class: "g-head" }, el("strong", {}, el("span", { class: "g-kind" }, g.kind), g.label, " ", pinBtn(g.src)),
+    el("summary", { class: "g-head" }, el("strong", {}, Object.assign(el("span", { class: "g-kind" }), { innerHTML: ICON_CHEV + g.kind }), g.kind ? g.label.replace(/^(Run |Buy from |Craft with |Kill |Quest: )/, "") : g.label, " ", pinBtn(g.src)),
       el("span", { class: "g-gain", title: "Slots to upgrade here" }, `${n} upgrade${n > 1 ? "s" : ""}`)), ul);
   box.addEventListener("toggle", () => {
     if (box.open) ui.shut.delete(key); else ui.shut.add(key);
@@ -771,16 +766,19 @@ function showCharacter() {
 }
 
 async function refreshAll() {
+  $("results").setAttribute("aria-busy", "true"); // dims the old list while the new one loads
   try {
     await loadGear();
+    if (state.mode === "lookup") await rescoreEquipped();
   } catch (e) {
     showStatus(e.message, true);
     return false;
+  } finally {
+    $("results").removeAttribute("aria-busy");
   }
-  if (state.mode === "lookup") await rescoreEquipped();
   if (!weaponTypes().some(([k]) => k === state.wtype)) state.wtype = ""; // not usable by this class/spec
   renderCharBar();
-  for (const id of ["char-bar", "hr-char", "lvl-disc", "slot-filters", "results"]) $(id).hidden = false;
+  for (const id of ["char-bar", "lvl-disc", "slot-filters", "results"]) $(id).hidden = false;
   hideStatus();
   render();
   return true;
@@ -806,7 +804,8 @@ async function lookup(event) {
   if (!/^\p{L}+$/u.test(name) || !/^\p{L}+$/u.test(surname)) { showStatus("Type the first name and the surname, letters only (no spaces or numbers).", true); return; }
   const btn = $("lookup-btn");
   btn.disabled = true;
-  showStatus(`Looking up ${name} ${surname}…`);
+  btn.setAttribute("aria-busy", "true");
+  showStatus(`Looking up ${name} ${surname}…`, false, true);
   try {
     const resp = await fetch(`/api/character?${new URLSearchParams({ region, name, surname })}`);
     const body = await resp.json().catch(() => ({}));
@@ -826,6 +825,7 @@ async function lookup(event) {
     showStatus(e.message, true);
   } finally {
     btn.disabled = false;
+    btn.removeAttribute("aria-busy");
   }
 }
 
@@ -882,7 +882,7 @@ function selectTab(mode) {
   $("panel-lookup").hidden = !lookupOn;
   $("panel-manual").hidden = lookupOn;
   $("input-hint").textContent = lookupOn
-    ? "First name and surname, no realm."
+    ? ""
     : "Pick race, class, spec and level, then tick the items you have.";
   store("tab", mode);
   if (lookupOn) setScene(state.mode === "lookup" ? state.char?.character.race_id : null);
@@ -985,6 +985,7 @@ async function init() {
     await lookup();
     applyUrlLevel(params);
   } else {
+    hideStatus();
     selectTab(recall("tab", "lookup"));
     $("side").classList.add("open"); // nothing to show yet: on a phone the form is the page
   }
