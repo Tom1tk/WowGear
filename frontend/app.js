@@ -479,7 +479,7 @@ function wornCell(r, iid) {
     cell.append(el("input", { type: "checkbox", class: "own-box", checked: ownedSet().has(iid), title: "I have this", "aria-label": `I have ${state.gear.items[iid].name || iid}`, onchange: (e) => toggleOwned(iid, e.target.checked) }));
   }
   if (!w.id) cell.append(el("span", { class: "worn-name muted" }, state.mode === "manual" ? "Not ticked" : "Empty slot"));
-  else cell.append(el("span", { class: "worn-name" }, itemLink(w.id, w)), w.score != null ? el("span", { class: "score" }, String(w.score)) : null);
+  else cell.append(el("span", { class: "worn-name" }, itemLink(w.id, w)), ...(w.score != null ? [el("span", { class: "score" }, String(w.score))] : []));
   cell.append(r.gain >= UP
     ? el("span", { class: "delta", title: r.gain === Infinity ? "Nothing useful worn here" : `Upgrade ${fmtGain(r.gain)} over what you wear` }, el("span", { class: "bar", style: `width:${Math.max(4, Math.round(Math.min(r.gain, BAR_CAP) / BAR_CAP * 34))}px` }), el("span", { class: "gain" }, fmtGain(r.gain)))
     : el("span", { class: "delta" }, el("span", { class: "none" }, w.tag || "none")));
