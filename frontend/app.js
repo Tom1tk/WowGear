@@ -1,6 +1,4 @@
-// WowGear Forever — per-level best-in-slot planner for WoW Forever.
-// Gear lists are static JSON (frontend/data/gear, built by scripts/data/build_gear.py);
-// the API is only used for the character lookup and item scores.
+import { describeSource as describeIn, catsOf, CATS, EFFORT } from "./sources.js";
 
 const $ = (id) => document.getElementById(id);
 const DATA = "/static/data";
@@ -13,8 +11,12 @@ const SLOT_LABEL = {
   ring: "Ring", trinket: "Trinket", main_hand: "Main hand", off_hand: "Off hand",
   two_hand: "Two-hand", ranged: "Ranged", relic: "Relic",
 };
+const GROUP = { two_hand: "weapons", main_hand: "weapons", off_hand: "weapons", ranged: "weapons", relic: "weapons", neck: "jewellery", ring: "jewellery", trinket: "jewellery" }; // rest: armour
+const grpOf = (slot) => GROUP[slot] || "armour";
+const BAR_CAP = 30; // gain bars cap at +30 so one outlier does not flatten the rest
 const ARMOR_ORDER = ["head", "neck", "shoulders", "back", "chest", "wrist", "hands", "waist", "legs", "feet"];
 const WOWHEAD = "https://www.wowhead.com/forever/item=";
+const ICON_CHEV = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const WARCRAFTDB = "https://forever.warcraftdb.com/data/item/";
 const ICON_WARN = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 
@@ -44,35 +46,75 @@ function recall(key, fallback = null) {
 }
 
 // ---------------------------------------------------------------- scene
-let sceneKey = "default";
-let sceneToken = 0;
 
-// Cross-fade the background to a race's home area and switch the colour theme.
-// Scene key = race slug from meta (bg/<slug>.jpg; missing image falls back to default.jpg).
+// Background art: WoW Forever launch press kit (bg/kit/). The race still sets the colour theme.
+const SCENES = {
+  "barrow-deeps": "Barrow Deeps", "campfire": "Campfire", "dalaran": "Dalaran", "drowned-city": "The Drowned City",
+  "hyjal": "Mount Hyjal", "hyjal-summit": "Hyjal Summit", "mulgore": "Mulgore", "new-water": "Open sea",
+  "riverglades": "Riverglades", "shendralas": "Shen'dralas", "skywatch": "Skywatch", "zephras": "Zephras Isle",
+  "key-alliance": "Alliance key art", "key-horde": "Horde key art",
+};
+const ROTATE_MS = 90_000;
+let sceneRace = null;
+let rotateTimer = 0;
+
 function raceSlug(raceId) {
   const r = state.meta?.races[String(raceId)];
   if (!r) return null;
   const slug = (r.slug || r.name.toLowerCase()).replace(/[\s_]+/g, "-");
-  return slug.endsWith("skyborne") ? "skyborne" : slug; // both Skyborne races share one scene/theme
+  return slug.endsWith("skyborne") ? "skyborne" : slug; // both Skyborne races share one theme
 }
-function setScene(raceId) {
-  const key = raceSlug(raceId) || "default";
-  if (key === sceneKey) return;
-  sceneKey = key;
-  const token = ++sceneToken;
+function sceneImage() {
+  const pick = recall("bg", "faction");
+  if (pick === "rotate") {
+    const keys = Object.keys(SCENES);
+    return keys[Math.floor(Date.now() / ROTATE_MS) % keys.length];
+  }
+  if (SCENES[pick]) return pick;
+  const faction = state.meta?.races[String(sceneRace)]?.faction;
+  return faction === "A" ? "key-alliance" : "key-horde";
+}
+function showImage(key) {
+  const [a, b] = [$("scene-a"), $("scene-b")];
+  const url = `/static/bg/kit/${key}.jpg`;
+  if ([a, b].some((l) => l.classList.contains("on") && l.dataset.key === key)) return;
   const img = new Image();
   img.onload = () => {
-    if (token !== sceneToken) return; // a newer choice won
-    const [a, b] = [$("scene-a"), $("scene-b")];
+    if (img.dataset.stale) return;
     const [shown, hidden] = a.classList.contains("on") ? [a, b] : [b, a];
-    hidden.style.backgroundImage = `url('${img.src}')`;
+    hidden.style.backgroundImage = `url('${url}')`;
+    hidden.dataset.key = key;
     hidden.classList.add("on");
     shown.classList.remove("on");
   };
-  img.onerror = () => { img.onerror = null; img.src = "/static/bg/default.jpg"; };
-  img.src = `/static/bg/${key}.jpg`;
-  if (key === "default") delete document.documentElement.dataset.race;
-  else document.documentElement.dataset.race = key;
+  showImage.pending?.setAttribute("data-stale", "1");
+  showImage.pending = img;
+  img.src = url;
+}
+function refreshScene() {
+  clearInterval(rotateTimer);
+  showImage(sceneImage());
+  if (recall("bg", "faction") === "rotate") rotateTimer = setInterval(() => showImage(sceneImage()), ROTATE_MS);
+}
+// Cross-fade the background and switch the race colour theme.
+function setScene(raceId) {
+  sceneRace = raceId;
+  const key = raceSlug(raceId);
+  if (key) document.documentElement.dataset.race = key;
+  else delete document.documentElement.dataset.race;
+  refreshScene();
+}
+function initSettings() {
+  const bg = $("bg-pick");
+  bg.append(el("option", { value: "faction" }, "My faction's key art"), el("option", { value: "rotate" }, "Rotate through all"));
+  for (const [k, name] of Object.entries(SCENES)) bg.append(el("option", { value: k }, name));
+  bg.value = recall("bg", "faction");
+  bg.onchange = () => { store("bg", bg.value); refreshScene(); };
+  const theme = $("theme-pick");
+  theme.value = recall("theme", "dark");
+  document.documentElement.dataset.theme = theme.value;
+  theme.onchange = () => { store("theme", theme.value); document.documentElement.dataset.theme = theme.value; };
+  refreshScene();
 }
 
 // ---------------------------------------------------------------- helpers
@@ -112,38 +154,12 @@ function refreshTooltips() {
   try { window.$WowheadPower?.refreshLinks(); } catch { /* tooltips are optional */ }
 }
 
-// "Uncertain" badge: a <details> so the reasons open on tap/keyboard; title is a desktop hover extra.
-function uncBadge(reasons) {
-  if (!reasons?.length) return null;
-  const d = el("details", { class: "unc" },
-    el("summary", { class: "badge badge-unc", title: reasons.join("\n") }));
-  d.querySelector("summary").innerHTML = `${ICON_WARN}Uncertain`;
-  d.append(el("ul", { class: "unc-body" }, reasons.map((r) => el("li", {}, r))));
-  return d;
-}
-// Item-level flags: Uncertain badge, or a quiet "1 source" when only one database had the item.
-function itemFlags(info) {
-  const unc = info?.uncertain?.length ? uncBadge(info.uncertain) : null;
-  const checks = Object.values(info?.checks || {});
-  const single = !unc && checks.length && checks.every((c) => c === "single");
-  return [unc, single ? el("span", { class: "one-src", title: "Only one database has this item, so it is not cross-checked." }, "1 source") : null];
-}
 function sourceReasons(src) {
   const inst = src.instance && state.meta.instances[src.instance];
   return [
     ...(src.conflict ? ["Our databases disagree about this source (for example the drop chance, or which monster or quest it comes from)."] : []),
     ...(inst?.uncertain || []).map((r) => `${inst.name}: ${r}`),
   ];
-}
-
-function instanceName(key) {
-  const inst = state.meta.instances[key];
-  return inst ? inst.name : key;
-}
-function instanceLevels(key) {
-  const inst = state.meta.instances[key];
-  if (!inst || inst.type.startsWith("raid") || inst.type === "world_boss") return "";
-  return ` (level ${inst.levels[0]}–${inst.levels[1]})`;
 }
 
 function currentClass() {
@@ -156,58 +172,6 @@ function currentFaction() {
 }
 function characterLevel() {
   return state.mode === "lookup" ? state.char.character.level : state.manual.level;
-}
-
-// ---------------------------------------------------------------- sources
-const STANDINGS = ["Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"];
-function formatMoney(copper) {
-  const c = Number(copper), g = Math.floor(c / 10000), s = Math.floor(c / 100) % 100;
-  return g ? `${g}g ${s}s` : `${s}s ${c % 100}c`;
-}
-function describeSource(src) {
-  const inst = src.instance;
-  const chance = src.chance != null ? ` — ${src.chance < 1 ? src.chance.toFixed(1) : Math.round(src.chance)}% drop chance` : "";
-  switch (src.type) {
-    case "drop": {
-      const rank = src.rank && src.rank !== "normal" ? ` (${src.rank})` : "";
-      if (inst) return { key: `inst:${inst}`, label: `Run ${instanceName(inst)}${instanceLevels(inst)}`, text: `Dropped by ${src.name}${rank}${chance}` };
-      return { key: `npc:${src.id}`, label: `Kill ${src.name}${src.zone ? ` in ${src.zone}` : ""}`, text: `Dropped by ${src.name}${rank}${src.level?.[0] ? `, level ${src.level[0]}` : ""}${chance}` };
-    }
-    case "boss":
-      return { key: `inst:${inst}`, label: `Run ${instanceName(inst)}${instanceLevels(inst)}`, text: `Dropped by ${src.name}` };
-    case "instance_trash":
-      return { key: `inst:${inst}`, label: `Run ${instanceName(inst)}${instanceLevels(inst)}`, text: `Random drop from the normal monsters (trash)${chance}` };
-    case "object":
-      if (inst) return { key: `inst:${inst}`, label: `Run ${instanceName(inst)}${instanceLevels(inst)}`, text: `Found in ${src.name || "a chest"}${chance}` };
-      return { key: `obj:${src.id}`, label: `Open ${src.name || "a chest"}${src.zone ? ` in ${src.zone}` : ""}`, text: `Found in ${src.name || "a chest"}${chance}` };
-    case "quest": {
-      const where = src.zone ? ` in ${src.zone}` : "";
-      const from = src.start_npc ? ` from ${src.start_npc}` : "";
-      const lvl = src.level ? ` (level ${src.level})` : "";
-      const label = inst && state.meta.instances[inst]?.tier ? `Quest: ${src.name} — needs ${instanceName(inst)}` : `Quest: ${src.name}${lvl}`;
-      return { key: `quest:${src.id}`, label, text: `Quest reward${where}${from}. Can be picked up at level ${src.min_level || 1}.` };
-    }
-    case "vendor": {
-      // Forever data: rep vendors are named by faction with {standing: 0-7}; plain vendors may have no name.
-      const standing = STANDINGS[Number(src.reputation?.standing)];
-      if (src.reputation) return { key: `rep:${src.name}`, label: `Buy from ${src.name} quartermaster`, text: `Needs ${standing || "some"} reputation with ${src.name}.` };
-      const who = src.name || "a vendor";
-      const price = src.copper ? ` Costs about ${formatMoney(src.copper)}.` : "";
-      return { key: src.name ? `vendor:${src.id}` : "vendor", label: `Buy from ${who}${src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${who}${src.title ? ` <${src.title}>` : ""}.${price}` };
-    }
-    case "craft": {
-      const recipe = src.recipe ? ` Recipe: ${src.recipe.name}${src.recipe.from?.length ? ` (${src.recipe.from.join(" / ")})` : ""}.` : " Recipe from the profession trainer.";
-      const raid = inst ? ` Needs materials from ${instanceName(inst)}.` : "";
-      const prof = src.name || "a profession";
-      return { key: `craft:${prof}`, label: `Craft with ${prof}`, text: `Crafted with ${prof}${src.skill ? ` (skill ${src.skill})` : ""}.${recipe}${raid}` };
-    }
-    case "world_drop":
-      return { key: "ah", label: "Auction House / world drops", text: "Random drop from many monsters. It is Bind on Equip, so you can often buy it on the Auction House." };
-    case "container":
-      return { key: `cont:${src.id}`, label: `Open ${src.name || "a container"}`, text: `Found in ${src.name || "a container"}${chance}` };
-    default:
-      return { key: src.type, label: src.type, text: src.type };
-  }
 }
 
 // ---------------------------------------------------------------- gear data
@@ -252,30 +216,6 @@ function weaponPlan() {
   return { use: ["main_hand", "off_hand"].filter((s) => state.gear.slots[s]), alt: two ? ["two_hand"] : [] };
 }
 
-// Displayed rows: [{slot, index, picks: [[id, score], ...]}]
-function displayRows() {
-  const rows = [];
-  for (const slot of ARMOR_ORDER) if (state.gear.slots[slot]) rows.push({ slot, index: 0 });
-  for (const slot of ["ring", "trinket"]) {
-    if (state.gear.slots[slot]) { rows.push({ slot, index: 0 }); rows.push({ slot, index: 1 }); }
-  }
-  const plan = weaponPlan();
-  for (const slot of plan.use) rows.push({ slot, index: 0 });
-  for (const slot of ["ranged", "relic"]) if (state.gear.slots[slot]) rows.push({ slot, index: 0 });
-  for (const row of rows) {
-    const items = pointAt(row.slot)?.items || [];
-    if (row.slot === "ring" || row.slot === "trinket") {
-      // pick index 0/1 = the two best; the rest are alternatives for both
-      row.pick = items[row.index] || null;
-      row.alts = items.slice(2);
-    } else {
-      row.pick = items[0] || null;
-      row.alts = items.slice(1);
-    }
-  }
-  return { rows, plan };
-}
-
 // ---------------------------------------------------------------- equipped / owned
 function equippedFor(row) {
   if (state.mode !== "lookup" || !state.char) return null;
@@ -313,30 +253,82 @@ function toggleOwned(iid, on) {
   render();
 }
 
-function rowStatus(row) {
-  const pick = row.pick;
-  if (!pick) return { cls: "none", text: "No item", gain: 0 };
-  const [iid, best] = pick;
+
+const describeSource = (src) => describeIn(state.meta, src);
+
+// Table view state (not part of the URL): source filter, sort, slot group, opened rows.
+const ui = { sort: "slot", src: new Set(), slot: "all", open: new Set() };
+const srcOk = (s) => !ui.src.size || catsOf(s).some((c) => ui.src.has(c));
+// sources with the allowed ones first, so the shown source is one the filter lets through
+const orderedSrcs = (info) => { const all = info.sources || []; return [...all.filter(srcOk), ...all.filter((s) => !srcOk(s))]; };
+function effort(srcs) {
+  const ok = srcs.filter(srcOk);
+  const ranks = (s) => catsOf(s).filter((c) => !ui.src.size || ui.src.has(c)).map((c) => EFFORT[c]);
+  const rank = Math.min(...ok.map((s) => Math.min(...ranks(s))));
+  const chance = Math.max(0, ...ok.filter((s) => Math.min(...ranks(s)) === rank).map((s) => s.chance || 0));
+  return { rank, chance };
+}
+
+const reasonsOf = (info) => [...(info.uncertain || []), ...(info.sources?.[0] ? sourceReasons(info.sources[0]) : [])];
+const uncBadge = () => Object.assign(el("span", { class: "badge badge-unc" }), { innerHTML: `${ICON_WARN}Uncertain` });
+
+// Every item that was best for this slot at some point up to the viewed level, best score first.
+function slotPool(slot) {
+  const target = state.level >= 60 && state.tier > 0 ? 60 + state.tier : Math.min(state.level, 60);
+  const best = new Map();
+  for (const p of state.gear.slots[slot] || []) if (pointKey(p) <= target) for (const [id, sc] of p.items) best.set(id, sc);
+  return [...best].sort((a, b) => b[1] - a[1]);
+}
+
+// What the player has for this row, and the gain from the best pick. Manual mode: ticked items.
+function wornFor(r, pick) {
+  const [pid, best] = pick;
+  const gainOver = (score) => Math.max(0, Math.round((best - score) * 10) / 10);
+  const named = (id) => ({ id, name: state.gear.items[id]?.name, quality: state.gear.items[id]?.quality });
   if (state.mode === "manual") {
     const owned = ownedSet();
-    if (owned.has(iid)) return { cls: "bis", text: "✓ You have it", gain: 0 };
-    const alt = row.alts.find(([id]) => owned.has(id));
-    if (alt) return { cls: "good", text: "Good (you have an alternative)", gain: best - alt[1] };
-    return { cls: "need", text: "Get this", gain: best };
+    if (owned.has(pid)) return { ...named(pid), score: best, gain: 0, tag: "Have it" };
+    const alt = r.cands.find(([id]) => owned.has(id));
+    return alt ? { ...named(alt[0]), score: alt[1], gain: gainOver(alt[1]) } : { gain: best };
   }
-  const eq = equippedFor(row);
-  if (!eq) return { cls: "empty", text: "Empty slot", gain: best };
-  if (String(eq.item_id) === iid) return { cls: "bis", text: "✓ Best in slot", gain: 0 };
-  if (row.alts.some(([id]) => id === String(eq.item_id)) ||
-      ((row.slot === "ring" || row.slot === "trinket") && pointAt(row.slot)?.items.slice(0, 2).some(([id]) => id === String(eq.item_id)))) {
-    return { cls: "good", text: "Good — on the list", gain: 0 };
-  }
-  const have = scoreOf(eq);
-  if (have == null) return { cls: "unknown", text: "Can't score your item", gain: 0, note: "Random-stat items (e.g. “… of the Monkey”) and some special items have no fixed score. Compare the stats yourself." };
-  const gain = Math.round((best - have) * 10) / 10;
-  if (gain <= 0) return { cls: "ahead", text: "Yours is as good or better", gain: 0 };
-  if (have >= 0.9 * best) return { cls: "close", text: `Close (+${gain})`, gain };
-  return { cls: "need", text: `Upgrade +${gain}`, gain };
+  const eq = equippedFor(r);
+  if (!eq) return { gain: best };
+  const w = { id: String(eq.item_id), name: eq.name, quality: QUALITY_BY_TYPE[eq.quality], score: scoreOf(eq) };
+  if (w.id === pid) return { ...w, gain: 0, tag: "Best" };
+  if (r.cands.some(([id]) => id === w.id)) return { ...w, gain: 0, tag: "On list" };
+  if (w.score == null) return { ...w, gain: 0, tag: "Can't score", unknown: true };
+  return { ...w, gain: gainOver(w.score) };
+}
+
+// Rows: one per slot (rings and trinkets twice), best pick under the source filter, then sorted.
+function buildRows() {
+  const { use } = weaponPlan();
+  const slots = [...ARMOR_ORDER, "ring", "ring", "trinket", "trinket", ...use, "ranged", "relic"].filter((s) => state.gear.slots[s]);
+  const seen = {};
+  const rows = slots.map((slot, order) => {
+    const index = seen[slot] = (seen[slot] ?? -1) + 1;
+    const pair = slot === "ring" || slot === "trinket";
+    const cands = pointAt(slot)?.items || [];
+    // With a source filter on, look beyond the top picks: the whole slotPool.
+    const ok = (ui.src.size ? slotPool(slot) : cands).filter(([id]) => (state.gear.items[id].sources || []).some(srcOk));
+    const top = ok.slice(0, pair ? 2 : 1), pick = ok[pair ? index : 0] || null;
+    const row = { slot, order, index, pair, cands, pick, alts: cands.filter((c) => !top.includes(c)), gain: 0, filtered: !pick && cands.length > 0,
+      label: pair ? `${SLOT_LABEL[slot]} ${index + 1}` : SLOT_LABEL[slot] };
+    if (pick) {
+      row.srcs = orderedSrcs(state.gear.items[pick[0]]);
+      row.effort = effort(row.srcs);
+      row.worn = wornFor(row, pick);
+      row.gain = row.worn.gain;
+    }
+    return row;
+  });
+  const gainRank = (r) => (!r.pick ? 3 : r.gain > 0 ? 0 : r.worn.unknown ? 1 : 2); // gains, can't score, no gain, no pick
+  const cmp = {
+    slot: (a, b) => a.order - b.order,
+    gain: (a, b) => gainRank(a) - gainRank(b) || b.gain - a.gain,
+    easy: (a, b) => !a.pick - !b.pick || (a.pick && (a.effort.rank - b.effort.rank || state.gear.items[a.pick[0]].required_level - state.gear.items[b.pick[0]].required_level || b.effort.chance - a.effort.chance)),
+  }[ui.sort];
+  return rows.sort((a, b) => cmp(a, b) || a.order - b.order);
 }
 
 // ---------------------------------------------------------------- render
@@ -344,155 +336,150 @@ function render() {
   if (!state.gear) return;
   const lvl = state.level;
   $("level-out").textContent = String(lvl);
+  $("lvl-btn-n").textContent = String(lvl);
   $("level-slider").value = String(lvl);
   $("tier-row").hidden = lvl < 60;
   const tierNote = state.meta.tier_notes?.[state.tier];
   $("tier-note").hidden = !tierNote;
   $("tier-note").textContent = tierNote || "";
-  document.querySelectorAll("#tier-buttons button").forEach((b) => {
-    b.setAttribute("aria-checked", String(Number(b.dataset.tier) === state.tier));
-  });
+  document.querySelectorAll("#tier-buttons button").forEach((b) => b.setAttribute("aria-checked", String(Number(b.dataset.tier) === state.tier)));
   const charLvl = characterLevel();
   $("level-note").textContent = lvl === charLvl ? "Your level" :
     lvl > charLvl ? `${lvl - charLvl} level${lvl - charLvl > 1 ? "s" : ""} ahead of you` : `${charLvl - lvl} below your level`;
   const g = state.gear;
-  $("gear-title").textContent = lvl >= 60 && state.tier > 0 ? `Best gear — ${state.meta.tiers[state.tier]}` : `Best gear at level ${lvl}`;
-  $("gear-sub").textContent = `${g.spec_name} ${g.class} · ${g.faction === "A" ? "Alliance" : "Horde"}`;
-  renderSlots();
-  renderTodo();
+  $("gear-title").textContent = lvl >= 60 && state.tier > 0 ? `Best gear: ${state.meta.tiers[state.tier]}` : `Best gear at level ${lvl}`;
+  $("gear-sub").textContent = `${g.spec_name} ${g.class} · ${g.faction === "A" ? "Alliance" : "Horde"}. Click a row for where to get it and alternatives.`;
+  const rows = buildRows();
+  renderWeaponNote();
+  renderRows(rows);
+  renderTodo(rows);
   renderUpcoming();
-  updateReportLink();
+  renderCounts(rows);
+  updateReportLink(rows);
   updateUrl();
   refreshTooltips();
 }
 
-function renderSlots() {
-  const list = $("slot-list");
-  list.innerHTML = "";
-  const { rows, plan } = displayRows();
-  const note = $("weapon-note");
-  if (plan.alt.length && state.gear.slots[plan.alt[0]]) {
-    const altItems = plan.alt.map((s) => pointAt(s)?.items[0]).filter(Boolean);
-    note.hidden = !altItems.length;
-    note.replaceChildren(
-      plan.use[0] === "two_hand" ? "A two-handed weapon scores best here. Other option: " : "One-hand + off-hand scores best here. Other option: ",
-      ...altItems.flatMap(([id, s], i) => [i ? " + " : "", itemLink(id, state.gear.items[id]), ` (${s})`]),
-    );
-  } else note.hidden = true;
+function renderWeaponNote() {
+  const note = $("weapon-note"), plan = weaponPlan();
+  const altItems = plan.alt.map((s) => pointAt(s)?.items[0]).filter(Boolean);
+  note.hidden = !altItems.length;
+  if (!altItems.length) return;
+  note.replaceChildren(
+    plan.use[0] === "two_hand" ? "A two-handed weapon scores best here. Other option: " : "One-hand + off-hand scores best here. Other option: ",
+    ...altItems.flatMap(([id, s], i) => [i ? " + " : "", itemLink(id, state.gear.items[id]), ` (${s})`]));
+}
 
-  for (const row of rows) {
-    const label = row.slot === "ring" || row.slot === "trinket" ? `${SLOT_LABEL[row.slot]} ${row.index + 1}` : SLOT_LABEL[row.slot];
-    const status = rowStatus(row);
-    const li = el("li", { class: `slot-row st-${status.cls}` });
-    li.append(el("div", { class: "slot-name" }, label));
-    const main = el("div", { class: "slot-main" });
-    if (!row.pick) {
-      main.append(el("span", { class: "muted" }, "No known item for this slot at this level."));
-    } else {
-      const [iid, score] = row.pick;
-      const info = state.gear.items[iid];
-      const seen = firstSeen(row.slot, iid);
-      main.append(el("div", { class: "pick" },
-        itemLink(iid, info),
-        el("span", { class: "score", title: "Score for your spec (compare within a slot)" }, String(score)),
-        seen && seen.tier === 0 && seen.level > 10 ? el("span", { class: "badge" }, `from lvl ${seen.level}`) : null,
-        info.binding === "ON_ACQUIRE" ? el("span", { class: "badge badge-bop", title: "Binds when picked up" }, "BoP") : null,
-        info.special ? el("span", { class: "badge badge-fx", title: info.special }, "special effect") : null,
-        ...itemFlags(info),
-      ));
-      const srcs = info.sources || [];
-      if (srcs.length) {
-        const d = describeSource(srcs[0]);
-        main.append(el("div", { class: "source" }, d.label === d.text ? d.text : `${d.label}. ${d.text}`,
-          " ", uncBadge(sourceReasons(srcs[0])), " ",
-          el("a", { class: "ext", href: `${WARCRAFTDB}${iid}`, target: "_blank", rel: "noopener", title: "Open this item on forever.warcraftdb.com" }, "warcraftdb")));
-        if (srcs.length > 1) {
-          const more = el("details", { class: "alts" }, el("summary", {}, `${srcs.length - 1} more source${srcs.length > 2 ? "s" : ""}`));
-          more.append(el("ul", {}, srcs.slice(1).map((s2) => {
-            const d2 = describeSource(s2);
-            return el("li", {}, d2.label === d2.text ? d2.text : `${d2.label}. ${d2.text}`, " ", uncBadge(sourceReasons(s2)));
-          })));
-          main.append(more);
-        }
-      }
-      const eq = equippedFor(row);
-      if (state.mode === "lookup") {
-        main.append(el("div", { class: "equipped" }, "You: ",
-          eq ? itemLink(eq.item_id, { name: eq.name, quality: QUALITY_BY_TYPE[eq.quality] }) : el("span", { class: "muted" }, "nothing equipped"),
-          eq && scoreOf(eq) != null ? el("span", { class: "score" }, String(scoreOf(eq))) : null));
-      } else {
-        const owned = ownedSet().has(iid);
-        main.append(el("label", { class: "own" },
-          el("input", { type: "checkbox", checked: owned, onchange: (e) => toggleOwned(iid, e.target.checked) }),
-          " I have this"));
-      }
-      if (row.alts.length) {
-        const details = el("details", { class: "alts" }, el("summary", {}, `${row.alts.length} alternative${row.alts.length > 1 ? "s" : ""}`));
-        const ul = el("ul");
-        for (const [aid, ascore] of row.alts) {
-          const ainfo = state.gear.items[aid];
-          const d = ainfo.sources?.[0] ? describeSource(ainfo.sources[0]) : null;
-          const altLi = el("li", {}, itemLink(aid, ainfo), el("span", { class: "score" }, String(ascore)), ...itemFlags(ainfo),
-            d ? el("span", { class: "muted" }, ` — ${d.label}`) : null);
-          if (state.mode === "manual") {
-            altLi.append(el("label", { class: "own own-small" },
-              el("input", { type: "checkbox", checked: ownedSet().has(aid), onchange: (e) => toggleOwned(aid, e.target.checked) }), " have"));
-          }
-          ul.append(altLi);
-        }
-        details.append(ul);
-        main.append(details);
-      }
-      if (status.note) main.append(el("div", { class: "note" }, status.note));
+function renderCounts(rows) {
+  $("n-all").textContent = rows.length;
+  for (const g of ["armour", "weapons", "jewellery"]) $(`n-${g}`).textContent = rows.filter((r) => grpOf(r.slot) === g).length;
+  // source picker: how many slots could use each category
+  document.querySelectorAll("#srcpick input").forEach((b) => {
+    if (b.value !== "all") b.nextElementSibling.textContent = rows.filter((r) => slotPool(r.slot).some(([id]) => (state.gear.items[id].sources || []).some((s) => catsOf(s).includes(b.value)))).length;
+  });
+}
+
+function renderRows(rows) {
+  const ol = $("rows");
+  ol.replaceChildren();
+  for (const r of rows) {
+    const g = grpOf(r.slot);
+    const li = el("li", { class: `row${ui.open.has(r.label) ? " open" : ""}`, "data-g": g, hidden: ui.slot !== "all" && g !== ui.slot });
+    const main = el("div", { class: "row-main" }, el("span", { class: "slot" }, r.label));
+    ol.append(li);
+    if (!r.pick) {
+      main.append(el("span", { class: "item muted nopick" }, r.filtered ? `No pick from these sources at level ${state.level}` : "No known item at this level."), el("span"), el("span"), el("span"), el("span"));
+      li.append(main);
+      continue;
     }
-    li.append(main);
-    li.append(el("div", { class: "slot-status" }, status.text));
-    list.append(li);
+    const [iid, score] = r.pick, info = state.gear.items[iid], seen = firstSeen(r.slot, iid);
+    const reasons = reasonsOf(info);
+    main.append(
+      el("span", { class: "item" }, itemLink(iid, info),
+        seen && seen.tier === 0 && seen.level > 10 ? el("span", { class: "badge", title: `Appears in the list from level ${seen.level}` }, `lvl ${seen.level}`) : null,
+        info.binding === "ON_ACQUIRE" ? el("span", { class: "badge badge-bop", title: "Binds when picked up" }, "BoP") : el("span", { class: "badge", title: "Binds when equipped" }, "BoE"),
+        info.special ? el("span", { class: "badge badge-fx", title: info.special }, "special") : null,
+        reasons.length ? Object.assign(uncBadge(), { title: reasons.join("\n") }) : null),
+      el("span", { class: "score", title: "Score for your spec (compare within a slot)" }, String(score)));
+    const d = r.srcs[0] ? describeSource(r.srcs[0]) : null;
+    main.append(el("span", { class: "src", title: d ? `${d.label}. ${d.text}` : "" }, d ? d.label : "Source unknown"));
+    main.append(wornCell(r, iid));
+    const btn = el("button", { type: "button", class: "chev-btn", "aria-expanded": String(ui.open.has(r.label)), "aria-label": `Details for ${r.label}` });
+    btn.innerHTML = ICON_CHEV;
+    main.append(btn);
+    li.append(main, buildDetail(r, info, iid, reasons));
+    const toggle = () => {
+      const open = li.classList.toggle("open");
+      btn.setAttribute("aria-expanded", String(open));
+      if (open) ui.open.add(r.label); else ui.open.delete(r.label);
+    };
+    main.addEventListener("click", (e) => { if (!e.target.closest("a, input, label")) toggle(); });
+    btn.addEventListener("click", (e) => { e.stopPropagation(); toggle(); });
   }
 }
 
-function renderTodo() {
-  const list = $("todo-list");
-  list.innerHTML = "";
-  const charLvl = characterLevel();
-  const viewing = state.level;
-  $("todo-sub").textContent = viewing === charLvl
-    ? "Grouped by where to go. The biggest gains are first."
+// "You wear" cell: item + score (or ticked item in manual mode), "I have this" box, gain bar.
+function wornCell(r, iid) {
+  const w = r.worn, cell = el("span", { class: "worn" });
+  if (state.mode === "manual") {
+    cell.append(el("input", { type: "checkbox", class: "own-box", checked: ownedSet().has(iid), title: "I have this", "aria-label": `I have ${state.gear.items[iid].name || iid}`, onchange: (e) => toggleOwned(iid, e.target.checked) }));
+  }
+  if (!w.id) cell.append(el("span", { class: "worn-name muted" }, state.mode === "manual" ? "Not ticked" : "Empty slot"));
+  else cell.append(el("span", { class: "worn-name" }, itemLink(w.id, w)), w.score != null ? el("span", { class: "score" }, String(w.score)) : null);
+  cell.append(r.gain > 0
+    ? el("span", { class: "delta", title: `Upgrade +${r.gain}` }, el("span", { class: "bar", style: `width:${Math.max(4, Math.round(Math.min(r.gain, BAR_CAP) / BAR_CAP * 34))}px` }), el("span", { class: "gain" }, `+${r.gain}`))
+    : el("span", { class: "delta" }, el("span", { class: "none" }, w.tag || "none")));
+  return cell;
+}
+
+function buildDetail(r, info, iid, reasons) {
+  const srcs = r.srcs, d = el("div", { class: "detail" });
+  if (reasons.length) d.append(el("ul", { class: "reasons" }, reasons.map((x) => el("li", {}, x))));
+  if (srcs[0]) { const s = describeSource(srcs[0]); d.append(el("p", {}, `${s.label}. ${s.text} `, el("a", { class: "ext", href: `${WARCRAFTDB}${iid}`, target: "_blank", rel: "noopener", title: "Open this item on forever.warcraftdb.com" }, "warcraftdb"))); }
+  if (srcs.length > 1) d.append(el("h3", {}, `${srcs.length - 1} more source${srcs.length > 2 ? "s" : ""}`), el("ul", {}, srcs.slice(1).map((s) => { const x = describeSource(s); return el("li", {}, `${x.label}. ${x.text}`); })));
+  const checks = Object.values(info.checks || {});
+  if (!info.uncertain?.length && checks.length && checks.every((c) => c === "single")) d.append(el("p", { class: "one-src" }, "1 source: only one database has this item, so it is not cross-checked."));
+  if (r.worn.unknown) d.append(el("p", { class: "muted" }, "Random-stat items (e.g. “… of the Monkey”) and some special items have no fixed score. Compare the stats yourself."));
+  if (r.alts.length) d.append(el("h3", {}, `${r.alts.length} alternative${r.alts.length > 1 ? "s" : ""}`), el("ul", {}, r.alts.map(([aid, as]) => {
+    const ai = state.gear.items[aid], s = ai.sources?.[0] ? describeSource(ai.sources[0]) : null;
+    return el("li", {}, itemLink(aid, ai), el("span", { class: "num muted" }, ` ${as}`), s ? el("span", { class: "muted" }, ` — ${s.label}`) : null,
+      reasonsOf(ai).length ? el("span", { class: "muted" }, " (Uncertain)") : null,
+      state.mode === "manual" ? el("label", { class: "own own-small" }, el("input", { type: "checkbox", checked: ownedSet().has(aid), onchange: (e) => toggleOwned(aid, e.target.checked) }), " have") : null);
+  })));
+  return d;
+}
+
+function renderTodo(rows) {
+  const charLvl = characterLevel(), viewing = state.level;
+  $("todo-sub").textContent = viewing === charLvl ? "Grouped by where to go, biggest gains first."
     : `For the gear at level ${viewing}${viewing > charLvl ? " (plan ahead)" : ""}.`;
   const groups = new Map();
-  const { rows } = displayRows();
-  for (const row of rows) {
-    if (!row.pick) continue;
-    const st = rowStatus(row);
-    if (!["need", "empty", "close"].includes(st.cls)) continue;
-    const [iid] = row.pick;
-    const info = state.gear.items[iid];
-    const src = info.sources?.[0];
-    if (!src) continue;
-    const d = describeSource(src);
+  for (const r of rows) {
+    if (!r.pick || r.gain <= 0 || !r.srcs[0]) continue;
+    const d = describeSource(r.srcs[0]);
     const g = groups.get(d.key) || { label: d.label, gain: 0, items: [] };
-    g.gain += st.gain;
-    g.items.push({ iid, info, text: d.text, slot: row.slot });
+    g.gain += r.gain; g.items.push({ r, d });
     groups.set(d.key, g);
   }
   const sorted = [...groups.values()].sort((a, b) => b.gain - a.gain).slice(0, 8);
-  if (!sorted.length) {
-    list.append(el("li", { class: "todo-done" }, state.mode === "manual"
-      ? "Tick the items you have. Then this list shows where to go for the rest."
-      : "Nothing to do at this level — your gear matches the list. Try the next levels on the slider."));
-    return;
-  }
+  const box = $("todo-list");
+  box.replaceChildren();
   for (const g of sorted) {
-    const ul = el("ul");
-    for (const it of g.items) ul.append(el("li", {}, itemLink(it.iid, it.info), " ", ...itemFlags(it.info), el("span", { class: "muted" }, ` — ${SLOT_LABEL[it.slot]}. ${it.text}`)));
-    list.append(el("li", {}, el("div", { class: "todo-head" }, el("strong", {}, g.label),
-      el("span", { class: "gain", title: "Total score gain" }, `+${Math.round(g.gain)}`)), ul));
+    const ul = el("ul", { class: "g-list" }, g.items.map(({ r, d }) => {
+      const info = state.gear.items[r.pick[0]];
+      return el("li", { title: d.text },
+        el("span", { class: "slot" }, r.label),
+        el("span", { class: "g-it" }, itemLink(r.pick[0], info), reasonsOf(info).length ? Object.assign(uncBadge(), { style: "margin-left:6px" }) : null),
+        el("span", { class: "g-d" }, `+${r.gain}`));
+    }));
+    box.append(el("div", { class: "group" }, el("div", { class: "g-head" }, el("strong", {}, g.label), el("span", { class: "g-gain", title: "Total score gain" }, `+${Math.round(g.gain)}`)), ul));
   }
+  if (!sorted.length) box.append(el("p", { class: "muted" }, state.mode === "manual" ? "Tick the items you have. Then this list shows where to go for the rest." : "Nothing to do at this level: your gear matches the list. Try the next levels on the slider."));
 }
 
 function renderUpcoming() {
   const list = $("upcoming-list");
-  list.innerHTML = "";
+  list.replaceChildren();
   const events = [];
   const start = state.level;
   for (const [slot, points] of Object.entries(state.gear.slots)) {
@@ -500,18 +487,14 @@ function renderUpcoming() {
     for (const p of points) {
       if (pointKey(p) <= (start >= 60 && state.tier ? 60 + state.tier : start)) continue;
       const top = p.items[0]?.[0];
-      if (top && top !== prev) {
-        events.push({ key: pointKey(p), p, slot, iid: top });
-        prev = top;
-      }
+      if (top && top !== prev) { events.push({ key: pointKey(p), p, slot, iid: top }); prev = top; }
     }
   }
   events.sort((a, b) => a.key - b.key);
-  for (const ev of events.slice(0, 10)) {
-    const when = ev.p.tier ? tierShort(ev.p.tier) : `Level ${ev.p.level}`;
-    list.append(el("li", {},
-      el("button", { type: "button", class: "jump", onclick: () => jumpTo(ev.p) }, when),
-      el("span", {}, ` ${SLOT_LABEL[ev.slot]}: `), itemLink(ev.iid, state.gear.items[ev.iid])));
+  for (const ev of events.slice(0, 6)) {
+    const when = ev.p.tier ? tierShort(ev.p.tier) : `Lv ${ev.p.level}`;
+    list.append(el("li", {}, el("button", { type: "button", class: "jump", title: "Show the gear for this level", onclick: () => jumpTo(ev.p) }, when),
+      el("span", { class: "slot" }, SLOT_LABEL[ev.slot]), itemLink(ev.iid, state.gear.items[ev.iid])));
   }
   if (!events.length) list.append(el("li", { class: "muted" }, "No further upgrades in this list."));
 }
@@ -522,39 +505,39 @@ function jumpTo(p) {
   render();
 }
 
+
 function renderCharBar() {
-  const bar = $("char-bar");
-  bar.innerHTML = "";
   const cls = currentClass();
   const specSel = el("select", { id: "spec-select", "aria-label": "Spec" });
-  for (const [key, name] of Object.entries(cls.specs)) {
-    specSel.append(el("option", { value: key, selected: key === state.spec }, name));
-  }
+  for (const [key, name] of Object.entries(cls.specs)) specSel.append(el("option", { value: key, selected: key === state.spec }, name));
   specSel.addEventListener("change", async () => {
     state.spec = specSel.value;
     if (state.mode === "manual") { state.manual.spec = state.spec; store("manual", state.manual); }
     await refreshAll();
   });
+  const kv = [el("dt", {}, "Spec"), el("dd", {}, specSel)];
+  let name, sub, faction, note;
   if (state.mode === "lookup") {
     const c = state.char.character;
-    bar.append(
-      c.avatar_url ? el("img", { class: "avatar", src: c.avatar_url, alt: "" }) : el("div", { class: "avatar avatar-empty" }),
-      el("div", { class: "char-info" },
-        el("div", { class: "char-name" }, `${c.name}${c.surname ? ` ${c.surname}` : ""}`, el("span", { class: `faction f-${c.faction}` }, c.faction === "H" ? "Horde" : "Alliance")),
-        el("div", { class: "char-meta" }, `Level ${c.level} ${c.race || ""} ${c.class_name || ""}${c.ruleset ? ` · ${c.ruleset}` : ""} · ${c.region.toUpperCase()}${c.guild ? ` · <${c.guild}>` : ""}`),
-        el("div", { class: "char-spec" }, el("label", { for: "spec-select" }, "Spec: "), specSel,
-          el("span", { class: "muted" }, ` ${state.char.spec_reason || ""}`))),
-    );
+    name = `${c.name}${c.surname ? ` ${c.surname}` : ""}`;
+    sub = `Level ${c.level} ${c.race || ""} ${c.class_name || cls.name}`;
+    faction = c.faction;
+    if (c.ruleset) kv.push(el("dt", {}, "Ruleset"), el("dd", {}, c.ruleset));
+    kv.push(el("dt", {}, "Region"), el("dd", {}, c.region.toUpperCase()));
+    if (c.guild) kv.push(el("dt", {}, "Guild"), el("dd", {}, c.guild));
+    note = state.char.spec_reason;
   } else {
     const race = state.meta.races[String(state.manual.raceId)];
-    bar.append(
-      el("div", { class: "avatar avatar-empty", "aria-hidden": "true" }, "?"),
-      el("div", { class: "char-info" },
-        el("div", { class: "char-name" }, `${race.name} ${cls.name}`, el("span", { class: `faction f-${race.faction}` }, race.faction === "H" ? "Horde" : "Alliance")),
-        el("div", { class: "char-meta" }, `Level ${state.manual.level} · entered by hand · your ticks are saved in this browser`),
-        el("div", { class: "char-spec" }, el("label", { for: "spec-select" }, "Spec: "), specSel)),
-    );
+    name = `${race.name} ${cls.name}`;
+    sub = `Level ${state.manual.level}`;
+    faction = race.faction;
+    note = "Entered by hand. Your ticks are saved in this browser.";
   }
+  $("char-bar").replaceChildren(el("h2", { class: "char-name" }, name),
+    el("div", { class: "sub" }, el("span", {}, sub), el("span", { class: `faction f-${faction}` }, faction === "H" ? "Horde" : "Alliance")),
+    el("dl", { class: "kv" }, kv), note ? el("p", { class: "sample" }, note) : null);
+  $("top-name").textContent = name;
+  $("top-sub").textContent = `${sub} · ${state.gear.spec_name}`;
 }
 
 // Button text = the label up to ":" ("Raid tier 1: Barrow Deeps, ..." -> "Raid tier 1"); the full label is the tooltip.
@@ -573,22 +556,18 @@ function renderTierButtons() {
   }
 }
 
-function uncertainLines() {
-  return displayRows().rows.filter((r) => r.pick).flatMap((r) => {
-    const [iid] = r.pick;
-    const info = state.gear.items[iid];
-    const reasons = [...(info.uncertain || []), ...(info.sources?.[0] ? sourceReasons(info.sources[0]) : [])];
-    return reasons.length ? [`- ${info.name || iid} (${iid}, ${SLOT_LABEL[r.slot]}): ${reasons.join("; ")}`] : [];
-  });
-}
 
-function updateReportLink() {
+function updateReportLink(rows) {
   const g = state.gear;
+  const lines = rows.filter((r) => r.pick).flatMap((r) => {
+    const [iid] = r.pick, reasons = reasonsOf(state.gear.items[iid]);
+    return reasons.length ? [`- ${state.gear.items[iid].name || iid} (${iid}, ${SLOT_LABEL[r.slot]}): ${reasons.join("; ")}`] : [];
+  });
   const title = `Wrong item: ${g.spec_name} ${g.class} (${g.faction}) level ${state.level}${state.tier ? ` tier ${state.tier}` : ""}`;
   const body = [
     `Class/spec: ${g.class} ${g.spec_name} (${g.faction === "A" ? "Alliance" : "Horde"})`,
     `Level: ${state.level}${state.tier ? `, tier ${state.tier}` : ""}`,
-    ...(uncertainLines().length ? ["", "Items on this page flagged Uncertain (reasons from our data):", ...uncertainLines(), ""] : []),
+    ...(lines.length ? ["", "Items on this page flagged Uncertain (reasons from our data):", ...lines, ""] : []),
     "Slot and item that looks wrong:",
     "What should it be instead (and where did you see that)?",
     `Data built: ${state.meta.built}`,
@@ -610,18 +589,32 @@ function updateUrl() {
 }
 
 // ---------------------------------------------------------------- flows
+// ---------------------------------------------------------------- flows
+// The level and character sections fold away once a character is shown (a phone gets the table, not the form).
+function setOpen(btn, open) {
+  $(btn).setAttribute("aria-expanded", String(open));
+  $($(btn).getAttribute("aria-controls")).hidden = !open;
+}
+function showCharacter() {
+  setOpen("lvl-btn", false);
+  setOpen("chg-btn", false);
+  $("side").classList.remove("open");
+  $("menu").setAttribute("aria-expanded", "false");
+}
+
 async function refreshAll() {
   try {
     await loadGear();
   } catch (e) {
     showStatus(e.message, true);
-    return;
+    return false;
   }
   if (state.mode === "lookup") await rescoreEquipped();
   renderCharBar();
-  $("results").hidden = false;
+  for (const id of ["char-bar", "hr-char", "lvl-disc", "slot-filters", "results"]) $(id).hidden = false;
   hideStatus();
   render();
+  return true;
 }
 
 async function rescoreEquipped() {
@@ -659,7 +652,7 @@ async function lookup(event) {
     state.level = Math.max(10, Math.min(60, body.character.level || 10));
     state.tier = 0;
     store("lookup", { region, name, surname });
-    await refreshAll();
+    if (await refreshAll()) showCharacter();
   } catch (e) {
     showStatus(e.message, true);
   } finally {
@@ -677,7 +670,7 @@ async function manualSubmit(event) {
   state.level = Math.max(10, level);
   state.tier = 0;
   store("manual", state.manual);
-  await refreshAll();
+  if (await refreshAll()) showCharacter();
 }
 
 // ---------------------------------------------------------------- manual form
@@ -727,8 +720,32 @@ function selectTab(mode) {
   else setScene(Number($("m-race").value));
 }
 
+
+// Source picker, sort, slot filter, folding sections, mobile menu.
+function setupControls() {
+  for (const b of ["lvl-btn", "chg-btn", "set-btn"]) $(b).addEventListener("click", () => setOpen(b, $(b).getAttribute("aria-expanded") !== "true"));
+  $("menu").addEventListener("click", (e) => { const o = $("side").classList.toggle("open"); e.currentTarget.setAttribute("aria-expanded", String(o)); });
+  document.querySelectorAll("#slot-filters button").forEach((b) => b.addEventListener("click", () => {
+    ui.slot = b.dataset.f;
+    document.querySelectorAll("#slot-filters button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    document.querySelectorAll("#rows .row").forEach((li) => { li.hidden = ui.slot !== "all" && li.dataset.g !== ui.slot; });
+  }));
+  const boxes = [...document.querySelectorAll("#srcpick input")];
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    ui.src = b.value === "all" ? new Set() : new Set(boxes.filter((x) => x.value !== "all" && x.checked).map((x) => x.value));
+    boxes.forEach((x) => { x.checked = x.value === "all" ? !ui.src.size : ui.src.has(x.value); });
+    $("src-sum").textContent = !ui.src.size ? "All sources" : ui.src.size <= 2 ? [...ui.src].map((c) => CATS[c]).join(", ") : `${ui.src.size} sources`;
+    render();
+  }));
+  const pick = $("srcpick");
+  document.addEventListener("click", (e) => { if (pick.open && !pick.contains(e.target)) pick.open = false; });
+  pick.addEventListener("keydown", (e) => { if (e.key === "Escape") { pick.open = false; pick.querySelector("summary").focus(); } });
+  $("sort").addEventListener("change", (e) => { ui.sort = e.target.value; render(); });
+}
+
 // ---------------------------------------------------------------- init
 async function init() {
+  initSettings();
   try {
     const resp = await fetch(`${DATA}/meta.json`);
     state.meta = await resp.json();
@@ -737,6 +754,7 @@ async function init() {
     return;
   }
   $("data-date").textContent = `Data built ${state.meta.built}`;
+  setupControls();
   renderTierButtons();
   $("tab-lookup").addEventListener("click", () => selectTab("lookup"));
   $("tab-manual").addEventListener("click", () => selectTab("manual"));
@@ -778,6 +796,7 @@ async function init() {
     applyUrlLevel(params);
   } else {
     selectTab(recall("tab", "lookup"));
+    $("side").classList.add("open"); // nothing to show yet: on a phone the form is the page
   }
 }
 

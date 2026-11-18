@@ -36,12 +36,12 @@ await page.selectOption("#m-class", "11");
 await page.selectOption("#m-spec", "feral_cat");
 await page.fill("#m-level", "24");
 await page.click("#panel-manual button[type=submit]");
-await page.waitForSelector("#slot-list li", { timeout: 15000 });
-chk("manual: gear list shows slots", (await page.locator("#slot-list li").count()) >= 14);
+await page.waitForSelector("#rows > li", { timeout: 15000 });
+chk("manual: gear list shows slots", (await page.locator("#rows > li").count()) >= 14);
 chk("manual: level output = 24", (await page.textContent("#level-out")) === "24");
-chk("manual: todo list filled", (await page.locator("#todo-list > li").count()) >= 1);
-chk("manual: item links go to wowhead forever", ((await page.getAttribute("#slot-list .item-link", "href")) ?? "").includes("/forever/item="));
-chk("manual: warcraftdb link", (await page.locator('#slot-list a.ext[href*="forever.warcraftdb.com/data/item/"]').count()) >= 1);
+chk("manual: todo list filled", (await page.locator("#todo-list .group").count()) >= 1);
+chk("manual: item links go to wowhead forever", ((await page.getAttribute("#rows .item-link", "href")) ?? "").includes("/forever/item="));
+chk("manual: warcraftdb link", (await page.locator('#rows a.ext[href*="forever.warcraftdb.com/data/item/"]').count()) >= 1);
 await page.screenshot({ path: `${OUT}/manual-druid-24.png`, fullPage: true });
 
 // Skyborne (only once the data has it): class list comes from the race
@@ -53,10 +53,11 @@ if (sky) {
 }
 
 // tick the first item -> slot shows "You have it"
-await page.locator("#slot-list li .own input").first().check();
-chk("manual: tick marks item as owned", (await page.locator("#slot-list li.st-bis").count()) >= 1);
+await page.locator("#rows .own-box").first().check();
+chk("manual: tick marks item as owned", (await page.locator('#rows .delta .none:text("Have it")').count()) >= 1);
 
 // slider to 60, tier buttons come from meta.tiers
+await page.click("#lvl-btn");
 await page.locator("#level-slider").fill("60");
 chk("slider 60 shows tier row", await page.isVisible("#tier-row"));
 const tierBtns = await page.locator("#tier-buttons button").count();
@@ -69,12 +70,12 @@ await page.screenshot({ path: `${OUT}/manual-druid-60-tier1.png`, fullPage: true
 
 // reload restores from URL
 await page.reload();
-await page.waitForSelector("#slot-list li", { timeout: 15000 });
+await page.waitForSelector("#rows > li", { timeout: 15000 });
 chk("reload restores level 60", (await page.textContent("#level-out")) === "60");
 
 // Tauren shaman enhancement at 30 (Horde-only class)
 await page.goto(`${BASE}/?race=6&class=7&spec=enhancement&lvl=30&level=30`);
-await page.waitForSelector("#slot-list li", { timeout: 15000 });
+await page.waitForSelector("#rows > li", { timeout: 15000 });
 chk("shaman 30 loads from URL", (await page.textContent("#gear-sub")).includes("Enhancement Shaman"));
 
 // ---- lookup mode, stubbed API (invented character)
@@ -106,7 +107,7 @@ await page.click("#lookup-btn");
 await page.waitForSelector("#char-bar .char-name", { timeout: 15000 });
 const bar = await page.textContent("#char-bar");
 chk("lookup: name surname shown", bar.includes("Testa Examplar"));
-chk("lookup: ruleset and region shown", bar.includes("Normal · EU"), bar.replace(/\s+/g, " ").slice(0, 120));
+chk("lookup: ruleset and region shown", bar.includes("Normal") && bar.includes("EU"), bar.replace(/\s+/g, " ").slice(0, 120));
 chk("lookup: request has name+surname+region", lastUrl.includes("name=Testa") && lastUrl.includes("surname=Examplar") && lastUrl.includes("region=eu"));
 chk("lookup: URL shareable", page.url().includes("surname=Examplar") && page.url().includes("region=eu"));
 await page.screenshot({ path: `${OUT}/lookup-stub.png`, fullPage: true });
@@ -146,30 +147,31 @@ await page2.route("**/data/gear/*.json", async (route) => {
   await route.fulfill({ response: resp, json: g });
 });
 await page2.goto(`${BASE}/?race=4&class=11&spec=feral_cat&lvl=24&level=24`);
-await page2.waitForSelector("#slot-list li", { timeout: 15000 });
-const nUnc = await page2.locator("#slot-list .badge-unc").count();
+await page2.waitForSelector("#rows > li", { timeout: 15000 });
+await page2.waitForLoadState("load"); // styles (and the fonts request) must be in before visibility checks
+const nUnc = await page2.locator("#rows .row-main .badge-unc").count();
 chk("uncertain: badges shown", nUnc >= 3, `${nUnc}`);
-chk("uncertain: '1 source' note shown", (await page2.locator("#slot-list .one-src").count()) >= 1);
+chk("uncertain: '1 source' note shown", (await page2.locator("#rows .one-src").count()) >= 1);
 chk("uncertain: legend visible", await page2.isVisible("#legend"));
-const first = page2.locator("#slot-list .pick .badge-unc").first();
-chk("uncertain: reasons hidden until opened", !(await page2.locator("#slot-list .pick .unc-body").first().isVisible()));
-await first.focus();
+const uncRow = page2.locator("#rows > li", { has: page2.locator(".badge-unc") }).first();
+chk("uncertain: reasons hidden until opened", !(await uncRow.locator(".reasons").isVisible()));
+await uncRow.locator(".chev-btn").focus();
 await page2.keyboard.press("Enter");
-chk("uncertain: keyboard opens reasons", await page2.locator("#slot-list .pick .unc-body").first().isVisible());
-chk("uncertain: reason text", (await page2.locator("#slot-list .pick .unc-body").first().textContent()).includes("Stats differ"));
+chk("uncertain: keyboard opens reasons", await uncRow.locator(".reasons").isVisible());
+chk("uncertain: reason text", (await uncRow.locator(".reasons").textContent()).includes("Stats differ"));
 chk("uncertain: report link carries reasons", decodeURIComponent(await page2.getAttribute("#report-link", "href")).includes("Stats differ"));
 await page2.screenshot({ path: `${OUT}/uncertain-desktop.png`, fullPage: true });
 await page2.setViewportSize({ width: 375, height: 860 });
 await page2.waitForTimeout(200);
 chk("uncertain mobile 375: no horizontal scroll", (await page2.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)) <= 1);
-await page2.locator("#slot-list .pick .badge-unc").nth(1).tap().catch(() => page2.locator("#slot-list .pick .badge-unc").nth(1).click());
+await page2.locator("#rows .row-main .badge-unc").nth(1).click();
 await page2.screenshot({ path: `${OUT}/uncertain-375.png`, fullPage: true });
 await ctx2.close();
 
 // ---- mobile layout: no horizontal scroll
 await page.setViewportSize({ width: 375, height: 860 });
 await page.goto(`${BASE}/?race=4&class=11&spec=feral_cat&lvl=24&level=24`);
-await page.waitForSelector("#slot-list li", { timeout: 15000 });
+await page.waitForSelector("#rows > li", { timeout: 15000 });
 const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 chk("mobile: no horizontal scroll", overflow <= 1, `overflow ${overflow}px`);
 await page.screenshot({ path: `${OUT}/mobile.png`, fullPage: false });

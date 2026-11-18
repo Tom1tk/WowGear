@@ -15,114 +15,107 @@
 </head>
 <body>
   <div class="scene" aria-hidden="true">
-    <div class="scene-layer on" id="scene-a" style="background-image: url('/static/bg/default.jpg')"></div>
+    <div class="scene-layer on" id="scene-a" ></div>
     <div class="scene-layer" id="scene-b"></div>
   </div>
 
-  <header class="site-header">
-    <h1 class="wordmark"><span class="wm-sword" aria-hidden="true">⚔</span> WowGear <span class="wm-era">Forever</span></h1>
-    <p class="tagline">The best gear for every level from 10 to 60 in WoW Forever — and where to get it.</p>
-  </header>
-
-  <main>
-    <section class="card input-card" aria-label="Your character">
+<div class="topbar"><div><b id="top-name">WowGear Forever</b><span id="top-sub">Best gear for every level</span></div>
+  <button type="button" class="tbtn" id="menu" aria-expanded="false" aria-controls="side"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Menu</button></div>
+<div class="app">
+<aside class="side" id="side">
+  <h1 class="logo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 17 14 6l3-3 .5 2.5L15 8 4.5 18.5 3 17Zm0 0-1.5 1.5M12 4l4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>WowGear <span>Forever</span></h1>
+  <section class="char" id="char-bar" hidden></section>
+  <div class="hr" id="hr-char" hidden></div>
+  <div class="disc" id="lvl-disc" hidden>
+    <button type="button" class="tbtn" id="lvl-btn" aria-expanded="false" aria-controls="lvl-drop"><span class="l"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 12h12M2 12V9m4 3V7m4 5V5m4 7V3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Level <b id="lvl-btn-n">20</b></span><svg class="ico chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="drop lvl-wrap" id="lvl-drop" hidden>
+      <label for="level-slider" style="font-weight:600">Gear for level <output id="level-out">20</output></label>
+      <div class="slider"><input type="range" id="level-slider" min="10" max="60" step="1" value="20" aria-describedby="level-note"><div class="ticks" aria-hidden="true"><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span></div></div>
+      <span class="muted" id="level-note"></span>
+      <div class="segmented" id="tier-row" role="radiogroup" aria-labelledby="tier-label" hidden>
+        <span class="muted" id="tier-label">Level 60:</span><span class="segmented" id="tier-buttons"></span>
+      </div>
+      <p class="hint" id="tier-note" hidden></p>
+    </div>
+  </div>
+  <div class="disc">
+    <button type="button" class="tbtn" id="chg-btn" aria-expanded="true" aria-controls="chg-drop"><span class="l"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 14c.6-2.8 2.7-4.2 5.5-4.2s4.9 1.4 5.5 4.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Change character</span><svg class="ico chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="drop" id="chg-drop">
       <div class="tabs" role="tablist">
-        <button type="button" class="tab" role="tab" id="tab-lookup" aria-selected="true" aria-controls="panel-lookup">Look up character</button>
+        <button type="button" class="tab" role="tab" id="tab-lookup" aria-selected="true" aria-controls="panel-lookup">Look up</button>
         <button type="button" class="tab" role="tab" id="tab-manual" aria-selected="false" aria-controls="panel-manual">Enter manually</button>
       </div>
-
-      <form id="panel-lookup" class="panel" role="tabpanel" aria-labelledby="tab-lookup" autocomplete="off">
-        <div class="field">
-          <label for="region">Region</label>
-          <select id="region">
-            <option value="eu" selected>EU</option>
-            <option value="us">US</option>
-            <option value="kr">KR</option>
-            <option value="tw">TW</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="character">First name</label>
-          <input id="character" type="text" placeholder="First name" autocapitalize="words" required>
-        </div>
-        <div class="field">
-          <label for="surname">Surname</label>
-          <input id="surname" type="text" placeholder="Surname" autocapitalize="words" required>
-        </div>
-        <button type="submit" class="btn-primary" id="lookup-btn">Show my gear</button>
+      <form class="form" id="panel-lookup" role="tabpanel" aria-labelledby="tab-lookup" autocomplete="off">
+        <div class="field"><label for="region">Region</label><select id="region"><option value="eu" selected>EU</option><option value="us">US</option><option value="kr">KR</option><option value="tw">TW</option></select></div>
+        <div class="field"><label for="character">First name</label><input id="character" type="text" placeholder="First name" autocapitalize="words" required></div>
+        <div class="field"><label for="surname">Surname</label><input id="surname" type="text" placeholder="Surname" autocapitalize="words" required></div>
+        <button class="btn-primary" type="submit" id="lookup-btn">Show my gear</button>
       </form>
-
-      <form id="panel-manual" class="panel" role="tabpanel" aria-labelledby="tab-manual" hidden>
-        <div class="field">
-          <label for="m-race">Race</label>
-          <select id="m-race"></select>
-        </div>
-        <div class="field">
-          <label for="m-class">Class</label>
-          <select id="m-class"></select>
-        </div>
-        <div class="field">
-          <label for="m-spec">Spec</label>
-          <select id="m-spec"></select>
-        </div>
-        <div class="field field-narrow">
-          <label for="m-level">Level</label>
-          <input id="m-level" type="number" min="1" max="60" value="20">
-        </div>
-        <button type="submit" class="btn-primary">Show gear</button>
+      <form class="form" id="panel-manual" role="tabpanel" aria-labelledby="tab-manual" hidden>
+        <div class="field"><label for="m-race">Race</label><select id="m-race"></select></div>
+        <div class="field"><label for="m-class">Class</label><select id="m-class"></select></div>
+        <div class="field"><label for="m-spec">Spec</label><select id="m-spec"></select></div>
+        <div class="field"><label for="m-level">Level</label><input id="m-level" type="number" min="1" max="60" value="20"></div>
+        <button class="btn-primary" type="submit">Show gear</button>
       </form>
       <p class="hint" id="input-hint">Forever characters have a first name and a surname, and no realm. No login needed.</p>
+    </div>
+  </div>
+  <div class="hr"></div>
+  <nav class="filters" id="slot-filters" aria-label="Slot filter" hidden>
+    <h3>Slots</h3>
+    <button type="button" aria-pressed="true" data-f="all">All <span class="n" id="n-all"></span></button>
+    <button type="button" aria-pressed="false" data-f="armour">Armour <span class="n" id="n-armour"></span></button>
+    <button type="button" aria-pressed="false" data-f="weapons">Weapons <span class="n" id="n-weapons"></span></button>
+    <button type="button" aria-pressed="false" data-f="jewellery">Jewellery <span class="n" id="n-jewellery"></span></button>
+  </nav>
+  <div class="hr"></div>
+  <div class="disc">
+    <button type="button" class="tbtn" id="set-btn" aria-expanded="false" aria-controls="set-drop"><span class="l"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.5v2m0 9v2M1.5 8h2m9 0h2M3.4 3.4l1.4 1.4m6.4 6.4 1.4 1.4M3.4 12.6l1.4-1.4m6.4-6.4 1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Settings</span><svg class="ico chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="drop form" id="set-drop" hidden>
+      <div class="field"><label for="bg-pick">Background</label><select id="bg-pick"></select></div>
+      <div class="field"><label for="theme-pick">Colours</label><select id="theme-pick"><option value="dark">Dark</option><option value="light">Light</option><option value="auto">Match my system</option></select></div>
+    </div>
+  </div>
+</aside>
+<div class="stage">
+<div id="status" class="status" role="status" hidden></div>
+<main class="work" id="results" hidden>
+  <section class="panel" aria-labelledby="gear-t">
+    <div class="sec-head"><h2 id="gear-title">Best gear</h2><p id="gear-sub"></p></div>
+    <p class="weapon-note" id="weapon-note" hidden></p>
+    <div class="toolbar">
+      <details class="srcpick" id="srcpick">
+        <summary><span class="muted">Get it from</span> <b id="src-sum">All sources</b><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary>
+        <div class="srcmenu" role="group" aria-label="Where to get it">
+          <label><input type="checkbox" value="all" checked> All sources</label>
+          <label><input type="checkbox" value="vendor"> Vendor / AH<span class="n"></span></label>
+          <label><input type="checkbox" value="ddrop"> Dungeon drops<span class="n"></span></label>
+          <label><input type="checkbox" value="wdrop"> World drops<span class="n"></span></label>
+          <label><input type="checkbox" value="craft"> Crafted<span class="n"></span></label>
+          <label><input type="checkbox" value="wq"> World quests<span class="n"></span></label>
+          <label><input type="checkbox" value="dq"> Dungeon quests<span class="n"></span></label>
+        </div>
+      </details>
+      <label class="sort"><span class="muted">Sort</span><select id="sort" title="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop." aria-description="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop.">
+        <option value="slot">Slot order</option><option value="gain">Biggest upgrade</option><option value="easy">Easiest to get</option></select></label>
+    </div>
+    <div class="cols" aria-hidden="true"><span>Slot</span><span>Best item</span><span style="text-align:right">Score</span><span>Where to get it</span><span>You wear / gain</span><span></span></div>
+    <ol class="rows" id="rows"></ol>
+  </section>
+  <aside class="rail" aria-label="Next steps">
+    <section class="panel" aria-labelledby="todo-t">
+      <div class="sec-head"><h2 id="todo-t">What to do next</h2><p id="todo-sub">Grouped by where to go, biggest gains first.</p></div>
+      <div id="todo-list"></div>
     </section>
-
-    <div id="status" class="status" role="status" hidden></div>
-
-    <section id="results" hidden>
-      <div class="card char-bar" id="char-bar"></div>
-
-      <div class="card level-card">
-        <div class="level-head">
-          <label for="level-slider" class="level-label">Gear for level <output id="level-out">20</output></label>
-          <span class="level-note" id="level-note"></span>
-        </div>
-        <div class="slider-wrap">
-          <input type="range" id="level-slider" min="10" max="60" step="1" value="20" list="level-ticks" aria-describedby="level-note">
-          <datalist id="level-ticks">
-            <option value="10" label="10"></option><option value="20" label="20"></option>
-            <option value="30" label="30"></option><option value="40" label="40"></option>
-            <option value="50" label="50"></option><option value="60" label="60"></option>
-          </datalist>
-          <div class="ticks" aria-hidden="true"><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span></div>
-        </div>
-        <div class="tier-row" id="tier-row" hidden>
-          <span class="tier-label" id="tier-label">Level 60 content:</span>
-          <div class="segmented" id="tier-buttons" role="radiogroup" aria-labelledby="tier-label"></div>
-          <p class="tier-note" id="tier-note" hidden></p>
-        </div>
-      </div>
-
-      <div class="layout">
-        <section class="card gear-card" aria-labelledby="gear-title">
-          <div class="card-head">
-            <h2 id="gear-title">Best gear</h2>
-            <span class="card-sub" id="gear-sub"></span>
-          </div>
-          <p class="legend" id="legend"><span class="badge badge-unc"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Uncertain</span> our data sources disagree about this item or where to get it; tap the badge to see why. <span class="badge badge-one">1 source</span> only one database has this item, so it is not cross-checked.</p>
-          <div id="weapon-note" class="weapon-note" hidden></div>
-          <ol id="slot-list" class="slot-list"></ol>
-        </section>
-
-        <aside class="side">
-          <section class="card todo-card" aria-labelledby="todo-title">
-            <h2 id="todo-title">What to do next</h2>
-            <p class="card-sub" id="todo-sub"></p>
-            <ol id="todo-list" class="todo-list"></ol>
-          </section>
-          <section class="card upcoming-card" aria-labelledby="upcoming-title">
-            <h2 id="upcoming-title">Coming up</h2>
-            <p class="card-sub">Levels where a better item becomes available.</p>
-            <ol id="upcoming-list" class="upcoming-list"></ol>
-          </section>
-          <details class="card glossary">
+    <section class="panel" aria-labelledby="up-t">
+      <div class="sec-head"><h2 id="up-t">Coming up</h2><p>Levels where a better item appears.</p></div>
+      <ol class="up-list" id="upcoming-list"></ol>
+    </section>
+  </aside>
+</main>
+<footer class="foot">
+<details class="glossary">
             <summary>New to Forever? Words on this page</summary>
             <dl>
               <dt>BiS</dt><dd>"Best in slot": the best item for that equipment slot.</dd>
@@ -139,20 +132,15 @@
               <dt>Score</dt><dd>How good an item is for your spec, from stat weights. Higher is better. Compare only within one slot.</dd>
             </dl>
           </details>
-        </aside>
-      </div>
-    </section>
-  </main>
+<p class="legend" id="legend"><span class="badge badge-unc"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Uncertain</span> our data sources disagree; open the row to see why. “1 source” (in an opened row) means only one database has the item. The gold bar is the score gained over what you wear.</p>
+<p class="credits">Data: Blizzard Game Data API (Forever), <a href="https://forever.warcraftdb.com/" target="_blank" rel="noopener">warcraftdb</a>.
+  Data from <a href="https://foreverdb.net/" target="_blank" rel="noopener">ForeverDB.net</a>.
+  Item tooltips by <a href="https://www.wowhead.com/forever" target="_blank" rel="noopener">Wowhead</a>.
+  Background art © Blizzard Entertainment. Not affiliated with Blizzard Entertainment.</p>
+<p class="credits"><a id="report-link" href="https://github.com/Tom1tk/WowGear/issues/new" target="_blank" rel="noopener">Report a wrong item</a> · <span id="data-date"></span></p>
+</footer>
+</div></div>
 
-  <footer class="site-footer">
-    <p>Data: Blizzard Game Data API (Forever), <a href="https://forever.warcraftdb.com/" target="_blank" rel="noopener">warcraftdb</a>.
-      Data from <a href="https://foreverdb.net/" target="_blank" rel="noopener">ForeverDB.net</a>.
-      Item tooltips by <a href="https://www.wowhead.com/forever" target="_blank" rel="noopener">Wowhead</a>.
-      Background art © Blizzard Entertainment.
-      Not affiliated with Blizzard Entertainment.</p>
-    <p><a id="report-link" href="https://github.com/Tom1tk/WowGear/issues/new" target="_blank" rel="noopener">Report a wrong item</a> · <span id="data-date"></span></p>
-  </footer>
-
-  <script src="/static/app.js" type="module"></script>
+<script src="/static/app.js" type="module"></script>
 </body>
 </html>
