@@ -565,31 +565,15 @@ function buildDetail(r, info, iid, reasons) {
 
 function renderTodo(rows) {
   const charLvl = characterLevel(), viewing = state.level;
-  $("todo-sub").textContent = viewing === charLvl ? "Grouped by where to go, biggest gains first."
+  $("todo-sub").textContent = viewing === charLvl ? "The best place for each activity, most upgrades first."
     : `For the gear at level ${viewing}${viewing > charLvl ? " (plan ahead)" : ""}.`;
-  const groups = new Map();
-  for (const r of rows) {
-    if (!r.pick || r.gain < UP || !r.srcs[0]) continue;
-    const d = describeSource(r.srcs[0]);
-    const g = groups.get(d.key) || { key: d.key, label: d.label, src: r.srcs[0], items: [] };
-    g.items.push({ r, d });
-    groups.set(d.key, g);
-  }
-  // groups by their biggest gain (then most upgrades); items inside by gain. Header shows the upgrade count, not a sum of percents.
-  const top = (g) => g.items[0].r.gain;
-  for (const g of groups.values()) g.items.sort((a, b) => b.r.gain - a.r.gain);
-  const sorted = [...groups.values()].sort((a, b) => (top(a) === top(b) ? b.items.length - a.items.length : top(b) - top(a))).slice(0, 8);
-  const box = $("todo-list");
-  box.replaceChildren();
   const sugg = suggestions(rows);
-  if (sugg.length) box.append(el("h3", { class: "g-sec" }, "Suggested"), ...sugg.map((g) => groupEl(g, `s:${g.kind}`)),
-    el("h3", { class: "g-sec" }, "Your Best gear list, by where to get it"));
-  for (const g of sorted) box.append(groupEl({ ...g, items: g.items.map(({ r, d }) => ({ label: r.label, id: r.pick[0], gain: r.gain, d })) }, `p:${g.key}`));
-  if (!sorted.length) box.append(el("p", { class: "muted" }, state.mode === "manual" ? "Tick the items you have. Then this list shows where to go for the rest." : "Nothing to do at this level: your gear matches the list. Try the next levels on the slider."));
+  $("todo-list").replaceChildren(...sugg.map((g) => groupEl(g, `s:${g.kind}`)));
+  if (!sugg.length) $("todo-list").append(el("p", { class: "muted" }, state.mode === "manual" ? "Tick the items you have. Then this list shows where to go for the rest." : "Nothing to do at this level: your gear matches the list. Try the next levels on the slider."));
 }
 
 // One "What to do next" group: a place, then the items to get there.
-// key: remembers if this group is folded (suggestions by activity, places by place).
+// key: remembers if this group is folded (per activity).
 function groupEl(g, key) {
   const ul = el("ul", { class: "g-list" }, g.items.map(({ label, id, gain, d }) => {
     const info = state.gear.items[id];
@@ -601,7 +585,7 @@ function groupEl(g, key) {
   }));
   const n = g.items.length;
   const box = el("details", { class: "group", open: !ui.shut.has(key) },
-    el("summary", { class: "g-head" }, el("strong", {}, g.label, " ", pinBtn(g.src)),
+    el("summary", { class: "g-head" }, el("strong", {}, el("span", { class: "g-kind" }, g.kind), g.label, " ", pinBtn(g.src)),
       el("span", { class: "g-gain", title: "Slots to upgrade here" }, `${n} upgrade${n > 1 ? "s" : ""}`)), ul);
   box.addEventListener("toggle", () => {
     if (box.open) ui.shut.delete(key); else ui.shut.add(key);
@@ -612,7 +596,7 @@ function groupEl(g, key) {
 
 // Suggested place per activity: the dungeon (quest, vendor ...) with the most slot upgrades over what the player has,
 // counting every item that was a best pick up to this level, not only the top pick.
-const SUGGEST = [["Dungeon", ["ddrop"]], ["Quest", ["wq", "dq"]], ["Vendor", ["vendor", "rep"]], ["Craft", ["craft"]], ["Farm", ["wdrop"]]];
+const SUGGEST = [["Dungeons", ["ddrop"]], ["Quests", ["wq", "dq"]], ["Vendors", ["vendor", "rep"]], ["Crafting", ["craft"]], ["Farming", ["wdrop"]]];
 function suggestions(rows) {
   const base = {}; // per slot: score of what the player has (pairs: the weaker one)
   const floor = {}; // only items close to the best pick (80%) count: far weaker ones are not worth the trip

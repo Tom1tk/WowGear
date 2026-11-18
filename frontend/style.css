@@ -259,14 +259,13 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 
 /* rail */
 .rail { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
-.g-sec { margin: 10px 0 2px; font: 600 11px/1.4 inherit; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.g-sec:first-child { margin-top: 0; }
 .group { padding: 8px 0; border-top: 1px solid var(--line); }
 .group:first-of-type { border-top: 0; padding-top: 4px; }
 .g-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; cursor: pointer; list-style: none; }
+.g-kind { display: block; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
 .g-head::-webkit-details-marker { display: none; }
-.g-head strong::before { content: "▾"; display: inline-block; width: 1em; color: var(--muted); transition: transform .15s; }
-.group:not([open]) .g-head strong::before { transform: rotate(-90deg); }
+.g-kind::before { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 8px 2px 2px; border: solid var(--muted); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); transform-origin: 50% 50%; transition: transform .15s; }
+.group:not([open]) .g-kind::before { transform: rotate(-45deg); }
 .group:not([open]) { padding-bottom: 4px; }
 .g-head strong { font-weight: 600; font-size: 14px; }
 .g-gain { color: var(--gold-2); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 13px; }
