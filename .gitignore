@@ -8,6 +8,6 @@ backend/app/item_icon_cache.json
 .vercel
 .env*
 data/raw/
-data/era/staging/
+data/forever/staging/
 node_modules/
 shots/

@@ -8,8 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 RAW = ROOT / "data" / "raw"
-STAGING = ROOT / "data" / "era" / "staging"
-ERA = ROOT / "data" / "era"
+FOREVER = ROOT / "data" / "forever"
+STAGING = FOREVER / "staging"
 REPORTS = ROOT / "reports"
 
 

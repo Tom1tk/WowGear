@@ -1,4 +1,6 @@
-"""Normalize cached Blizzard Era item JSON into data/era/staging/blizzard.json.
+"""Normalize cached Blizzard WoW Forever item JSON into data/forever/staging/blizzard.json
+(plus staging/blizzard_meta.json with the namespace version). 404 markers (ids Forever
+does not have) are skipped: "missing", not a conflict.
 
 Primary stats come straight from the API. "Equip:" effects are text in the
 API (e.g. "Equip: +20 Attack Power."), so they are read with the patterns in
@@ -83,10 +85,17 @@ def parse_effect(text: str):
 def normalize(raw: dict) -> dict:
     p = raw["preview_item"]
     stats: dict[str, float] = {}
+    unknown_stats: list[str] = []
     for s in p.get("stats", []):
-        key = STAT_KEYS.get(s["type"]["type"])
+        stype = (s.get("type") or {}).get("type")
+        if stype is None:  # display-only entry (e.g. "+13 to All Resistances"): keep it visible
+            unknown_stats.append(s.get("display", {}).get("display_string", str(s)))
+            continue
+        key = STAT_KEYS.get(stype)
         if key and not s.get("is_negated"):
             stats[key] = stats.get(key, 0) + s["value"]
+        elif not key:
+            unknown_stats.append(f'{stype} {s["value"]}')
     effects, unparsed = [], []
     for sp in p.get("spells", []):
         desc = sp.get("description", "")
@@ -127,11 +136,12 @@ def normalize(raw: dict) -> dict:
         "weapon": weapon,
         "effects": effects,
         "unparsed_effects": unparsed,
+        "unknown_stats": unknown_stats,
         "classes": classes or None,
         "races": races or None,
         "reputation": {"faction": rep["faction"]["name"], "faction_id": rep["faction"]["id"],
                        "level": rep["min_reputation_level"]} if rep else None,
-        "skill": {"name": skill["profession"]["name"], "level": skill["level"]} if skill else None,
+        "skill": {"name": skill["profession"].get("name"), "level": skill.get("level")} if skill else None,
         "set": (p.get("set") or {}).get("item_set", {}).get("name"),
         "unique": bool(p.get("unique_equipped") or p.get("limit_category")),
         "temporary": bool(p.get("expiration_time_left")),
@@ -139,17 +149,24 @@ def normalize(raw: dict) -> dict:
 
 
 def main():
-    out = {}
+    out, missing = {}, 0
     for path in (RAW / "blizzard" / "items").glob("*.json"):
         raw = json.loads(path.read_text(encoding="utf-8"))
+        if "_status" in raw:
+            missing += 1
+            continue
         out[raw["id"]] = normalize(raw)
+    version = RAW / "blizzard" / "version.json"
+    write_json(STAGING / "blizzard_meta.json", {
+        "missing_404": missing, "items": len(out),
+        **(json.loads(version.read_text()) if version.exists() else {})})
     write_json(STAGING / "blizzard.json", out, compact=True)
     unparsed = {}
     for item in out.values():
         for text in item["unparsed_effects"]:
             if text.startswith("Equip:"):
                 unparsed[text] = unparsed.get(text, 0) + 1
-    print(f"{len(out)} items; {len(unparsed)} distinct unparsed Equip effects")
+    print(f"{len(out)} items ({missing} missing/404); {len(unparsed)} distinct unparsed Equip effects")
 
 
 if __name__ == "__main__":
