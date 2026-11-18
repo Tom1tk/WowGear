@@ -96,7 +96,7 @@ def candidate_ids(sitemap: list[int]) -> list[int]:
     """Every sitemap item id plus ForeverDB gear-finder ids (is_gear_node filters later)."""
     from parse_foreverdb import parse_gear_sources
     text = (RAW / "foreverdb" / "GearSources.lua").read_text(encoding="utf-8")
-    return sorted(set(sitemap) | set(parse_gear_sources(text)))
+    return sorted(set(sitemap) | set(parse_gear_sources(text)), key=lambda i: (i < 200000, i))  # Forever-only ids first
 
 
 def is_gear_node(node: dict) -> bool:
