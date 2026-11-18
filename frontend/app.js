@@ -441,7 +441,7 @@ function render() {
     lvl > charLvl ? `${lvl - charLvl} level${lvl - charLvl > 1 ? "s" : ""} ahead of you` : `${charLvl - lvl} below your level`;
   const g = state.gear;
   $("gear-title").textContent = lvl >= 60 && state.tier > 0 ? `Best gear: ${state.meta.tiers[state.tier]}` : `Best gear at level ${lvl}`;
-  $("gear-sub").textContent = `${g.spec_name} ${g.class} · ${g.faction === "A" ? "Alliance" : "Horde"}. Click a row for where to get it and alternatives.`;
+  $("gear-sub").textContent = `${g.spec_name} ${g.class} · ${g.faction === "A" ? "Alliance" : "Horde"}`;
   const rows = buildRows();
   renderWeaponNote();
   renderRows(rows);
@@ -565,8 +565,7 @@ function buildDetail(r, info, iid, reasons) {
 
 function renderTodo(rows) {
   const charLvl = characterLevel(), viewing = state.level;
-  $("todo-sub").textContent = viewing === charLvl ? "The best place for each activity, most upgrades first."
-    : `For the gear at level ${viewing}${viewing > charLvl ? " (plan ahead)" : ""}.`;
+  $("todo-sub").textContent = viewing === charLvl ? "" : `For level ${viewing}.`;
   const sugg = suggestions(rows);
   $("todo-list").replaceChildren(...sugg.map((g) => groupEl(g, `s:${g.kind}`)));
   if (!sugg.length) $("todo-list").append(el("p", { class: "muted" }, state.mode === "manual" ? "Tick the items you have. Then this list shows where to go for the rest." : "Nothing to do at this level: your gear matches the list. Try the next levels on the slider."));
@@ -699,7 +698,7 @@ function renderCharBar() {
     name = `${race.name} ${cls.name}`;
     sub = `Level ${state.manual.level}`;
     faction = race.faction;
-    note = "Entered by hand. Your ticks are saved in this browser.";
+    note = "Entered by hand.";
   }
   $("char-bar").replaceChildren(el("h2", { class: "char-name" }, name),
     el("div", { class: "sub" }, el("span", {}, sub), el("span", { class: `faction f-${faction}` }, faction === "H" ? "Horde" : "Alliance")),
@@ -883,8 +882,8 @@ function selectTab(mode) {
   $("panel-lookup").hidden = !lookupOn;
   $("panel-manual").hidden = lookupOn;
   $("input-hint").textContent = lookupOn
-    ? "Forever characters have a first name and a surname, and no realm. No login needed."
-    : "No character needed: pick race, class, spec and level, then tick the items you have.";
+    ? "First name and surname, no realm."
+    : "Pick race, class, spec and level, then tick the items you have.";
   store("tab", mode);
   if (lookupOn) setScene(state.mode === "lookup" ? state.char?.character.race_id : null);
   else setScene(Number($("m-race").value));

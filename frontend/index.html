@@ -19,7 +19,7 @@
     <div class="scene-layer" id="scene-b"></div>
   </div>
 
-<div class="topbar"><div><b id="top-name">WowGear Forever</b><span id="top-sub">Best gear for every level</span></div>
+<div class="topbar"><div><b id="top-name">WowGear Forever</b><span id="top-sub"></span></div>
   <button type="button" class="tbtn" id="menu" aria-expanded="false" aria-controls="side"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Menu</button></div>
 <div class="app">
 <aside class="side" id="side">
@@ -58,7 +58,7 @@
         <div class="field"><label for="m-level">Level</label><input id="m-level" type="number" min="1" max="60" value="20"></div>
         <button class="btn-primary" type="submit">Show gear</button>
       </form>
-      <p class="hint" id="input-hint">Forever characters have a first name and a surname, and no realm. No login needed.</p>
+      <p class="hint" id="input-hint">First name and surname, no realm.</p>
     </div>
   </div>
   <div class="hr"></div>
@@ -111,17 +111,17 @@
   </section>
   <aside class="rail" aria-label="Next steps">
     <section class="panel" aria-labelledby="todo-t">
-      <div class="sec-head"><h2 id="todo-t">What to do next</h2><p id="todo-sub">Grouped by where to go, biggest gains first.</p></div>
+      <div class="sec-head"><h2 id="todo-t">What to do next</h2><p id="todo-sub"></p></div>
       <div id="todo-list"></div>
     </section>
     <section class="panel" id="lookup" aria-labelledby="lk-t">
-      <div class="sec-head"><h2 id="lk-t">Item lookup</h2><p>Where an item is best for this spec.</p></div>
+      <div class="sec-head"><h2 id="lk-t">Item lookup</h2></div>
       <input id="lk-in" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lk-list" aria-label="Search for an item by name" placeholder="Search an item by name" autocomplete="off" spellcheck="false">
       <ul id="lk-list" role="listbox" aria-label="Matching items" hidden></ul>
       <div id="lk-out" aria-live="polite"></div>
     </section>
     <section class="panel" aria-labelledby="up-t">
-      <div class="sec-head"><h2 id="up-t">Coming up</h2><p>Levels where a better item appears.</p></div>
+      <div class="sec-head"><h2 id="up-t">Coming up</h2></div>
       <ol class="up-list" id="upcoming-list"></ol>
     </section>
   </aside>
