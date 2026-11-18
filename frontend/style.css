@@ -194,7 +194,7 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .sec-head p { margin: 0; font-size: var(--fs-md); color: var(--muted); }
 .sec-head p:empty { display: none; }
 .panel { background: color-mix(in srgb, var(--card) var(--card-alpha), transparent); backdrop-filter: blur(10px); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-3) 14px; }
-.legend { margin: 0 0 6px; text-align: left; font-size: var(--fs-sm); color: var(--muted); }
+.legend { margin: 0;  font-size: var(--fs-sm); color: var(--muted); }
 
 /* gear table */
 .cols, .row-main { display: grid; grid-template-columns: 78px minmax(0, 1.4fr) 44px minmax(0, 1fr) minmax(0, 1fr) 40px 84px 20px; gap: 10px; align-items: center; }
@@ -292,10 +292,11 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .jump { flex: none; width: 52px; border: 1px solid var(--line); background: var(--card-2); border-radius: var(--r-sm); padding: 0 6px; cursor: pointer; font-size: var(--fs-sm); font-weight: 600; color: var(--accent); }
 .jump:hover { border-color: var(--gold); }
 .status { padding: 20px; color: var(--muted); }
-.foot { text-align: center; color: var(--muted); font-size: var(--fs-sm); padding: 8px 16px 24px; }
+.foot { display: grid; grid-template-columns: minmax(0, 1fr) 400px; grid-template-rows: auto auto 1fr; gap: 6px 20px; align-items: start; color: var(--muted); font-size: var(--fs-sm); padding: 8px 20px 24px; }
+.foot > :not(.glossary) { grid-column: 1; }
 
 /* narrower desktop */
-@media (max-width: 1700px) { .app { grid-template-columns: 220px minmax(0, 1fr); } .logo { font-size: 17px; } .work { grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; padding: 12px 14px 8px; } .cols, .row-main { grid-template-columns: 64px minmax(0, 1.4fr) 40px minmax(0, 1fr) minmax(0, .9fr) 36px 80px 20px; gap: 8px; } }
+@media (max-width: 1700px) { .app { grid-template-columns: 220px minmax(0, 1fr); } .logo { font-size: 17px; } .work, .foot { grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; padding: 12px 14px 8px; } .foot { gap: 6px 14px; padding-bottom: 24px; } .cols, .row-main { grid-template-columns: 64px minmax(0, 1.4fr) 40px minmax(0, 1fr) minmax(0, .9fr) 36px 80px 20px; gap: 8px; } }
 /* mobile */
 @media (max-width: 900px) {
   .app { display: block; }
@@ -306,6 +307,7 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
   .side { display: none; position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
   .side.open { display: flex; }
   .work { grid-template-columns: minmax(0, 1fr); padding: 10px 12px; gap: 14px; }
+  .foot { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 24px; } .glossary { order: 1; }
   .rail { position: static; max-height: none; overflow: visible; order: -1; }
   .cols { display: none; }
   .row-main { grid-template-columns: 70px minmax(0, 1fr) 40px 22px; grid-template-areas: "slot item score chev" ". src src ." ". worn worn ."; gap: 2px 8px; padding: 6px; }
@@ -316,14 +318,14 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 @media (prefers-reduced-motion: reduce) { .tbtn .chev, .chev-btn .ico { transition: none; } }
 .status.error { color: var(--bad); }
 .jump { width: auto; min-width: 52px; white-space: nowrap; }
-.glossary { text-align: left; max-width: 760px; margin: 0 auto 10px; }
+.glossary { grid-column: 2; grid-row: 1 / span 3; }
 .glossary summary { cursor: pointer; color: var(--gold-2); list-style: none; display: inline-flex; align-items: center; gap: 6px; }
 .glossary summary::-webkit-details-marker { display: none; }
 .glossary summary .ico { transform: rotate(-90deg); transition: transform .15s; }
 .glossary[open] summary .ico { transform: none; }
 .glossary dl { margin: 6px 0 0; display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; }
 .glossary dt { font-weight: 600; } .glossary dd { margin: 0; }
-.foot .credits { margin: 6px 0 0; }
+.foot .credits { margin: 0; }
 [hidden] { display: none !important; }
 .faction.f-A { background: var(--alliance); }
 .own-box { flex: none; accent-color: var(--gold); margin: 0; }
