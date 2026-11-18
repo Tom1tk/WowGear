@@ -6,7 +6,7 @@ the repo's LICENSE). Output:
   npcs:   {id: {"name", "title", "side" ("A"/"H"/"AH"/None), "zone" (area id), "spot": [x, y] (first spawn)}}
   zones:  {area id: {"name", "map" (uiMapId, for in-game map pins)}} from support/Forever/Zones/uiMapIdToAreaId.lua
   drops:  {item id: [npc ids]} from QuestieTrace (src/corrections/Forever/traces, aggregated player traces);
-          trace-only NPCs are added to npcs
+          npcs come from src/corrections/Forever/combined/foreverNpcDB.lua (all correction layers applied)
 
     python scripts/data/parse_questie.py
 """
@@ -58,6 +58,8 @@ def read_traces(name: str, keys: str) -> dict[int, dict]:
 
 def npc_record(row: list) -> dict:
     spawns = field(row, N_SPAWNS) or {}
+    if isinstance(spawns, list):  # {[1]={...}} is written as {{...}} in combined/
+        spawns = dict(enumerate(spawns, 1))
     zone = field(row, N_ZONE)
     spots = spawns.get(zone) if isinstance(spawns, dict) else None
     if not spots and isinstance(spawns, dict) and spawns:
@@ -71,7 +73,7 @@ def read_rows(path) -> dict[int, list]:
     """{id: [fields...]} from a Questie data file (lines like `[12] = {...},`)."""
     out = {}
     for line in path.read_text(encoding="utf-8").split("\n"):
-        m = re.match(r"^\[(\d+)\] = (\{.*\}),?\s*$", line)
+        m = re.match(r"^(?:npc)?\[(\d+)\] ?= ?(\{.*\}),?\s*$", line)
         if m:
             out[int(m.group(1))] = lua_value(m.group(2))[0]
     return out
@@ -140,13 +142,8 @@ def main() -> None:
         if qid in chains:
             rec["chain"] = chains[qid]
         out_q[qid] = rec
-    npcs = {nid: npc_record(row) for nid, row in read_rows(DB / "foreverNpcDB.lua").items()}
-    for nid, t in read_traces("foreverNpcTraces.lua", "npcKeys").items():
-        if nid not in npcs and t.get("name"):  # row layout as in foreverNpcDB.lua
-            row = [None] * N_TITLE
-            row[N_NAME - 1], row[N_SPAWNS - 1], row[N_ZONE - 1] = t["name"], t.get("spawns"), t.get("zoneID")
-            row[N_SIDE - 1] = t.get("friendlyToFaction")
-            npcs[nid] = npc_record(row)
+    # combined/ = base + all correction layers (incl. traces), so trace-only NPCs have names too
+    npcs = {nid: npc_record(row) for nid, row in read_rows(TRACES.parent / "combined" / "foreverNpcDB.lua").items()}
     drops = {iid: t["npcDrops_add"] for iid, t in read_traces("foreverItemTraces.lua", "itemKeys").items()
              if t.get("npcDrops_add")}
     zones = read_zones()

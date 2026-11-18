@@ -2,7 +2,7 @@
 
 Items kept: **5601**; with at least one conflict (Uncertain): **193**.
 Items known to both warcraftdb and Blizzard: 3042.
-Source entries: 9854; confirmed by 2 datasets: 2535; conflicts: 792.
+Source entries: 9804; confirmed by 2 datasets: 2532; conflicts: 702.
 
 Missing in a source is not a conflict. ForeverDB sources labelled Classic (k) or clue (c) are ignored.
 Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
@@ -27,7 +27,7 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 
 ## Source conflicts by kind
 
-- drop: 792
+- drop: 702
 
 ## Examples (first 50 item conflicts)
 
