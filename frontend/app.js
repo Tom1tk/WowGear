@@ -159,6 +159,11 @@ function characterLevel() {
 }
 
 // ---------------------------------------------------------------- sources
+const STANDINGS = ["Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"];
+function formatMoney(copper) {
+  const c = Number(copper), g = Math.floor(c / 10000), s = Math.floor(c / 100) % 100;
+  return g ? `${g}g ${s}s` : `${s}s ${c % 100}c`;
+}
 function describeSource(src) {
   const inst = src.instance;
   const chance = src.chance != null ? ` — ${src.chance < 1 ? src.chance.toFixed(1) : Math.round(src.chance)}% drop chance` : "";
@@ -183,13 +188,18 @@ function describeSource(src) {
       return { key: `quest:${src.id}`, label, text: `Quest reward${where}${from}. Can be picked up at level ${src.min_level || 1}.` };
     }
     case "vendor": {
-      const rep = src.reputation ? ` Needs ${src.reputation.faction} reputation.` : "";
-      return { key: `vendor:${src.id}`, label: `Buy from ${src.name}${src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${src.name}${src.title ? ` <${src.title}>` : ""}.${rep}` };
+      // Forever data: rep vendors are named by faction with {standing: 0-7}; plain vendors may have no name.
+      const standing = STANDINGS[Number(src.reputation?.standing)];
+      if (src.reputation) return { key: `rep:${src.name}`, label: `Buy from ${src.name} quartermaster`, text: `Needs ${standing || "some"} reputation with ${src.name}.` };
+      const who = src.name || "a vendor";
+      const price = src.copper ? ` Costs about ${formatMoney(src.copper)}.` : "";
+      return { key: src.name ? `vendor:${src.id}` : "vendor", label: `Buy from ${who}${src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${who}${src.title ? ` <${src.title}>` : ""}.${price}` };
     }
     case "craft": {
       const recipe = src.recipe ? ` Recipe: ${src.recipe.name}${src.recipe.from?.length ? ` (${src.recipe.from.join(" / ")})` : ""}.` : " Recipe from the profession trainer.";
       const raid = inst ? ` Needs materials from ${instanceName(inst)}.` : "";
-      return { key: `craft:${src.id}`, label: `${src.id} (crafted)`, text: `Crafted with ${src.id}${src.skill ? ` (skill ${src.skill})` : ""}.${recipe}${raid}` };
+      const prof = src.name || "a profession";
+      return { key: `craft:${prof}`, label: `Craft with ${prof}`, text: `Crafted with ${prof}${src.skill ? ` (skill ${src.skill})` : ""}.${recipe}${raid}` };
     }
     case "world_drop":
       return { key: "ah", label: "Auction House / world drops", text: "Random drop from many monsters. It is Bind on Equip, so you can often buy it on the Auction House." };
