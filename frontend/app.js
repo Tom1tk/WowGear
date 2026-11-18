@@ -1,4 +1,4 @@
-import { describeSource as describeIn, catsOf, CATS, EFFORT, locText, pinCommand } from "./sources.js";
+import { describeSource as describeIn, catsOf, CATS, EFFORT, locText, pinCommand, mapUrl } from "./sources.js";
 import { setupLookup } from "./lookup.js";
 
 const $ = (id) => document.getElementById(id);
@@ -143,7 +143,11 @@ function pinBtn(src) {
     catch { window.prompt("Copy this, then paste it into game chat:", cmd); }
     setTimeout(() => delete b.dataset.done, 2500);
   });
-  return b;
+  const url = mapUrl(l.zone);
+  if (!url) return b;
+  const a = el("a", { class: "ext", href: url, target: "_blank", rel: "noopener", title: `Open ${l.zone} on wowforevermap.com (zone page; find ${l.x.toFixed(1)}, ${l.y.toFixed(1)} there)` }, "map");
+  a.addEventListener("click", (e) => e.stopPropagation());
+  return el("span", { class: "pin-wrap" }, b, " ", a);
 }
 
 // ---------------------------------------------------------------- helpers

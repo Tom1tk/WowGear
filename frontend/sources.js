@@ -9,6 +9,15 @@ export const locText = (l) => `${l.zone} ${l.x.toFixed(1)}, ${l.y.toFixed(1)}`;
 export const pinCommand = (l, kind) => kind === "builtin"
   ? `/run C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(${l.map},${l.x / 100},${l.y / 100}))`
   : `/way ${l.zone} ${l.x.toFixed(1)} ${l.y.toFixed(1)}`;
+// Zone and dungeon pages on wowforevermap.com (from its sitemap, 2026-11-18). The site has no coordinate links, so we open the zone page.
+const MAP_ZONES = new Set("alterac-mountains arathi-highlands ashenvale azshara badlands blasted-lands burning-steppes darkshore darnassus deadwind-pass desolace dun-morogh durotar duskwood dustwallow-marsh eastern-plaguelands elwynn-forest felwood feralas hillsbrad-foothills ironforge loch-modan moonglade mount-hyjal mulgore orgrimmar redridge-mountains riverglades searing-gorge shendralas silithus silverpine-forest stonetalon-mountains stormwind-city stranglethorn-vale swamp-of-sorrows tanaris teldrassil the-barrens the-hinterlands thousand-needles thunder-bluff tirisfal-glades undercity ungoro-crater western-plaguelands westfall wetlands winterspring zephras-isle".split(" "));
+const MAP_DUNGEONS = new Set("blackfathom-deeps blackrock-spire city-of-dalaran dire-maul excavation-site-wetlands gnomeregan maraudon onyxias-lair ragefire-chasm razorfen-downs razorfen-kraul ruins-of-lordaeron scarlet-monastery scholomance shadowfang-keep stormwind-stockade stratholme sunken-temple the-hall-of-thanes uldaman wailing-caverns zulfarrak".split(" "));
+export function mapUrl(zone) {
+  const s = zone === "The Stockade" ? "stormwind-stockade" : zone.toLowerCase().replace(/'/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  if (MAP_ZONES.has(s)) return `https://wowforevermap.com/zone/${s}`;
+  if (MAP_DUNGEONS.has(s)) return `https://wowforevermap.com/dungeons/${s}`;
+  return null;
+}
 export function formatMoney(copper) {
   const c = Number(copper), g = Math.floor(c / 10000), s = Math.floor(c / 100) % 100;
   return g ? `${g}g ${s}s` : `${s}s ${c % 100}c`;
