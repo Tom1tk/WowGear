@@ -30,7 +30,6 @@ def test_weapon_rules():
     offhand_axe = item(**{"class": 2, "subclass": 0, "inventory_type": "WEAPONOFFHAND"})
     assert scorer.usable_from(sword, DRUID) is None       # druids cannot use swords
     assert scorer.usable_from(sword, ROGUE) == 1
-    assert scorer.usable_from(offhand_axe, SHAMAN) is None  # no dual wield in Classic
     assert scorer.usable_from(offhand_axe, WARRIOR) == 1
     wand = item(**{"class": 2, "subclass": 19, "inventory_type": "RANGEDRIGHT"})
     assert scorer.usable_from(wand, MAGE) == 1 and scorer.usable_from(wand, WARRIOR) is None
@@ -49,24 +48,24 @@ def test_min_level_floor_for_items_without_requirement():
     assert scorer.min_level({"required_level": 24, "item_level": 29}) == 24
 
 
-def test_hand_kept_effect_is_added_to_the_score():
-    wolfshead = scorer.items["8345"]
-    assert wolfshead["name"] == "Wolfshead Helm"
-    assert scorer.score_for("8345", DRUID, "feral_cat", 60) >= 70  # effect value, not only Spirit
-    assert scorer.score_for("8345", ROGUE, "combat", 60) is None   # Era item is Druid-only
-
-
 def test_class_limited_effect_is_ignored_for_other_classes(monkeypatch):
-    monkeypatch.setitem(scorer.effects, "11815", {"name": "Hand of Justice", "stats": {"ap": 20}, "classes": [11]})
-    hoj = scorer.items["11815"]
-    assert scorer.score(hoj, "11815", {"ap": 1}, {}, "trinket", None, ROGUE) == 20  # item stat only
-    assert scorer.score(hoj, "11815", {"ap": 1}, {}, "trinket", None, DRUID) == 40  # stat + effect
+    monkeypatch.setitem(scorer.effects, "900001", {"name": "Invented Charm", "stats": {"ap": 20}, "classes": [11]})
+    charm = {"class": 4, "subclass": 0, "inventory_type": "TRINKET", "stats": {"ap": 20}, "quality": 3}
+    assert scorer.score(charm, "900001", {"ap": 1}, {}, "trinket", None, ROGUE) == 20  # item stat only
+    assert scorer.score(charm, "900001", {"ap": 1}, {}, "trinket", None, DRUID) == 40  # stat + effect
 
 
-def test_strength_scores_for_enhancement_not_for_mage():
-    reaper = "12784"  # Arcanite Reaper
-    assert scorer.score_for(reaper, SHAMAN, "enhancement", 60) > 50
-    assert scorer.score_for(reaper, MAGE, "frost", 60) is None  # mages cannot use axes
+def test_unified_hit_and_crit_rating_aliases():
+    ring = {"class": 4, "subclass": 0, "inventory_type": "FINGER", "stats": {"hit_rating": 10, "spell_crit": 5}}
+    assert scorer.score(ring, "900002", {"hit": 2, "crit": 3}, {}, "ring", None, ROGUE) == 35
+
+
+def test_strength_scores_for_enhancement_not_for_mage(monkeypatch):
+    axe = {"class": 2, "subclass": 1, "inventory_type": "TWOHWEAPON", "stats": {"str": 30},
+           "weapon": {"dps": 60, "speed": 3.5}, "required_level": 60, "item_level": 70, "quality": 4}
+    monkeypatch.setitem(scorer.items, "900003", axe)
+    assert scorer.score_for("900003", SHAMAN, "enhancement", 60) > 50
+    assert scorer.score_for("900003", MAGE, "frost", 60) is None  # mages cannot use axes
 
 
 def test_detect_spec_from_talent_points():

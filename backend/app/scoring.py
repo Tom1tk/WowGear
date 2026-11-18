@@ -1,6 +1,6 @@
 """Item rules and scoring shared by the web app and the offline gear builder.
 
-The data files live in data/era/ (made by scripts/data/). This module only
+The data files live in data/forever/ (made by scripts/data/). This module only
 reads them: class armor/weapon rules, stat weights, hand-kept special
 effects, and the merged item table.
 """
@@ -11,7 +11,7 @@ import json
 from functools import cached_property
 from pathlib import Path
 
-DATA = Path(__file__).resolve().parents[2] / "data" / "era"
+DATA = Path(__file__).resolve().parents[2] / "data" / "forever"
 
 ARMOR_SLOTS = {
     "HEAD": "head", "NECK": "neck", "SHOULDER": "shoulders", "CLOAK": "back",
@@ -25,6 +25,11 @@ WEAPON_SLOTS = ("main_hand", "off_hand", "two_hand")
 def _load(name: str) -> dict:
     with (DATA / name).open(encoding="utf-8") as fh:
         return json.load(fh)
+
+
+# Forever words some stats as ratings / unified hit+crit; they score like the base stat unless weighted.
+STAT_ALIAS = {"bonus_armor": "armor", "hit_rating": "hit", "crit_rating": "crit", "dodge_rating": "dodge", "parry_rating": "parry",
+              "block_rating": "block", "spell_hit": "hit", "spell_crit": "crit", "sp_damage": "sp", "haste_rating": "haste", "expertise_rating": "expertise", "def_rating": "def"}
 
 
 def _strip_meta(data: dict) -> dict:
@@ -146,7 +151,7 @@ class Scorer:
             if key.startswith("wskill_"):
                 total += value * weights.get("wskill", 0) * 0.5
             else:
-                total += value * weights.get(key, 0)
+                total += value * weights.get(key, weights.get(STAT_ALIAS.get(key, ""), 0))
         wpn = item.get("weapon")
         if wpn and slot in WEAPON_SLOTS:
             per = weapon_w.get("offhand_dps", 0) if slot == "off_hand" else weapon_w.get("dps", 0)

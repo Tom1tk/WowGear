@@ -1,5 +1,6 @@
 """API endpoints with the Blizzard client replaced by a fake."""
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app import main
@@ -7,6 +8,14 @@ from app.blizzard import CharacterNotFoundError
 from app.models import CharacterSummary, EquippedItem, TalentTree
 
 client = TestClient(main.app)
+
+INVENTED_AXE = {"class": 2, "subclass": 1, "inventory_type": "TWOHWEAPON", "stats": {"str": 30},
+                "weapon": {"dps": 60, "speed": 3.5}, "required_level": 60, "item_level": 70, "quality": 4}
+
+
+@pytest.fixture(autouse=True)
+def invented_item(monkeypatch):
+    monkeypatch.setitem(main.scorer.items, "900003", INVENTED_AXE)
 
 
 def test_health():
@@ -16,8 +25,8 @@ def test_health():
 
 def test_score_endpoint():
     body = client.post("/api/score", json={"class_id": 7, "spec": "enhancement", "level": 60,
-                                           "item_ids": [12784, 999999]}).json()
-    assert body["scores"]["12784"] > 0 and body["scores"]["999999"] is None
+                                           "item_ids": [900003, 999999]}).json()
+    assert body["scores"]["900003"] > 0 and body["scores"]["999999"] is None
 
 
 def test_score_rejects_unknown_spec():
@@ -28,7 +37,7 @@ def test_character_detects_spec_and_scores_items(monkeypatch):
     async def fake(region, name, surname):
         summary = CharacterSummary(name="Testa", surname="Exampleton", region=region, level=60,
                                    faction="H", race="Tauren", race_id=6, class_name="Shaman", class_id=7)
-        equipped = {"two_hand": EquippedItem(slot="two_hand", item_id=12784, name="Arcanite Reaper")}
+        equipped = {"two_hand": EquippedItem(slot="two_hand", item_id=900003, name="Invented Greataxe")}
         talents = [TalentTree(name="Elemental", points=5), TalentTree(name="Enhancement", points=31),
                    TalentTree(name="Restoration", points=15)]
         return summary, equipped, talents

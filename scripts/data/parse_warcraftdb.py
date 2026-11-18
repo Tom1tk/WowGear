@@ -82,7 +82,7 @@ EQUIP = [
     (rf"^\+{N} Attack Power in Cat, Bear, and Dire Bear forms only\.?$", ("feral_ap",)),
     (rf"^Increased Defense \+{N}\.?$", ("def",)),
     (rf"^Increases defense skill by {N}\.?$", ("def",)),
-    (rf"^Increases your armor by {N}\.?$", ("armor",)),
+    (rf"^Increases your armor by {N}\.?$", ("bonus_armor",)),
     (rf"^Increases your chance to dodge an attack by {N}%\.?$", ("dodge",)),
     (rf"^Increases your chance to parry an attack by {N}%\.?$", ("parry",)),
     (rf"^Increases your chance to block attacks with a shield by {N}%\.?$", ("block",)),

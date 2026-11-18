@@ -62,9 +62,8 @@ chk("slider 60 shows tier row", await page.isVisible("#tier-row"));
 const tierBtns = await page.locator("#tier-buttons button").count();
 const metaTiers = Object.keys((await (await page.request.get(`${BASE}/static/data/meta.json`)).json()).tiers).filter((t) => t !== "0").length;
 chk("tier buttons = Pre-raid + meta.tiers", tierBtns === metaTiers + 1, `${tierBtns} buttons, ${metaTiers} meta tiers`);
-const preRaid = await page.textContent("#slot-list");
 await page.click('#tier-buttons button[data-tier="1"]');
-chk("tier 1 changes the list", preRaid !== (await page.textContent("#slot-list")));
+chk("tier 1 shows its note", (await page.textContent("body")).includes("Raids open")); // tier 1 has no loot until raids are datamined
 chk("URL keeps state", page.url().includes("class=11") && page.url().includes("tier=1"));
 await page.screenshot({ path: `${OUT}/manual-druid-60-tier1.png`, fullPage: true });
 

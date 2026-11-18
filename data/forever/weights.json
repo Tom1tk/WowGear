@@ -1,0 +1,975 @@
+{
+ "_about": "Stat weights per class.spec for WoW Forever. 'leveling' below level 60, 'endgame' at 60. Equivalence points (AP for physical specs, spell power for casters/healers, Stamina for tanks). Weapon: dps per weapon DPS, offhand_dps, ranged_dps, slow_bonus per second above 2.5. Provisional: no per-level-range stat priorities exist for Forever yet (guides say level 60 data is needed). Values are equivalence points reasoned from the class changes cited above. Whether warcraftdb/Blizzard 'hit'/'crit' numbers are ratings or percent points is unconfirmed.",
+ "_sources": [
+  "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+  "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+  "https://www.icy-veins.com/wow-forever/balance-druid-ranged-dps-pve-stat-priority (Balance: Hit to 17%, Crit, Spell Power, Intellect; page says preliminary)",
+  "https://www.icy-veins.com/wow-forever/enhancement-shaman-melee-dps-pve-stat-priority and https://gladiatorboost.com/news/wow-forever-launch-class-changes-2/ (Nov 2026 tuning: Strength becomes Enhancement's strongest stat)",
+  "https://skycoach.gg/blog/wow-forever/articles/forever-warrior-guide (Forever changes weapon skill, Hit, Rage scaling; Vanilla lists are only a starting point)",
+  "https://www.warcrafttavern.com/forever/news/class-tuning-coming-for-shamans-warlocks-hunter-pets-in-wow-forever/ (Nov 2026 tuning: shamans, warlocks, hunter pets)"
+ ],
+ "profiles": {
+  "warrior.arms": {
+   "leveling": {
+    "str": 2.0,
+    "agi": 1.0,
+    "ap": 1.0,
+    "crit": 18,
+    "hit": 15,
+    "haste": 10,
+    "expertise": 10,
+    "sta": 0.3,
+    "armor": 0.01
+   },
+   "endgame": {
+    "str": 2.0,
+    "agi": 1.0,
+    "ap": 1.0,
+    "crit": 18,
+    "hit": 18,
+    "haste": 10,
+    "expertise": 10,
+    "sta": 0.1,
+    "armor": 0.01
+   },
+   "weapon": {
+    "dps": 9,
+    "slow_bonus": 2
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Arms: two-hander, weapon DPS counts for the main hit; Str 1 = 2 AP."
+   ]
+  },
+  "warrior.fury": {
+   "leveling": {
+    "str": 2.0,
+    "agi": 1.0,
+    "ap": 1.0,
+    "crit": 18,
+    "hit": 15,
+    "haste": 10,
+    "expertise": 10,
+    "sta": 0.3,
+    "armor": 0.01
+   },
+   "endgame": {
+    "str": 2.0,
+    "agi": 1.0,
+    "ap": 1.0,
+    "crit": 18,
+    "hit": 18,
+    "haste": 10,
+    "expertise": 12,
+    "sta": 0.1,
+    "armor": 0.01
+   },
+   "weapon": {
+    "dps": 5,
+    "offhand_dps": 3
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Fury: dual wield, weapon DPS split main/off hand."
+   ]
+  },
+  "warrior.protection": {
+   "leveling": {
+    "sta": 1.0,
+    "armor": 0.12,
+    "str": 0.4,
+    "agi": 0.5,
+    "def": 1.5,
+    "dodge": 12,
+    "parry": 12,
+    "block": 6,
+    "block_value": 0.5,
+    "hit": 4,
+    "expertise": 4,
+    "crit": 3
+   },
+   "endgame": {
+    "sta": 1.2,
+    "armor": 0.12,
+    "str": 0.4,
+    "agi": 0.5,
+    "def": 1.5,
+    "dodge": 12,
+    "parry": 12,
+    "block": 6,
+    "block_value": 0.5,
+    "hit": 4,
+    "expertise": 4,
+    "crit": 3
+   },
+   "weapon": {
+    "dps": 1
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Protection: Stamina and mitigation first; Hit/Expertise only for threat."
+   ]
+  },
+  "paladin.retribution": {
+   "leveling": {
+    "str": 2.0,
+    "agi": 1.0,
+    "ap": 1.0,
+    "crit": 18,
+    "hit": 15,
+    "haste": 10,
+    "expertise": 10,
+    "sta": 0.3,
+    "armor": 0.01,
+    "sp": 0.4,
+    "int": 0.2
+   },
+   "endgame": {
+    "str": 2.0,
+    "agi": 1.0,
+    "ap": 1.0,
+    "crit": 18,
+    "hit": 15,
+    "haste": 10,
+    "expertise": 10,
+    "sta": 0.1,
+    "armor": 0.01,
+    "sp": 0.4,
+    "int": 0.2
+   },
+   "weapon": {
+    "dps": 9,
+    "slow_bonus": 2
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Retribution: Str main stat, some Spell Power for seals/Judgement."
+   ]
+  },
+  "paladin.holy": {
+   "leveling": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.7,
+    "mp5": 2.0,
+    "spi": 0.0,
+    "crit": 8,
+    "haste": 6,
+    "sta": 0.1
+   },
+   "endgame": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.7,
+    "mp5": 1.5,
+    "spi": 0.0,
+    "crit": 8,
+    "haste": 6,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Holy: Spell Power/healing and Intellect; unified Crit helps."
+   ]
+  },
+  "paladin.protection": {
+   "leveling": {
+    "sta": 1.0,
+    "armor": 0.12,
+    "str": 0.2,
+    "agi": 0.5,
+    "def": 1.5,
+    "dodge": 12,
+    "parry": 12,
+    "block": 6,
+    "block_value": 0.5,
+    "hit": 4,
+    "expertise": 4,
+    "crit": 3,
+    "sp": 0.4,
+    "int": 0.15
+   },
+   "endgame": {
+    "sta": 1.2,
+    "armor": 0.12,
+    "str": 0.2,
+    "agi": 0.5,
+    "def": 1.5,
+    "dodge": 12,
+    "parry": 12,
+    "block": 6,
+    "block_value": 0.5,
+    "hit": 4,
+    "expertise": 4,
+    "crit": 3,
+    "sp": 0.4,
+    "int": 0.15
+   },
+   "weapon": {
+    "dps": 1
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Protection: Holy Shield / Consecration scale with Spell Power in Forever."
+   ]
+  },
+  "hunter.beast_mastery": {
+   "leveling": {
+    "agi": 2.0,
+    "rap": 1.0,
+    "ap": 1.0,
+    "str": 1.0,
+    "int": 0.3,
+    "crit": 20,
+    "hit": 16,
+    "haste": 10,
+    "expertise": 4,
+    "sta": 0.4,
+    "armor": 0.01
+   },
+   "endgame": {
+    "agi": 2.0,
+    "rap": 1.0,
+    "ap": 1.0,
+    "str": 1.0,
+    "int": 0.3,
+    "crit": 22,
+    "hit": 18,
+    "haste": 12,
+    "expertise": 4,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0.5,
+    "ranged_dps": 3.5
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Hunter: ranged weapon DPS dominates; Agility to RAP and crit."
+   ]
+  },
+  "hunter.marksmanship": {
+   "leveling": {
+    "agi": 2.0,
+    "rap": 1.0,
+    "ap": 1.0,
+    "str": 1.0,
+    "int": 0.3,
+    "crit": 20,
+    "hit": 16,
+    "haste": 10,
+    "expertise": 4,
+    "sta": 0.4,
+    "armor": 0.01
+   },
+   "endgame": {
+    "agi": 2.0,
+    "rap": 1.0,
+    "ap": 1.0,
+    "str": 1.0,
+    "int": 0.3,
+    "crit": 22,
+    "hit": 18,
+    "haste": 12,
+    "expertise": 4,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0.5,
+    "ranged_dps": 4.0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Marksmanship: same stats, more weight on the ranged weapon."
+   ]
+  },
+  "hunter.survival": {
+   "leveling": {
+    "agi": 2.4,
+    "rap": 1.0,
+    "ap": 1.0,
+    "str": 1.0,
+    "int": 0.3,
+    "crit": 20,
+    "hit": 16,
+    "haste": 10,
+    "expertise": 4,
+    "sta": 0.6,
+    "armor": 0.01
+   },
+   "endgame": {
+    "agi": 2.4,
+    "rap": 1.0,
+    "ap": 1.0,
+    "str": 1.0,
+    "int": 0.3,
+    "crit": 22,
+    "hit": 18,
+    "haste": 12,
+    "expertise": 4,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0.5,
+    "ranged_dps": 3.5
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Survival: Agility-heavy."
+   ]
+  },
+  "rogue.assassination": {
+   "leveling": {
+    "str": 1.0,
+    "agi": 2.0,
+    "ap": 1.0,
+    "crit": 22,
+    "hit": 20,
+    "haste": 10,
+    "expertise": 12,
+    "sta": 0.3,
+    "armor": 0.01
+   },
+   "endgame": {
+    "str": 1.0,
+    "agi": 2.0,
+    "ap": 1.0,
+    "crit": 22,
+    "hit": 22,
+    "haste": 10,
+    "expertise": 12,
+    "sta": 0.1,
+    "armor": 0.01
+   },
+   "weapon": {
+    "dps": 4,
+    "offhand_dps": 3
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Assassination: poisons scale with AP in Forever (2x AP per Blizzard class notes); dagger speed matters little."
+   ]
+  },
+  "rogue.combat": {
+   "leveling": {
+    "str": 1.0,
+    "agi": 2.0,
+    "ap": 1.0,
+    "crit": 22,
+    "hit": 20,
+    "haste": 10,
+    "expertise": 12,
+    "sta": 0.3,
+    "armor": 0.01
+   },
+   "endgame": {
+    "str": 1.0,
+    "agi": 2.0,
+    "ap": 1.0,
+    "crit": 22,
+    "hit": 22,
+    "haste": 10,
+    "expertise": 12,
+    "sta": 0.1,
+    "armor": 0.01
+   },
+   "weapon": {
+    "dps": 6,
+    "offhand_dps": 3
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Combat: weapon DPS matters most."
+   ]
+  },
+  "rogue.subtlety": {
+   "leveling": {
+    "str": 1.0,
+    "agi": 2.0,
+    "ap": 1.0,
+    "crit": 22,
+    "hit": 20,
+    "haste": 10,
+    "expertise": 12,
+    "sta": 0.3,
+    "armor": 0.01
+   },
+   "endgame": {
+    "str": 1.0,
+    "agi": 2.0,
+    "ap": 1.0,
+    "crit": 22,
+    "hit": 22,
+    "haste": 10,
+    "expertise": 12,
+    "sta": 0.1,
+    "armor": 0.01
+   },
+   "weapon": {
+    "dps": 5,
+    "offhand_dps": 3
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Subtlety: Agility/crit."
+   ]
+  },
+  "priest.discipline": {
+   "leveling": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.7,
+    "mp5": 2.0,
+    "spi": 0.5,
+    "crit": 8,
+    "haste": 6,
+    "sta": 0.1
+   },
+   "endgame": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.7,
+    "mp5": 1.5,
+    "spi": 0.5,
+    "crit": 8,
+    "haste": 6,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Discipline: healing/Spell Power, Spirit for regen."
+   ]
+  },
+  "priest.holy": {
+   "leveling": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.7,
+    "mp5": 2.0,
+    "spi": 0.6,
+    "crit": 8,
+    "haste": 6,
+    "sta": 0.1
+   },
+   "endgame": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.7,
+    "mp5": 1.5,
+    "spi": 0.6,
+    "crit": 8,
+    "haste": 6,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Holy: healing/Spell Power, Spirit."
+   ]
+  },
+  "priest.shadow": {
+   "leveling": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 20,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.3,
+    "mp5": 0.5,
+    "sp_shadow": 1.0
+   },
+   "endgame": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 22,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.3,
+    "mp5": 0.5,
+    "sp_shadow": 1.0
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Shadow: Shadow damage, Hit to cap."
+   ]
+  },
+  "shaman.elemental": {
+   "leveling": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 20,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_nature": 1.0,
+    "sp_fire": 0.5
+   },
+   "endgame": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 22,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_nature": 1.0,
+    "sp_fire": 0.5
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Elemental: Lightning/Chain Lightning, Spell Power, Hit."
+   ]
+  },
+  "shaman.enhancement": {
+   "leveling": {
+    "str": 2.2,
+    "agi": 1.2,
+    "ap": 1.0,
+    "crit": 18,
+    "hit": 15,
+    "haste": 10,
+    "expertise": 10,
+    "sta": 0.3,
+    "armor": 0.01,
+    "sp": 0.8,
+    "int": 0.5,
+    "mp5": 0.5
+   },
+   "endgame": {
+    "str": 2.2,
+    "agi": 1.2,
+    "ap": 1.0,
+    "crit": 18,
+    "hit": 15,
+    "haste": 10,
+    "expertise": 10,
+    "sta": 0.1,
+    "armor": 0.01,
+    "sp": 0.8,
+    "int": 0.5,
+    "mp5": 0.3
+   },
+   "weapon": {
+    "dps": 7,
+    "slow_bonus": 3
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Enhancement: Strength strongest stat (Nov 2026 tuning), Spell Power and Intellect from Lightning/imbue scaling."
+   ]
+  },
+  "shaman.restoration": {
+   "leveling": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.7,
+    "mp5": 2.0,
+    "spi": 0.1,
+    "crit": 8,
+    "haste": 6,
+    "sta": 0.1
+   },
+   "endgame": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.7,
+    "mp5": 1.5,
+    "spi": 0.1,
+    "crit": 8,
+    "haste": 6,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Restoration: healing/Spell Power, Intellect, mp5."
+   ]
+  },
+  "mage.arcane": {
+   "leveling": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 20,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_arcane": 1.0
+   },
+   "endgame": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 22,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_arcane": 1.0
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Arcane: Arcane damage, Intellect for mana."
+   ]
+  },
+  "mage.fire": {
+   "leveling": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 20,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_fire": 1.0
+   },
+   "endgame": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 22,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_fire": 1.0
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Fire: Fire damage, crit."
+   ]
+  },
+  "mage.frost": {
+   "leveling": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 20,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_frost": 1.0
+   },
+   "endgame": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 22,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_frost": 1.0
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Frost: Frost damage, Hit."
+   ]
+  },
+  "warlock.affliction": {
+   "leveling": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 20,
+    "haste": 10,
+    "sta": 0.3,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_shadow": 1.0
+   },
+   "endgame": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 22,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_shadow": 1.0
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Affliction: Shadow damage, Hit; DoTs worth casting alongside Wrack (Nov 2026 tuning)."
+   ]
+  },
+  "warlock.demonology": {
+   "leveling": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 20,
+    "haste": 10,
+    "sta": 0.4,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_shadow": 0.8,
+    "sp_fire": 0.4
+   },
+   "endgame": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 22,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_shadow": 0.8,
+    "sp_fire": 0.4
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Demonology: pet-heavy; Stamina and Spell Power."
+   ]
+  },
+  "warlock.destruction": {
+   "leveling": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 20,
+    "haste": 10,
+    "sta": 0.3,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_fire": 1.0
+   },
+   "endgame": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 18,
+    "hit": 22,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_fire": 1.0
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Destruction: Fire damage, crit."
+   ]
+  },
+  "druid.balance": {
+   "leveling": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 20,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_nature": 1.0,
+    "sp_arcane": 1.0
+   },
+   "endgame": {
+    "sp": 1.0,
+    "int": 0.6,
+    "crit": 14,
+    "hit": 22,
+    "haste": 10,
+    "sta": 0.1,
+    "spi": 0.1,
+    "mp5": 0.5,
+    "sp_nature": 1.0,
+    "sp_arcane": 1.0
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Balance: Icy Veins order Hit (to 17%), Crit, Spell Power, Intellect."
+   ]
+  },
+  "druid.feral_cat": {
+   "leveling": {
+    "str": 2.0,
+    "agi": 2.0,
+    "ap": 1.0,
+    "crit": 20,
+    "hit": 16,
+    "haste": 10,
+    "expertise": 8,
+    "sta": 0.3,
+    "armor": 0.01,
+    "feral_ap": 1.0
+   },
+   "endgame": {
+    "str": 2.0,
+    "agi": 2.0,
+    "ap": 1.0,
+    "crit": 22,
+    "hit": 18,
+    "haste": 10,
+    "expertise": 8,
+    "sta": 0.1,
+    "armor": 0.01,
+    "feral_ap": 1.0
+   },
+   "weapon": {
+    "dps": 0,
+    "note": "In Cat Form weapon damage does not count; only the weapon's stats and feral attack power."
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Feral cat: Shred 200% in Forever; Str/Agi both 1:1 AP-ish."
+   ]
+  },
+  "druid.feral_bear": {
+   "leveling": {
+    "sta": 1.0,
+    "armor": 0.15,
+    "str": 0.5,
+    "agi": 1.0,
+    "def": 1.5,
+    "dodge": 12,
+    "parry": 12,
+    "block": 6,
+    "block_value": 0.5,
+    "hit": 4,
+    "expertise": 4,
+    "crit": 3,
+    "ap": 0.3,
+    "feral_ap": 0.3
+   },
+   "endgame": {
+    "sta": 1.2,
+    "armor": 0.15,
+    "str": 0.5,
+    "agi": 1.0,
+    "def": 1.5,
+    "dodge": 12,
+    "parry": 12,
+    "block": 6,
+    "block_value": 0.5,
+    "hit": 4,
+    "expertise": 4,
+    "crit": 3,
+    "ap": 0.3,
+    "feral_ap": 0.3
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Feral bear: Stamina, armor, Agility for dodge."
+   ]
+  },
+  "druid.restoration": {
+   "leveling": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.7,
+    "mp5": 2.0,
+    "spi": 0.6,
+    "crit": 8,
+    "haste": 6,
+    "sta": 0.1
+   },
+   "endgame": {
+    "heal": 1.0,
+    "sp": 1.0,
+    "int": 0.7,
+    "mp5": 1.5,
+    "spi": 0.6,
+    "crit": 8,
+    "haste": 6,
+    "sta": 0.1
+   },
+   "weapon": {
+    "dps": 0
+   },
+   "sources": [
+    "https://www.warcrafttavern.com/forever/guides/stats/ (Forever stats: unified Hit/Crit across melee/ranged/spell, Haste added, Expertise replaces weapon skill, Spell Power on gear)",
+    "https://www.warcrafttavern.com/forever/news/wow-forever-pre-launch-class-changes-bug-fixes/ (Blizzard pre-launch class changes)",
+    "Restoration: healing/Spell Power, Spirit; Forever adds critical healing to Rejuvenation/Tranquility."
+   ]
+  }
+ },
+ "aliases": {},
+ "leveling_default": {
+  "warrior": "arms",
+  "paladin": "retribution",
+  "hunter": "beast_mastery",
+  "rogue": "combat",
+  "priest": "shadow",
+  "shaman": "enhancement",
+  "mage": "frost",
+  "warlock": "affliction",
+  "druid": "feral_cat"
+ }
+}

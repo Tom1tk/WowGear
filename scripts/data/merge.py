@@ -1,20 +1,12 @@
-"""Merge all staged sources into the data files the web app reads.
+"""Cross-reference warcraftdb, Blizzard and ForeverDB into the data files the build reads.
 
-Inputs (data/era/staging/, made by the parse_*.py scripts):
-  blizzard.json  - Source A: Blizzard Game Data API, Classic Era (stats, rules)
-  questie.json   - Source B: QuestieDB Classic Era (drops, quests, vendors, NPCs)
-  cmangos.json   - Source C: CMaNGOS classic-db, patch 1.12 (stats, loot, quests)
-  vmangos.json   - Source D: VMaNGOS world DB, patch 1.12 (stats, loot, quests)
-  atlasloot.json - Source E: AtlasLootClassic (boss loot, crafting, level ranges)
-plus the hand-kept data/era/instances.json.
+Inputs (data/forever/staging/, made by parse_warcraftdb.py, parse_blizzard.py, parse_foreverdb.py)
+plus hand tables data/forever/instances.json, exclude.json and the ForeverDB boss lists (Loot.lua).
+Outputs: data/forever/items.json, sources.json, reports/conflicts.md.
 
-Outputs:
-  data/era/items.json    - equippable items with stats, rules and confidence
-  data/era/sources.json  - where each item comes from, with provenance
-  reports/conflicts.md   - facts the sources disagree on
-  reports/instances.md   - instance level ranges vs boss levels
-
-Rule: a fact is "confirmed" when two independent sources agree.
+Rules (tasks/forever-plan.md section 2): missing in a source is not a conflict; a field is
+confirmed (2+ sources agree), single, or conflict. Scoring value on conflict: Blizzard > warcraftdb >
+ForeverDB. Sources ForeverDB labels "k" (Classic data) are ignored.
 
     python scripts/data/merge.py
 """
@@ -26,442 +18,341 @@ import sys
 from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(__file__))
-from _common import ERA, REPORTS, STAGING, read_json, write_json  # noqa: E402
+from _common import FOREVER, REPORTS, STAGING, read_json, write_json  # noqa: E402
+from forever_loot import parse_loot  # noqa: E402
 
-EQUIP_TYPES = {
-    "HEAD", "NECK", "SHOULDER", "CLOAK", "CHEST", "ROBE", "WRIST", "HAND", "WAIST",
-    "LEGS", "FEET", "FINGER", "TRINKET", "WEAPON", "TWOHWEAPON", "WEAPONMAINHAND",
-    "WEAPONOFFHAND", "SHIELD", "HOLDABLE", "RANGED", "RANGEDRIGHT", "THROWN", "RELIC",
-}
-MANGOS_STATS = {"3": "agi", "4": "str", "5": "int", "6": "spi", "7": "sta"}
-QUALITY = {"UNCOMMON": 2, "RARE": 3, "EPIC": 4, "LEGENDARY": 5}
-ALLIANCE_RACES = 1 | 4 | 8 | 64
-HORDE_RACES = 2 | 16 | 32 | 128
-WORLD_DROP_NPCS = 12  # more droppers than this = a random "world drop"
-# Reputations earned only in raids: quest rewards gated by them belong to that tier.
-RAID_FACTIONS = {910: "temple_of_ahnqiraj", 270: "zulgurub", 749: "molten_core"}
-PVP_FACTIONS = {890, 889, 509, 510, 730, 729}
-RANK_NAMES = {0: "normal", 1: "elite", 2: "rare elite", 3: "boss", 4: "rare"}
+EQUIP = {"HEAD", "NECK", "SHOULDER", "CLOAK", "CHEST", "ROBE", "WRIST", "HAND", "WAIST", "LEGS", "FEET",
+         "FINGER", "TRINKET", "WEAPON", "TWOHWEAPON", "WEAPONMAINHAND", "WEAPONOFFHAND", "SHIELD",
+         "HOLDABLE", "RANGED", "RANGEDRIGHT", "THROWN", "RELIC"}
+QUALITY = {"POOR": 0, "COMMON": 1, "UNCOMMON": 2, "RARE": 3, "EPIC": 4, "LEGENDARY": 5}
+INV_GROUP = {"WEAPONMAINHAND": "WEAPON", "ROBE": "CHEST", "BODY": "SHIRT"}
+STAT_NAME = {"str": "Strength", "agi": "Agility", "sta": "Stamina", "int": "Intellect", "spi": "Spirit",
+             "sp": "Spell Power", "ap": "Attack Power", "armor": "Armor", "heal": "Healing"}
+# Blizzard "unknown_stats" lines ("SPELL_POWER 12") the parser left unmapped.
+BLIZZ_STAT = {"SPELL_POWER": "sp", "SPELL_HEALING_DONE": "heal", "SPELL_DAMAGE_DONE": "sp_damage",
+              "CRIT_RATING": "crit_rating", "HIT_RATING": "hit_rating", "DODGE_RATING": "dodge_rating",
+              "PARRY_RATING": "parry_rating", "BLOCK_RATING": "block_rating", "HASTE_RATING": "haste_rating",
+              "EXPERTISE_RATING": "expertise_rating", "MANA_REGENERATION": "mp5", "HEALTH_REGEN": "hp5",
+              "RANGED_ATTACK_POWER": "rap", "BLOCK_VALUE": "block_value", "SPELL_PENETRATION": "spell_pen",
+              "BONUS_STAT_FIRE_DAMAGE_DONE": "sp_fire", "BONUS_STAT_FROST_DAMAGE_DONE": "sp_frost",
+              "BONUS_STAT_SHADOW_DAMAGE_DONE": "sp_shadow", "BONUS_STAT_ARCANE_DAMAGE_DONE": "sp_arcane",
+              "BONUS_STAT_NATURE_DAMAGE_DONE": "sp_nature", "BONUS_STAT_HOLY_DAMAGE_DONE": "sp_holy"}
+FOLD = {"hit_rating": "hit", "crit_rating": "crit", "dodge_rating": "dodge", "parry_rating": "parry",
+        "block_rating": "block"}
+PRIO = ("blizzard", "warcraftdb", "foreverdb")
+LABEL = {"blizzard": "Blizzard", "warcraftdb": "warcraftdb", "foreverdb": "ForeverDB"}
+FIELDS = ("name", "required_level", "item_level", "inventory_type", "type", "stats", "weapon", "binding", "classes")
+EQUIP_ONLY = {"bonus_armor", "sp", "heal", "mp5", "ap", "rap"}
+CHANCE_RATIO = 2.0
 
 
-def pretty_zone(code: str | None) -> str | None:
-    if not code:
-        return None
-    small = {"Of", "The", "And"}
-    words = code.replace("_", " ").title().split()
-    return " ".join(w.lower() if i and w in small else w for i, w in enumerate(words))
+def stat_text(stats: dict, empty: str = "none") -> str:
+    return ", ".join(f"+{v:g} {STAT_NAME.get(k, k)}" for k, v in sorted(stats.items())) or empty
 
 
-def faction_of_races(mask) -> str | None:
-    if not mask:
-        return None
-    a, h = bool(mask & ALLIANCE_RACES), bool(mask & HORDE_RACES)
-    return "A" if a and not h else "H" if h and not a else None
+def canon_stats(s: dict) -> dict:
+    out: dict = {}
+    for k, v in (s or {}).items():
+        if v:
+            out[FOLD.get(k, k)] = round(out.get(FOLD.get(k, k), 0) + float(v), 1)
+    return out
 
 
 class Merger:
     def __init__(self):
-        self.blz = read_json(STAGING / "blizzard.json")
-        self.q = read_json(STAGING / "questie.json")
-        self.cm = read_json(STAGING / "cmangos.json")
-        self.vm = read_json(STAGING / "vmangos.json")
-        self.al = read_json(STAGING / "atlasloot.json")
-        self.instances = {k: v for k, v in read_json(ERA / "instances.json").items() if not k.startswith("_")}
-        self.conflicts: list[str] = []
-        self.recipe_items = self._recipe_index()
-        self.excluded = {k for k in read_json(ERA / "exclude.json") if not k.startswith("_")}
-        self._index_instances()
+        self.w = read_json(STAGING / "warcraftdb.json")
+        self.b = read_json(STAGING / "blizzard.json")
+        self.f = read_json(STAGING / "foreverdb.json")
+        self.instances = {k: v for k, v in read_json(FOREVER / "instances.json").items() if not k.startswith("_")}
+        excl = FOREVER / "exclude.json"
+        self.excluded = {k for k in read_json(excl) if not k.startswith("_")} if excl.exists() else set()
+        self.loot = parse_loot(self.instances)
+        self.zone_inst = {}
+        for k, v in self.instances.items():
+            for n in [v["name"], (v.get("ids") or {}).get("warcraftdb_zone_name")]:
+                if n:
+                    self.zone_inst[n.lower()] = k
+        self.field_conf = Counter()
+        self.pair_conf = Counter()
+        self.src_conf = Counter()
+        self.examples: list[tuple[str, str, str]] = []  # (field, item, reason)
 
-    def _recipe_index(self) -> dict:
-        """Recipe item name ('Plans: Heartseeker') -> how to get the recipe."""
+    # ---------- item fields ----------
+    def values(self, iid: str) -> dict:
+        """{source: normalized record} for sources that know the item."""
         out = {}
-        prefixes = ("Plans: ", "Pattern: ", "Schematic: ", "Formula: ", "Recipe: ")
-        for rid, rec in self.q["item"].items():
-            name = rec.get("name") or ""
-            for pre in prefixes:
-                if name.startswith(pre):
-                    how = []
-                    if rec.get("vendors"):
-                        how.append("vendor")
-                    if rec.get("npcDrops") or rec.get("objectDrops"):
-                        how.append("drop")
-                    if rec.get("questRewards"):
-                        how.append("quest")
-                    out[name[len(pre):].lower()] = {"id": int(rid), "name": name, "from": how}
+        if iid in self.b:
+            rec = dict(self.b[iid])
+            stats = dict(rec["stats"])
+            for line in rec.get("unknown_stats") or []:
+                name, _, num = line.partition(" ")
+                if name in BLIZZ_STAT and num.lstrip("-").replace(".", "").isdigit():
+                    stats[BLIZZ_STAT[name]] = stats.get(BLIZZ_STAT[name], 0) + float(num)
+            rec["stats"] = stats
+            out["blizzard"] = rec
+        if iid in self.w:
+            out["warcraftdb"] = self.w[iid]
+        if iid in self.f:
+            out["foreverdb"] = {"name": self.f[iid]["name"]}
         return out
 
-    # ---------- instances ----------
-    def _index_instances(self):
-        self.area_to_instance = {}
-        self.npc_to_instance = {}
-        self.al_boss_items = defaultdict(set)  # (instance, npc or name) -> items
-        for key, inst in self.instances.items():
-            for area in inst.get("areas", []):
-                self.area_to_instance.setdefault(int(area), key)
-            al = self.al["instances"].get(inst.get("atlasloot") or "")
-            if not al:
+    @staticmethod
+    def field_value(src: str, rec: dict, field: str):
+        if field == "type":
+            return None if rec.get("class") is None else (rec["class"], rec.get("subclass"))
+        v = rec.get(field)
+        if field == "inventory_type" and v:
+            return INV_GROUP.get(v, v)
+        if field == "name":
+            return v.strip().lower() if v else None
+        if field == "stats":
+            return canon_stats(v) if v is not None else None
+        if field == "weapon":
+            return None if not v else (round(v["min"]), round(v["max"]), round(v["speed"], 1))
+        if field == "required_level":
+            return v  # None = unknown, 0 = none: blizzard 0 vs wcdb None is "missing", not a conflict
+        return v or None
+
+    def stat_diff(self, vals: dict[str, dict]) -> tuple[bool, str]:
+        """Compare stat dicts of the sources; unparsed effects / rating wording are not conflicts."""
+        names = list(vals)
+        for i, a in enumerate(names):
+            for c in names[i + 1:]:
+                sa, sc = vals[a][0], vals[c][0]
+                diff = []
+                if not sa or not sc:
+                    continue  # one source has no parsed stat block: nothing to compare
+                for k in sorted(set(sa) | set(sc)):
+                    x, y = sa.get(k), sc.get(k)
+                    if x == y or (None in (x, y) and k in EQUIP_ONLY):  # Equip-effect bonuses Blizzard omits: missing, not a conflict
+                        continue
+                    if (x is None and vals[c][1]) or (y is None and vals[a][1]):
+                        continue  # the other source has effect text its parser did not read
+                    diff.append(k)
+                if diff:
+                    return True, (f"Stats differ: {LABEL[a]} {stat_text({k: sa[k] for k in diff if k in sa}, "none of these")}, "
+                                  f"{LABEL[c]} {stat_text({k: sc[k] for k in diff if k in sc}, "none of these")}")
+        return False, ""
+
+    def build_item(self, iid: str, recs: dict) -> dict:
+        checks, uncertain, conflicts = {}, [], {}
+        for field in FIELDS:
+            vals = {}
+            for src, rec in recs.items():
+                v = self.field_value(src, rec, field)
+                if v is None or (field == "required_level" and v == 0 and src == "blizzard" and
+                                 recs.get("warcraftdb", {}).get("required_level") is None):
+                    continue
+                vals[src] = (v, bool(rec.get("unparsed_effects"))) if field == "stats" else v
+            if len(vals) < 2:
+                if vals:
+                    checks[field] = "single"
                 continue
-            for boss in al["bosses"]:
-                if boss["npc"]:
-                    self.npc_to_instance[boss["npc"]] = key
-                ref = boss["npc"] or f"{key}:{boss['name']}"
-                for item in boss["items"]:
-                    self.al_boss_items[item].add((key, ref, boss["name"]))
-
-    def instance_of_npc(self, npc_id: int) -> str | None:
-        if npc_id in self.npc_to_instance:
-            return self.npc_to_instance[npc_id]
-        rec = self.q["npc"].get(str(npc_id)) or {}
-        for area in [rec.get("zoneID")] + list(rec.get("spawns") or []):
-            if area and int(area) in self.area_to_instance:
-                return self.area_to_instance[int(area)]
-        maps = (self.cm["npc"].get(str(npc_id)) or {}).get("maps") or []
-        return None if not maps else None
-
-    def instance_report(self) -> list[str]:
-        lines = ["# Instance level ranges vs boss levels", "",
-                 "Source 1: data/era/instances.json (AtlasLootClassic ranges where present).",
-                 "Source 2: levels of the instance's bosses in QuestieDB.",
-                 "A range is **confirmed** when the highest boss level is inside the range (+/- 3).", "",
-                 "| Instance | Range | AtlasLoot | Boss levels | Check |", "|---|---|---|---|---|"]
-        for key, inst in self.instances.items():
-            al = self.al["instances"].get(inst.get("atlasloot") or "") or {}
-            levels = []
-            for boss in al.get("bosses", []):
-                rec = self.q["npc"].get(str(boss["npc"])) if boss["npc"] else None
-                if rec and rec.get("maxLevel"):
-                    levels.append(rec["maxLevel"])
-            lo, hi = inst["levels"]
-            top = max(levels) if levels else None
-            ok = top is not None and lo - 3 <= top <= hi + 3
-            inst["check"] = "confirmed" if ok else ("single-source" if top is None else "conflict")
-            alr = al.get("level_range")
-            if alr and (alr[1], alr[2]) != (lo, hi):
-                inst["check"] = "conflict"
-            lines.append(f"| {inst['name']} | {lo}-{hi} | {alr[1:] if alr else '-'} | "
-                         f"{min(levels) if levels else '-'}-{top if top else '-'} | {inst['check']} |")
-        return lines
-
-    # ---------- items ----------
-    def compare_stats(self, iid: str, blz: dict) -> tuple[str, list[str]]:
-        notes = []
-        agree = 0
-        seen = 0
-        for label, src in (("CMaNGOS", self.cm), ("VMaNGOS", self.vm)):
-            e = src["items"].get(iid)
-            if not e:
-                continue
-            seen += 1
-            diffs = []
-            for mid, key in MANGOS_STATS.items():
-                if (e["stats"].get(mid) or 0) != (blz["stats"].get(key) or 0):
-                    diffs.append(f"{key} {e['stats'].get(mid, 0)} vs {blz['stats'].get(key, 0)}")
-            if (e.get("required_level") or 0) != (blz.get("required_level") or 0):
-                diffs.append(f"required level {e.get('required_level')} vs {blz.get('required_level')}")
-            if (e.get("armor") or 0) != (blz["stats"].get("armor") or 0) and blz["class"] == 4 and blz["subclass"] != 6:
-                diffs.append(f"armor {e.get('armor')} vs {blz['stats'].get('armor', 0)}")
-            if blz.get("weapon") and e.get("dmg") and e["dmg"][0] and \
-                    (round(e["dmg"][0]), round(e["dmg"][1])) != (blz["weapon"]["min"], blz["weapon"]["max"]):
-                diffs.append(f"damage {e['dmg']} vs {[blz['weapon']['min'], blz['weapon']['max']]}")
-            if diffs:
-                notes.append(f"{label}: " + "; ".join(diffs))
+            if field == "stats":
+                bad, reason = self.stat_diff(vals)
+                if bad and "block_value" in reason:
+                    reason += " (the Blizzard block figure looks like a different field; warcraftdb's is used for scoring)"
             else:
-                agree += 1
-        if agree:
-            return "confirmed", notes
-        if seen:
-            return "era-changed", notes  # Blizzard (current Era) wins over 1.12 data
-        return "single-source", notes
-
-    def is_random_suffix(self, iid: str, blz: dict) -> bool:
-        for src in (self.cm, self.vm):
-            e = src["items"].get(iid)
-            if e and e.get("random_property"):
-                return True
-        return False
-
-    def honor_rank(self, iid: str) -> int:
-        return max((src["items"].get(iid) or {}).get("honor_rank") or 0 for src in (self.cm, self.vm))
+                distinct = {repr(v) for v in vals.values()}
+                bad = len(distinct) > 1
+                reason = ""
+                if bad:
+                    reason = (f"{field.replace('_', ' ').capitalize()} differs: " +
+                              "; ".join(f"{LABEL[s]} {v}" for s, v in vals.items()))
+            if bad:
+                checks[field] = "conflict"
+                uncertain.append(reason)
+                conflicts[field] = {s: (v[0] if field == "stats" else v) for s, v in vals.items()}
+                self.field_conf[field] += 1
+                names = list(vals)
+                for i, a in enumerate(names):
+                    for c in names[i + 1:]:
+                        self.pair_conf[f"{LABEL[a]} vs {LABEL[c]}"] += 1
+                self.examples.append((field, iid, reason))
+            else:
+                checks[field] = "confirmed"
+        base = recs.get("blizzard") or recs.get("warcraftdb")
+        item = {k: base.get(k) for k in ("name", "item_level", "required_level", "inventory_type", "class", "subclass",
+                                        "binding", "unique", "classes", "races", "skill", "reputation", "effects",
+                                        "unparsed_effects", "weapon")}
+        item["quality"] = QUALITY.get(base.get("quality"), 1)
+        stats = dict(base.get("stats") or {})
+        wc = recs.get("warcraftdb")
+        if wc and recs.get("blizzard") and recs["blizzard"].get("unparsed_effects"):
+            for k, v in wc["stats"].items():  # effect text Blizzard's parser could not read
+                stats.setdefault(k, v)
+        stats.pop("block_value", None)  # Blizzard shield_block is not the in-game block value: warcraftdb only
+        if wc and wc["stats"].get("block_value"):
+            stats["block_value"] = wc["stats"]["block_value"]
+        item["stats"] = stats
+        if item["required_level"] is None:
+            item["required_level"] = (wc or {}).get("required_level") or 0
+        item.update(uncertain=uncertain, checks=checks, found_in=sorted(recs), conflict_values=conflicts)
+        return {k: v for k, v in item.items() if v not in (None, [], {}) or k in ("uncertain", "checks")}
 
     # ---------- sources ----------
-    def quest_raid(self, qq: dict, depth: int = 0) -> str | None:
-        """Raid a quest depends on: needed items that drop in a raid, a raid
-        reputation, or a previous quest that is itself raid-gated."""
-        best = None
-        rep = qq.get("requiredMinRep")
-        if isinstance(rep, list) and rep and rep[0] in RAID_FACTIONS:
-            best = RAID_FACTIONS[rep[0]]
-        started = qq.get("startedBy") or {}
-        item_starts = (started.get("3") if isinstance(started, dict) else
-                       (started[2] if len(started) > 2 else None)) or []
-        needed = ((qq.get("objectiveItems") or []) + (qq.get("requiredSourceItems") or [])
-                  + list(item_starts) + ([qq["sourceItemId"]] if qq.get("sourceItemId") else []))
-        for item in needed:
-            for src in self._raw_item_instances(str(item)):
-                if self.instances[src].get("tier") and (
-                        best is None or self.instances[src]["tier"] > self.instances[best].get("tier", 0)):
-                    best = src
-        if best is None and depth < 6:
-            for pre in (qq.get("preQuestSingle") or []) + (qq.get("preQuestGroup") or []):
-                pq = self.q["quest"].get(str(pre))
-                if pq:
-                    got = self.quest_raid(pq, depth + 1)
-                    if got:
-                        return got
-        return best
+    def inst_of_boss(self, npc, name: str) -> tuple[str | None, str | None]:
+        if npc and int(npc) in self.loot["npc"]:
+            return self.loot["npc"][int(npc)], None
+        key = self.loot["boss"].get((name or "").lower())
+        return (key, "matched by boss name") if key else (None, None)
 
-    def craft_raid(self, reagents: list[int]) -> str | None:
-        """Raid whose drops a recipe needs (a reagent that only drops in raids)."""
-        best = None
-        for reagent in reagents:
-            rec = self.q["item"].get(str(reagent)) or {}
-            if rec.get("vendors"):
-                continue
-            insts = self._raw_item_instances(str(reagent))
-            npcs = rec.get("npcDrops") or []
-            if not insts or not npcs:
-                continue
-            tiers = [self.instances[i].get("tier", 0) for i in insts]
-            if min(tiers) > 0:
-                raid = min(insts, key=lambda i: self.instances[i].get("tier", 0))
-                if best is None or self.instances[raid]["tier"] > self.instances[best]["tier"]:
-                    best = raid
-        return best
-
-    def _raw_item_instances(self, iid: str) -> set:
-        rec = self.q["item"].get(iid) or {}
-        out = set()
-        for npc in rec.get("npcDrops") or []:
-            inst = self.instance_of_npc(int(npc))
-            if inst:
-                out.add(inst)
-        for obj in rec.get("objectDrops") or []:
-            zone = (self.q["object"].get(str(obj)) or {}).get("zoneID")
-            if zone and int(zone) in self.area_to_instance:
-                out.add(self.area_to_instance[int(zone)])
-        return out
-
-    def npc_info(self, npc_id: int) -> dict:
-        q = self.q["npc"].get(str(npc_id)) or {}
-        c = self.cm["npc"].get(str(npc_id)) or self.vm["npc"].get(str(npc_id)) or {}
-        zone = q.get("zoneID") or (q.get("spawns") or [None])[0]
-        return {
-            "name": q.get("name") or c.get("name") or f"NPC {npc_id}",
-            "level": [q.get("minLevel") or c.get("min_level"), q.get("maxLevel") or c.get("max_level")],
-            "rank": RANK_NAMES.get(q.get("rank", c.get("rank")), "normal"),
-            "zone": pretty_zone(self.q["zones"].get(str(zone))) if zone else None,
-            "friendly": q.get("friendlyToFaction"),
-            "title": q.get("subName"),
-        }
-
-    def sources_for(self, iid: str, blz: dict) -> list[dict]:
-        q_item = self.q["item"].get(iid) or {}
+    def sources_for(self, iid: str) -> list[dict]:
         found: dict[tuple, dict] = {}
 
-        def add(kind, ref, dataset, **extra):
-            rec = found.setdefault((kind, ref), {"type": kind, "id": ref, "found_in": set(), "chance": []})
-            rec["found_in"].add(dataset)
-            if extra.get("chance") is not None:
-                rec["chance"].append(extra["chance"])
+        def add(src, kind, key, **kw):
+            rec = found.setdefault((kind, key), {"type": kind, "found_in": set(), "chance_by": {}})
+            rec["found_in"].add(src)
+            ch = kw.pop("chance", None)
+            if ch:
+                rec["chance_by"][src] = float(ch)
+            for k, v in kw.items():
+                if v not in (None, "") and k not in rec:
+                    rec[k] = v
 
-        for npc in q_item.get("npcDrops") or []:
-            add("drop", int(npc), "QuestieDB")
-        for obj in q_item.get("objectDrops") or []:
-            add("object", int(obj), "QuestieDB")
-        for cont in q_item.get("itemDrops") or []:
-            add("container", int(cont), "QuestieDB")
-        for quest in q_item.get("questRewards") or []:
-            add("quest", int(quest), "QuestieDB")
-        for vendor in q_item.get("vendors") or []:
-            add("vendor", int(vendor), "QuestieDB")
-        for label, src in (("CMaNGOS", self.cm), ("VMaNGOS", self.vm)):
-            for key, chance in (src["drops"].get(iid) or {}).items():
-                kind, _, ref = key.partition(":")
-                kind = {"npc": "drop", "object": "object", "item": "container"}[kind]
-                add(kind, int(ref), label, chance=chance)
-            for quest in src["quest_rewards"].get(iid) or []:
-                add("quest", int(quest), label)
-            for vendor in src["vendors"].get(iid) or []:
-                add("vendor", int(vendor), label)
-        for inst, ref, boss_name in self.al_boss_items.get(int(iid), ()):
-            if isinstance(ref, int):
-                add("drop", ref, "AtlasLoot")
-            else:
-                add("boss", ref, "AtlasLoot")
-                found[("boss", ref)]["instance"] = inst
-                found[("boss", ref)]["name"] = boss_name
-        for prof, crafted in self.al["crafting"].items():
-            info = crafted.get(iid)
-            if not info:
-                continue
-            add("craft", info["profession"], "AtlasLoot")
-            rec = found[("craft", info["profession"])]
-            rec["skill"] = info["skill"]
-            raid = self.craft_raid(info.get("reagents") or [])
-            if raid:
-                rec["instance"] = raid
-            recipe = self.recipe_items.get(blz["name"].lower())
-            if recipe:
-                add("craft", info["profession"], "QuestieDB (recipe item)")
-                rec["recipe"] = recipe
-        return self._shape(iid, blz, list(found.values()))
-
-    def _shape(self, iid, blz, raw: list[dict]) -> list[dict]:
+        for s in (self.w.get(iid) or {}).get("sources", []):
+            t = s["type"]
+            if t == "drop":
+                inst, via = self.inst_of_boss(s["id"], s["name"])
+                add("warcraftdb", "drop", (s["name"] or "").lower(), id=s["id"], name=s["name"],
+                    chance=s.get("chance"), instance=inst, instance_via=via)
+            elif t in ("object", "item"):
+                add("warcraftdb", "object" if t == "object" else "container", (s["name"] or "").lower(),
+                    id=s["id"], name=s["name"], chance=s.get("chance"))
+            elif t == "quest":
+                add("warcraftdb", "quest", s["id"], id=s["id"], name=s["name"], zone=s.get("zone"),
+                    instance=self.zone_inst.get((s.get("zone") or "").lower()))
+            elif t == "vendor":
+                add("warcraftdb", "vendor", s["id"], id=s["id"], name=s["name"], zone=s.get("zone"),
+                    faction=s.get("faction"))
+            elif t == "craft":
+                add("warcraftdb", "craft", s["id"], id=s["id"], name=s["name"])
+        fe = self.f.get(iid)
+        d_inst = None
+        for p in (fe or {}).get("sources", []):
+            if len(p) < 2 or p[-1] in ("k", "c"):
+                continue  # k = Classic data; c = unconfirmed client clue
+            g = p[0]
+            side = {"a": "A", "h": "H"}.get(p[4] if g == "q" and len(p) > 4 else p[3] if g == "V" and len(p) > 3 else "")
+            if g == "d":
+                key = self.loot["boss"].get(p[2].lower()) or self.loot["inst"].get(int(p[1]))
+                d_inst = key or d_inst
+                if p[2]:
+                    add("foreverdb", "drop", p[2].lower(), name=p[2], chance=p[3], instance=key)
+            elif g == "m":  # a mob (npc id) in the dungeon the "d" row names
+                add("foreverdb", "drop", p[2].lower(), id=int(p[1]), name=p[2],
+                    instance=self.loot["npc"].get(int(p[1])) or d_inst)
+            elif g == "R":
+                add("foreverdb", "drop", p[2].lower(), id=int(p[1]), name=p[2])
+            elif g == "q":
+                add("foreverdb", "quest", int(p[1]), id=int(p[1]), name=p[2], faction=side,
+                    level=int(p[3]) if p[3].isdigit() else None)
+            elif g == "V":
+                add("foreverdb", "vendor", int(p[1]), id=int(p[1]), faction=side, copper=p[2])
+            elif g == "c":
+                add("foreverdb", "craft", int(p[3]) if p[3].isdigit() else p[1], name=p[1], skill=p[2])
+            elif g == "r":
+                add("foreverdb", "vendor", f"rep:{p[1]}", name=p[3], reputation={"faction_id": p[1], "standing": p[2]})
+            elif g == "o":
+                add("foreverdb", "object", p[1].lower(), name=p[1], chance=p[2])
+            elif g == "x":
+                add("foreverdb", "container", p[2].lower(), id=int(p[1]), name=p[2])
         out = []
-        drops = [r for r in raw if r["type"] == "drop"]
-        # Many droppers = random world drop (Auction House item), unless they
-        # are all in one instance (then it is an instance trash drop).
-        if len(drops) > WORLD_DROP_NPCS:
-            insts = Counter(self.instance_of_npc(r["id"]) for r in drops)
-            inst, n = insts.most_common(1)[0]
-            chance = max((max(r["chance"]) for r in drops if r["chance"]), default=None)
-            datasets = set().union(*(r["found_in"] for r in drops))
-            if inst and n >= len(drops) * 0.8:
-                out.append({"type": "instance_trash", "instance": inst, "npcs": len(drops),
-                            "chance": chance, "found_in": sorted(datasets)})
-            else:
-                out.append({"type": "world_drop", "npcs": len(drops), "chance": chance,
-                            "found_in": sorted(datasets)})
-            raw = [r for r in raw if r["type"] != "drop"]
-        for r in raw:
-            rec = {"type": r["type"], "id": r["id"], "found_in": sorted(r["found_in"])}
-            if r["chance"]:
-                rec["chance"] = round(sum(r["chance"]) / len(r["chance"]), 2)
-            if r["type"] == "drop":
-                info = self.npc_info(r["id"])
-                rec.update(name=info["name"], level=info["level"], rank=info["rank"], zone=info["zone"])
-                inst = self.instance_of_npc(r["id"])
-                if inst:
-                    rec["instance"] = inst
-                if rec.get("chance") is not None and rec["chance"] < 0.2 and not inst:
-                    continue  # tiny open-world chance: not a realistic source
-            elif r["type"] == "boss":
-                rec.update(name=r["name"], instance=r["instance"])
-            elif r["type"] == "vendor":
-                info = self.npc_info(r["id"])
-                rec.update(name=info["name"], zone=info["zone"], title=info["title"])
-                if info["friendly"] in ("A", "H"):
-                    rec["faction"] = info["friendly"]
-                title = info["title"] or ""
-                if title.endswith("Supply Officer") and any(
-                        w in title for w in ("Arathor", "Warsong", "Silverwing", "Defilers", "Frostwolf", "Stormpike")):
-                    rec["type"] = "pvp_rep"  # battleground reputation reward
-                rep = blz.get("reputation")
-                if rep:
-                    rec["reputation"] = rep
-                    if rep.get("faction_id") in PVP_FACTIONS:
-                        rec["type"] = "pvp_rep"
-                    elif rep.get("faction_id") in RAID_FACTIONS:
-                        rec["instance"] = RAID_FACTIONS[rep["faction_id"]]
-            elif r["type"] == "quest":
-                qq = self.q["quest"].get(str(r["id"])) or {}
-                cq = self.cm["quests"].get(str(r["id"])) or self.vm["quests"].get(str(r["id"])) or {}
-                if not qq and not cq:
-                    continue
-                rec["name"] = qq.get("name") or cq.get("title")
-                rec["level"] = qq.get("questLevel") or cq.get("level")
-                rec["min_level"] = qq.get("requiredLevel") or cq.get("min_level") or 1
-                fac = faction_of_races(qq.get("requiredRaces") or cq.get("races"))
-                if fac:
-                    rec["faction"] = fac
-                classes = qq.get("requiredClasses") or cq.get("classes")
-                if classes:
-                    rec["classes_mask"] = classes
-                zone = qq.get("zoneOrSort") or cq.get("zone")
-                if zone and zone > 0:
-                    rec["zone"] = pretty_zone(self.q["zones"].get(str(zone)))
-                    if zone in self.area_to_instance:
-                        rec["instance"] = self.area_to_instance[zone]
-                started = qq.get("startedBy") or []
-                starters = (started.get("1") if isinstance(started, dict) else started[:1] and started[0]) or []
-                raid = self.quest_raid(qq)
-                if raid:
-                    rec["instance"] = raid
-                if starters:
-                    rec["start_npc"] = self.npc_info(starters[0])["name"]
-            elif r["type"] == "object":
-                name = (self.cm["objects"].get(str(r["id"])) or self.vm["objects"].get(str(r["id"]))
-                        or (self.q["object"].get(str(r["id"])) or {}).get("name"))
-                rec["name"] = name
-                zone = (self.q["object"].get(str(r["id"])) or {}).get("zoneID")
-                if zone:
-                    rec["zone"] = pretty_zone(self.q["zones"].get(str(zone)))
-                    if int(zone) in self.area_to_instance:
-                        rec["instance"] = self.area_to_instance[int(zone)]
-            elif r["type"] == "craft":
-                rec["skill"] = r.get("skill")
-                if r.get("instance"):
-                    rec["instance"] = r["instance"]
-                if r.get("recipe"):
-                    rec["recipe"] = r["recipe"]
-            elif r["type"] == "container":
-                cont = self.blz.get(str(r["id"])) or (self.q["item"].get(str(r["id"])) or {})
-                rec["name"] = cont.get("name")
-            out.append(rec)
-        for rec in out:
-            rec["confirmed"] = len(rec["found_in"]) >= 2
+        for (kind, _key), r in found.items():
+            r["found_in"] = sorted(r["found_in"])
+            r["confirmed"] = len(r["found_in"]) >= 2
+            r["conflict"] = False
+            ch = r.pop("chance_by")
+            if ch:
+                r["chance"] = round(ch.get("warcraftdb", ch.get("foreverdb")), 2)
+                if len(ch) == 2 and min(ch.values()) > 0 and max(ch.values()) / min(ch.values()) > CHANCE_RATIO:
+                    r["conflict"] = True
+                    r["conflict_reason"] = (f"Drop chance for {r.get('name')}: warcraftdb {ch['warcraftdb']:g}%, "
+                                            f"ForeverDB {ch['foreverdb']:g}% (more than 2x apart).")
+            out.append(r)
+        self.disjoint_conflicts(out)
+        for r in out:
+            if r["type"] == "drop" and not r.get("instance") and r["found_in"] == ["warcraftdb"]:
+                r["uncertain"] = (f"warcraftdb lists '{r.get('name')}' as a dropper, but no source gives its zone or "
+                                  "level or places it in an instance, so it is treated as an open-world drop.")
+            elif r.get("instance_via"):
+                r["uncertain"] = (f"Placed in {self.instances[r['instance']]['name']} by boss name only: "
+                                  "no source maps this NPC id to the instance.")
+            r.pop("instance_via", None)
+            if r["conflict"]:
+                self.src_conf[r["type"]] += 1
+            if r.get("instance") is None:
+                r.pop("instance", None)
         return out
+
+    def disjoint_conflicts(self, out: list[dict]) -> None:
+        """Both sources list this kind of source for the item but not one in common."""
+        for kind in ("drop", "quest"):  # vendor lists are partial in ForeverDB (first vendor only)
+            rows = [r for r in out if r["type"] == kind]
+            by = {s: [r for r in rows if s in r["found_in"]] for s in ("warcraftdb", "foreverdb")}
+            placed = kind != "drop" or any(r.get("instance") for r in rows)  # trash lists are partial on both sides
+            if placed and by["warcraftdb"] and by["foreverdb"] and not any(r["confirmed"] for r in rows):
+                def names(rs):
+                    return ", ".join(sorted({str(r.get("name") or f"NPC {r.get('id')}") for r in rs})[:3])
+                reason = (f"warcraftdb lists {kind} source {names(by['warcraftdb'])}; "
+                          f"ForeverDB lists {kind} source {names(by['foreverdb'])}; no overlap.")
+                for r in rows:
+                    r["conflict"], r["conflict_reason"] = True, reason
 
     # ---------- run ----------
     def run(self):
-        items, sources = {}, {}
-        stat_checks = Counter()
-        dropped = Counter()
-        for iid, blz in self.blz.items():
-            if blz["inventory_type"] not in EQUIP_TYPES or blz["quality"] not in QUALITY:
-                dropped["not gear"] += 1
-                continue
-            known = iid in self.q["item"] or iid in self.cm["items"] or iid in self.vm["items"]
-            if not known:
-                dropped["not in Era data (e.g. Season of Discovery)"] += 1
-                continue
-            if blz.get("temporary") or iid in self.excluded:
-                dropped["temporary or excluded by hand (data/era/exclude.json)"] += 1
-                continue
-            if self.is_random_suffix(iid, blz):
-                dropped["random suffix (no fixed stats)"] += 1
-                continue
-            srcs = self.sources_for(iid, blz)
-            rank = self.honor_rank(iid)
-            if rank:
-                srcs = [{"type": "pvp_rank", "rank": rank, "found_in": ["CMaNGOS", "VMaNGOS"], "confirmed": True}]
-            if not srcs:
-                dropped["no known source"] += 1
-                continue
-            check, notes = self.compare_stats(iid, blz)
-            stat_checks[check] += 1
-            if notes and check != "confirmed":
-                self.conflicts.append(f"- {blz['name']} ({iid}): {' | '.join(notes)}")
-            item = {k: v for k, v in blz.items() if v is not None and v != [] and v != {} and v is not False}
-            item["quality"] = QUALITY[blz["quality"]]
-            item["stats_check"] = check
-            items[iid] = item
-            sources[iid] = srcs
-        write_json(ERA / "items.json", items, compact=True)
-        write_json(ERA / "sources.json", sources, compact=True)
-        inst_lines = self.instance_report()
+        items, sources, dropped = {}, {}, Counter()
+        for iid in sorted(set(self.w) | set(self.b), key=int):
+            recs = self.values(iid)
+            base = recs.get("blizzard") or recs["warcraftdb"]
+            if base["class"] not in (2, 4) or base["inventory_type"] not in EQUIP:
+                dropped["not equippable gear"] += 1
+            elif QUALITY.get(base["quality"], 0) < 1:
+                dropped["poor quality"] += 1
+            elif base.get("temporary") or iid in self.excluded:
+                dropped["temporary or excluded by hand"] += 1
+            elif (base.get("required_level") or 0) > 60:
+                dropped["required level above 60"] += 1
+            else:
+                srcs = self.sources_for(iid)
+                if not srcs:
+                    dropped["no known source"] += 1
+                    continue
+                items[iid] = self.build_item(iid, recs)
+                sources[iid] = srcs
+        for iid in self.f:
+            if iid not in self.w and iid not in self.b:
+                dropped["ForeverDB only (no stats from Blizzard/warcraftdb yet)"] += 1
+        write_json(FOREVER / "items.json", items, compact=True)
+        write_json(FOREVER / "sources.json", sources, compact=True)
+        self.report(items, sources, dropped)
+
+    def report(self, items, sources, dropped):
+        n_unc = sum(1 for i in items.values() if i["uncertain"])
+        srcs = [s for v in sources.values() for s in v]
+        lines = ["# Cross-reference report (warcraftdb / Blizzard / ForeverDB)", "",
+                 f"Items kept: **{len(items)}**; with at least one conflict (Uncertain): **{n_unc}**.",
+                 f"Items known to both warcraftdb and Blizzard: "
+                 f"{sum(1 for i in items.values() if {'blizzard', 'warcraftdb'} <= set(i['found_in']))}.",
+                 f"Source entries: {len(srcs)}; confirmed by 2 datasets: {sum(s['confirmed'] for s in srcs)}; "
+                 f"conflicts: {sum(s['conflict'] for s in srcs)}.", "",
+                 "Missing in a source is not a conflict. ForeverDB sources labelled Classic (k) or clue (c) are ignored.",
+                 "Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.", "",
+                 "## Items not kept", "", *[f"- {k}: {v}" for k, v in dropped.most_common()], "",
+                 "## Item field conflicts by field", "",
+                 *[f"- {k}: {v}" for k, v in self.field_conf.most_common()], "",
+                 "## By source pair", "", *[f"- {k}: {v}" for k, v in self.pair_conf.most_common()], "",
+                 "## Source conflicts by kind", "", *[f"- {k}: {v}" for k, v in self.src_conf.most_common()], "",
+                 "## Examples (first 50 item conflicts)", ""]
+        for field, iid, reason in self.examples[:50]:
+            lines.append(f"- {items[iid]['name']} ({iid}) [{field}]: {reason}")
+        ex = list({(iid, s["conflict_reason"]): (iid, s) for iid, v in sources.items() for s in v if s["conflict"]}.values())[:25]
+        lines += ["", "## Examples (source conflicts)", ""]
+        lines += [f"- {items[i]['name']} ({i}): {s['conflict_reason']}" for i, s in ex]
         REPORTS.mkdir(exist_ok=True)
-        (REPORTS / "instances.md").write_text("\n".join(inst_lines) + "\n", encoding="utf-8")
-        src_conf = Counter(s["confirmed"] for v in sources.values() for s in v)
-        report = [
-            "# Data merge report", "",
-            f"Items kept: **{len(items)}**", "",
-            "## Items not kept", "", *[f"- {k}: {v}" for k, v in dropped.most_common()], "",
-            "## Item stats check (Blizzard Era API vs CMaNGOS / VMaNGOS 1.12)", "",
-            "- confirmed: Blizzard matches at least one emulator database",
-            "- era-changed: emulators have the item but with other values; the Blizzard (current Era) value is used",
-            "- single-source: only Blizzard (and QuestieDB) know the item", "",
-            *[f"- {k}: {v}" for k, v in stat_checks.most_common()], "",
-            "## Item sources", "",
-            f"- confirmed (2+ datasets): {src_conf[True]}",
-            f"- single-source: {src_conf[False]}", "",
-            f"## Stat differences ({len(self.conflicts)})", "",
-            "The site uses the Blizzard value. Listed so a human can spot data errors.", "",
-            *sorted(self.conflicts),
-        ]
-        (REPORTS / "conflicts.md").write_text("\n".join(report) + "\n", encoding="utf-8")
-        print(f"items: {len(items)}; dropped: {dict(dropped)}; stats: {dict(stat_checks)}; "
-              f"sources confirmed/single: {src_conf[True]}/{src_conf[False]}")
+        (REPORTS / "conflicts.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        print(f"items {len(items)}, uncertain {n_unc}, dropped {dict(dropped)}, field conflicts {dict(self.field_conf)}, "
+              f"source conflicts {dict(self.src_conf)}")
 
 
 if __name__ == "__main__":

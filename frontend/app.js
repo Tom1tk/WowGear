@@ -51,7 +51,9 @@ let sceneToken = 0;
 // Scene key = race slug from meta (bg/<slug>.jpg; missing image falls back to default.jpg).
 function raceSlug(raceId) {
   const r = state.meta?.races[String(raceId)];
-  return r ? r.slug || r.name.toLowerCase().replace(/\s+/g, "-") : null;
+  if (!r) return null;
+  const slug = (r.slug || r.name.toLowerCase()).replace(/[\s_]+/g, "-");
+  return slug.endsWith("skyborne") ? "skyborne" : slug; // both Skyborne races share one scene/theme
 }
 function setScene(raceId) {
   const key = raceSlug(raceId) || "default";
