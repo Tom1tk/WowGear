@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WowGear Forever - Field guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#F5F1E4; --ink:#2C2E2A; --muted:#575950; --line:#2C2E2A;
+  --quest:#F5E211; --drop:#FF705D; --vendor:#2BA0FF; --craft:#EBC1FF;
+  /* Quality colours darkened so they pass 4.5:1 on cream; the in-game bright ones (#1eff00, #3d9bff, #b86bff) fail. */
+  --q-common:#2C2E2A; --q-uncommon:#1a7f00; --q-rare:#1f6fd1; --q-epic:#8a3fd1;
+  --ease:0.4s ease-out;
+}
+*{box-sizing:border-box}
+html{background:var(--cream)}
+body{margin:0;background:var(--cream);color:var(--ink);font:400 15px/1.3 "Space Grotesk",system-ui,sans-serif}
+::selection{background:var(--quest);color:var(--ink)}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radius:4px}
+*{scrollbar-color:var(--ink) var(--cream)}
+b,strong,h1,h2,h3{font-weight:700;line-height:1.02;letter-spacing:-.01em;margin:0}
+a{color:inherit}
+.num{font-variant-numeric:tabular-nums}
+svg{width:1em;height:1em;flex:none;vertical-align:-.12em}
+
+/* capsules */
+.cap{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:999px;padding:3px 12px;font:700 13px/1.2 inherit;font-family:inherit;color:var(--ink);background:var(--cream);cursor:default;white-space:nowrap;transition:background var(--ease),transform var(--ease)}
+button.cap{cursor:pointer}
+button.cap:hover{background:var(--ink);color:var(--cream)}
+.t-quest{background:var(--quest)} .t-drop{background:var(--drop)} .t-vendor{background:var(--vendor)} .t-craft{background:var(--craft)}
+.cap.t-quest,.cap.t-drop,.cap.t-vendor,.cap.t-craft{border-color:var(--ink)}
+button.cap[aria-pressed="true"],button.cap[aria-expanded="true"]{background:var(--ink);color:var(--cream)}
+button.cap.t-quest:hover,button.cap.t-drop:hover,button.cap.t-vendor:hover,button.cap.t-craft:hover{background:var(--ink);color:var(--cream)}
+.cap.sm{padding:1px 9px;font-size:12px;border-width:1.5px}
+
+/* top bar */
+header{padding:14px 24px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;border-bottom:2px solid var(--ink)}
+header h1{font-size:26px;margin-right:6px}
+.charline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1}
+.charline select{font:700 13px inherit;font-family:inherit;border:2px solid var(--ink);border-radius:999px;background:var(--cream);color:var(--ink);padding:3px 8px}
+.sample{color:var(--muted);font-size:13px}
+.panel{margin:0;padding:14px 24px;border-bottom:2px solid var(--ink);background:#EDE7D3}
+.panel[hidden]{display:none}
+.panel form,.panel .lvl{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.panel label{display:flex;flex-direction:column;gap:3px;font-size:13px;font-weight:700}
+.panel input,.panel select{font:400 15px inherit;font-family:inherit;border:2px solid var(--ink);border-radius:8px;padding:6px 10px;background:var(--cream);color:var(--ink);min-width:120px}
+.panel input[type=range]{padding:0;min-width:320px;accent-color:var(--ink)}
+.manual{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.manual[hidden]{display:none}
+.linkbtn{background:none;border:0;padding:6px 2px;font:400 14px inherit;font-family:inherit;text-decoration:underline;color:var(--ink);cursor:pointer}
+
+/* columns */
+main{display:grid;grid-template-columns:300px minmax(0,1fr) 320px;gap:0;align-items:start}
+section{padding:16px 22px 28px;min-width:0}
+section+section{border-left:2px solid var(--ink)}
+section>h2{font-size:24px;margin-bottom:12px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 10px}
+
+/* what to do next */
+#todo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+#todo li{border:2px solid var(--ink);border-radius:14px;padding:9px 11px;cursor:default;transition:background var(--ease),transform var(--ease)}
+#todo li:hover,#todo li:focus-visible{background:#fff;transform:translateX(3px)}
+#todo .head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px}
+#todo .gain{font-weight:700;font-size:18px}
+#todo .where{font-weight:700;font-size:15px;line-height:1.1;margin-bottom:4px}
+#todo .its{font-size:13px;color:var(--muted)}
+
+/* best gear */
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.grp h3{font-size:17px;margin:12px 0 2px;padding-bottom:3px;border-bottom:2px solid var(--ink)}
+.rows{list-style:none;margin:0;padding:0}
+.row{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:0 10px;align-items:start;padding:6px 8px;border-bottom:1px solid #cfc9b5;border-radius:6px;transition:opacity var(--ease),background var(--ease)}
+.row[hidden]{display:none}
+.row .slot{grid-row:1/3;font-weight:700;font-size:13px;padding-top:2px}
+.row .l1{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;min-width:0}
+.row .l2{grid-column:2/4;font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:baseline;min-width:0}
+.row .src{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.row .src:hover{white-space:normal}
+.row .delta{grid-column:3;grid-row:1;font-weight:700;white-space:nowrap}
+.row .you{white-space:nowrap;color:var(--ink)}
+.item{font-weight:700;text-decoration:none;border-bottom:2px solid currentColor}
+.item:hover{background:var(--quest);color:var(--ink)!important}
+.q0,.q1{color:var(--q-common)} .q2{color:var(--q-uncommon)} .q3{color:var(--q-rare)} .q4{color:var(--q-epic)}
+.score{font-weight:700}
+.tag{font-size:12px;color:var(--muted)}
+.one{font-size:12px;color:var(--muted);font-style:normal}
+details.unc,details.alts{display:inline}
+details>summary{display:inline-flex;align-items:center;gap:4px;cursor:pointer;list-style:none;border-radius:999px}
+details>summary::-webkit-details-marker{display:none}
+details.unc>summary{border:1.5px dashed var(--ink);padding:0 8px;font-size:12px;font-weight:700}
+details.alts>summary{text-decoration:underline;font-size:12px;color:var(--muted)}
+details>ul{margin:4px 0 2px;padding:6px 10px 6px 26px;background:#fff;border:1.5px solid var(--ink);border-radius:10px;color:var(--ink);white-space:normal}
+details[open]{display:block;grid-column:2/4;flex-basis:100%}
+.row.dim{opacity:.3}
+.row.hl{background:#fff;box-shadow:inset 0 0 0 2px var(--ink)}
+
+/* coming up + notes */
+#up{list-style:none;margin:0 0 20px;padding:0}
+#up li{display:grid;grid-template-columns:54px 1fr;gap:8px;padding:6px 0;border-bottom:1px solid #cfc9b5;font-size:14px}
+#up .lv{font-weight:700}
+.notes{display:flex;flex-direction:column;gap:8px;font-size:14px}
+.notes p{margin:0}
+.notes b{font-size:20px;margin-right:4px}
+.fine{color:var(--muted);font-size:13px}
+footer{border-top:2px solid var(--ink);padding:12px 24px;font-size:13px;color:var(--muted)}
+
+@media (max-width:1100px){
+  main{grid-template-columns:1fr}
+  section+section{border-left:0;border-top:2px solid var(--ink)}
+}
+@media (max-width:600px){
+  header{padding:12px 16px} section{padding:14px 16px 22px} .panel{padding:12px 16px}
+  .panel input[type=range]{min-width:0;width:100%}
+  .row{grid-template-columns:62px minmax(0,1fr) auto}
+  .row .l2{flex-wrap:wrap}.row .src{white-space:normal;flex:1 1 100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>WowGear Forever</h1>
+  <div class="charline">
+    <span class="cap"><b>Testa Exampleton</b></span>
+    <span class="cap">Tauren Druid</span>
+    <select id="spec" class="cap" aria-label="Spec"></select>
+    <span class="cap">Horde</span><span class="cap">Normal</span><span class="cap">EU</span>
+    <span class="sample">Sample character</span>
+  </div>
+  <button class="cap t-quest" id="lvlbtn" aria-expanded="false" aria-controls="lvlpanel">Level <span id="lvlnum" class="num">29</span></button>
+  <button class="cap" id="chgbtn" aria-expanded="false" aria-controls="chgpanel">Change character</button>
+</header>
+<div class="panel" id="lvlpanel" hidden>
+  <div class="lvl">
+    <label>Level <span class="num" id="lvlout">29</span>
+      <input type="range" id="lvl" min="10" max="60" value="29"></label>
+    <fieldset id="tier" hidden style="border:0;padding:0;margin:0;display:none;gap:6px">
+      <label style="flex-direction:row;gap:6px"><input type="radio" name="t" checked style="min-width:0"> Pre-raid</label>
+      <label style="flex-direction:row;gap:6px"><input type="radio" name="t" style="min-width:0"> Raid tier 1</label>
+    </fieldset>
+  </div>
+</div>
+<div class="panel" id="chgpanel" hidden>
+  <form onsubmit="return false">
+    <label>Region <select><option>EU</option><option>US</option><option>KR</option><option>TW</option></select></label>
+    <label>First name <input autocomplete="off"></label>
+    <label>Surname <input autocomplete="off"></label>
+    <button class="cap" type="submit">Look up</button>
+    <button class="linkbtn" type="button" id="manbtn" aria-expanded="false">Enter manually</button>
+  </form>
+  <div class="manual" id="manual" hidden style="margin-top:10px">
+    <label>Race <select><option>Tauren</option><option>Orc</option><option>Troll</option></select></label>
+    <label>Class <select><option>Druid</option><option>Warrior</option></select></label>
+    <label>Spec <select><option>Feral (Cat)</option><option>Balance</option></select></label>
+    <label>Level <input type="number" min="10" max="60" value="29" style="min-width:80px"></label>
+  </div>
+</div>
+
+<main>
+  <section aria-labelledby="h-todo">
+    <h2 id="h-todo">What to do next</h2>
+    <p class="sub">Grouped by where to go. Biggest gains first.</p>
+    <ul id="todo"></ul>
+  </section>
+  <section aria-labelledby="h-gear">
+    <h2 id="h-gear">Best gear</h2>
+    <div class="filters" id="filters" role="group" aria-label="Filter by where it comes from"></div>
+    <div id="gear"></div>
+  </section>
+  <section aria-labelledby="h-up">
+    <h2 id="h-up">Coming up</h2>
+    <p class="sub">Levels where a better item appears.</p>
+    <ul id="up"></ul>
+    <div class="notes" id="notes"></div>
+  </section>
+</main>
+<footer>Mock-up C: Field guide. Sample character, real Forever data.</footer>
+
+<script>
+const LEVEL=29, WORN_MAX=18;
+const WOWHEAD="https://www.wowhead.com/forever/item=";
+const STANDINGS=["Hated","Hostile","Unfriendly","Neutral","Friendly","Honored","Revered","Exalted"];
+const SLOT_LABEL={head:"Head",neck:"Neck",shoulders:"Shoulders",back:"Back",chest:"Chest",wrist:"Wrist",hands:"Hands",waist:"Waist",legs:"Legs",feet:"Feet",ring:"Ring",trinket:"Trinket",two_hand:"Two-hand"};
+const GROUPS=[["Armour",["head","shoulders","back","chest","wrist","hands","waist","legs","feet"]],["Weapons",["two_hand"]],["Jewellery",["neck","ring","trinket"]]];
+const TYPE_OF={quest:"quest",vendor:"vendor",craft:"craft"}; // everything else is a drop
+const TYPE_LABEL={quest:"Quest",drop:"Dungeon / drop",vendor:"Vendor / rep",craft:"Crafted"};
+const SHORT={quest:"Quest",drop:"Drop",vendor:"Vendor",craft:"Craft"};
+// Invented gear the sample wears that we cannot score.
+const UNKNOWN={chest:"Weathered Hide Vest",waist:"Frayed Rope Belt",back:"Patchwork Cloak of Nothing"};
+let META,GEAR;
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ICON_WARN='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.5v3.2M8 11.6v.1"/></svg>';
+
+function formatMoney(copper){const c=Number(copper),g=Math.floor(c/10000),s=Math.floor(c/100)%100;return g?`${g}g ${s}s`:`${s}s ${c%100}c`}
+function instanceName(k){const i=META.instances[k];return i?i.name:k}
+function instanceLevels(k){const i=META.instances[k];if(!i||i.type.startsWith("raid")||i.type==="world_boss")return "";return ` (level ${i.levels[0]}–${i.levels[1]})`}
+function describeSource(src){
+  const inst=src.instance;
+  const chance=src.chance!=null?` — ${src.chance<1?src.chance.toFixed(1):Math.round(src.chance)}% drop chance`:"";
+  switch(src.type){
+    case "drop":{const rank=src.rank&&src.rank!=="normal"?` (${src.rank})`:"";
+      if(inst)return{key:`inst:${inst}`,label:`Run ${instanceName(inst)}${instanceLevels(inst)}`,text:`Dropped by ${src.name}${rank}${chance}`};
+      return{key:`npc:${src.id}`,label:`Kill ${src.name}${src.zone?` in ${src.zone}`:""}`,text:`Dropped by ${src.name}${rank}${src.level?.[0]?`, level ${src.level[0]}`:""}${chance}`}}
+    case "boss":return{key:`inst:${inst}`,label:`Run ${instanceName(inst)}${instanceLevels(inst)}`,text:`Dropped by ${src.name}`};
+    case "instance_trash":return{key:`inst:${inst}`,label:`Run ${instanceName(inst)}${instanceLevels(inst)}`,text:`Random drop from the normal monsters (trash)${chance}`};
+    case "object":
+      if(inst)return{key:`inst:${inst}`,label:`Run ${instanceName(inst)}${instanceLevels(inst)}`,text:`Found in ${src.name||"a chest"}${chance}`};
+      return{key:`obj:${src.id}`,label:`Open ${src.name||"a chest"}${src.zone?` in ${src.zone}`:""}`,text:`Found in ${src.name||"a chest"}${chance}`};
+    case "quest":{const where=src.zone?` in ${src.zone}`:"",from=src.start_npc?` from ${src.start_npc}`:"",lvl=src.level?` (level ${src.level})`:"";
+      const label=inst&&META.instances[inst]?.tier?`Quest: ${src.name} — needs ${instanceName(inst)}`:`Quest: ${src.name}${lvl}`;
+      return{key:`quest:${src.id}`,label,text:`Quest reward${where}${from}. Can be picked up at level ${src.min_level||1}.`}}
+    case "vendor":{const standing=STANDINGS[Number(src.reputation?.standing)];
+      if(src.reputation)return{key:`rep:${src.name}`,label:`Buy from ${src.name} quartermaster`,text:`Needs ${standing||"some"} reputation with ${src.name}.`};
+      const who=src.name||"a vendor",price=src.copper?` Costs about ${formatMoney(src.copper)}.`:"";
+      return{key:src.name?`vendor:${src.id}`:"vendor",label:`Buy from ${who}${src.zone?` (${src.zone})`:""}`,text:`Sold by ${who}${src.title?` <${src.title}>`:""}.${price}`}}
+    case "craft":{const recipe=src.recipe?` Recipe: ${src.recipe.name}${src.recipe.from?.length?` (${src.recipe.from.join(" / ")})`:""}.`:" Recipe from the profession trainer.";
+      const raid=inst?` Needs materials from ${instanceName(inst)}.`:"",prof=src.name||"a profession";
+      return{key:`craft:${prof}`,label:`Craft with ${prof}`,text:`Crafted with ${prof}${src.skill?` (skill ${src.skill})`:""}.${recipe}${raid}`}}
+    case "world_drop":return{key:"ah",label:"Auction House / world drops",text:"Random drop from many monsters. It is Bind on Equip, so you can often buy it on the Auction House."};
+    case "container":return{key:`cont:${src.id}`,label:`Open ${src.name||"a container"}`,text:`Found in ${src.name||"a container"}${chance}`};
+    default:return{key:src.type,label:src.type,text:src.type};
+  }
+}
+const typeOf=info=>TYPE_OF[info.sources?.[0]?.type]||"drop";
+const gid=key=>"g"+[...key].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7);
+const bp=(slot,lv)=>GEAR.slots[slot]?.filter(p=>p.tier===0&&p.level<=lv).pop();
+const reasons=(src)=>{const i=src.instance&&META.instances[src.instance];return[...(src.conflict?[src.conflict_reason||"Our databases disagree about this source."]:[]),...(i?.uncertain||[]).map(r=>`${i.name}: ${r}`)]};
+const allReasons=info=>[...(info.uncertain||[]),...(info.sources?.[0]?reasons(info.sources[0]):[])];
+const isSingle=info=>{const c=Object.values(info.checks||{});return !allReasons(info).length&&c.length&&c.every(x=>x==="single")};
+const link=(id,info)=>`<a class="item q${info.quality}" href="${WOWHEAD+id}" target="_blank" rel="noopener">${esc(info.name)}</a>`;
+const uncBadge=r=>r.length?`<details class="unc"><summary>${ICON_WARN}Uncertain</summary><ul>${r.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></details>`:"";
+
+function build(){
+  const picks=[];
+  for(const [,slots] of GROUPS)for(const slot of slots){
+    const n=(slot==="ring"||slot==="trinket")?2:1;
+    const best=bp(slot,LEVEL)?.items||[], worn=bp(slot,WORN_MAX)?.items||[];
+    for(let i=0;i<n;i++){
+      const pick=best[i]; if(!pick)continue;
+      const info=GEAR.items[pick[0]], w=worn[i];
+      let you,gain;
+      if(UNKNOWN[slot]&&i===0){you={name:UNKNOWN[slot],score:null};gain=pick[1]}
+      else if(w){you={name:GEAR.items[w[0]].name,q:GEAR.items[w[0]].quality,id:w[0],score:w[1]};gain=pick[1]-w[1]}
+      else{you=null;gain=pick[1]}
+      picks.push({slot,i,id:pick[0],score:pick[1],info,you,gain,type:typeOf(info),d:info.sources?.[0]?describeSource(info.sources[0]):null,n});
+    }
+  }
+  return picks;
+}
+function renderGear(picks){
+  $("#gear").innerHTML=GROUPS.map(([name,slots])=>{
+    const rows=picks.filter(p=>slots.includes(p.slot));
+    return `<div class="grp"><h3>${name}</h3><ul class="rows">${rows.map(p=>{
+      const lvlSeen=(()=>{let l=null;for(const b of GEAR.slots[p.slot])if(b.tier===0&&b.level<=LEVEL&&b.items.some(x=>x[0]===p.id)){l=b.level;break}return l})();
+      const ur=allReasons(p.info);
+      const alts=(bp(p.slot,LEVEL).items||[]).filter((_,k)=>k>=p.n).slice(0,3);
+      const delta=p.gain>0?`+${Math.round(p.gain)}`:"";
+      const youHtml=!p.you?`<span class="you">You: nothing equipped</span>`
+        :p.you.score==null?`<span class="you">You: ${esc(p.you.name)}, Can't score</span>`
+        :`<span class="you">You: <a class="item q${p.you.q}" href="${WOWHEAD+p.you.id}" target="_blank" rel="noopener">${esc(p.you.name)}</a> <span class="num">${p.you.score}</span></span>`;
+      return `<li class="row" data-type="${p.type}" data-g="${p.d?gid(p.d.key):""}">
+        <span class="slot">${SLOT_LABEL[p.slot]}${p.n>1?" "+(p.i+1):""}</span>
+        <div class="l1"><span class="cap sm t-${p.type}">${SHORT[p.type]}</span>${link(p.id,p.info)}<span class="score num" title="Score for your spec">${p.score}</span>
+          ${lvlSeen&&lvlSeen>10?`<span class="tag">from lvl ${lvlSeen}</span>`:""}${p.info.binding==="ON_ACQUIRE"?'<span class="tag">BoP</span>':p.info.binding==="ON_EQUIP"?'<span class="tag">BoE</span>':""}
+          ${uncBadge(ur)}${isSingle(p.info)?'<i class="one">1 source</i>':""}</div>
+        <span class="delta num">${delta}</span>
+        <div class="l2"><span class="src" title="${esc(p.d?p.d.text:"")}">${esc(p.d?(p.d.label===p.d.text?p.d.text:p.d.label+". "+p.d.text):"Source unknown")}</span>${youHtml}
+          ${alts.length?`<details class="alts"><summary>${alts.length} alternative${alts.length>1?"s":""}</summary><ul>${alts.map(a=>{const ai=GEAR.items[a[0]];return `<li>${link(a[0],ai)} <span class="num">${a[1]}</span> ${ai.sources?.[0]?" — "+esc(describeSource(ai.sources[0]).label):""}</li>`}).join("")}</ul></details>`:""}</div>
+      </li>`}).join("")}</ul></div>`}).join("");
+}
+function renderTodo(picks){
+  const groups=new Map();
+  for(const p of picks){
+    if(!p.d||p.gain<=0)continue;
+    const g=groups.get(p.d.key)||{label:p.d.label,type:p.type,gain:0,items:[]};
+    g.gain+=p.gain;g.items.push(p);groups.set(p.d.key,g);
+  }
+  const sorted=[...groups.entries()].sort((a,b)=>b[1].gain-a[1].gain).slice(0,8);
+  $("#todo").innerHTML=sorted.map(([key,g])=>`<li tabindex="0" data-g="${gid(key)}" aria-label="${esc(g.label)}, gain ${Math.round(g.gain)}">
+    <div class="head"><span class="cap sm t-${g.type}">${TYPE_LABEL[g.type]}</span><span class="gain num" title="Total score gain">+${Math.round(g.gain)}</span></div>
+    <div class="where">${esc(g.label)}</div>
+    <div class="its">${g.items.map(p=>`${esc(p.info.name)} (${SLOT_LABEL[p.slot].toLowerCase()})`).join(", ")}</div></li>`).join("");
+  const rows=[...document.querySelectorAll(".row")];
+  const set=k=>rows.forEach(r=>{r.classList.toggle("dim",!!k&&r.dataset.g!==k);r.classList.toggle("hl",!!k&&r.dataset.g===k)});
+  document.querySelectorAll("#todo li").forEach(li=>{
+    for(const [a,b] of [["mouseenter",1],["focus",1],["mouseleave",0],["blur",0]])li.addEventListener(a,()=>set(b?li.dataset.g:null));
+  });
+}
+function renderUp(picks){
+  const ev=[];
+  for(const [slot,pts] of Object.entries(GEAR.slots)){
+    if(!SLOT_LABEL[slot])continue;
+    const n=(slot==="ring"||slot==="trinket")?2:1;
+    let prev=(bp(slot,LEVEL)?.items||[]).slice(0,n).map(x=>x[0]).join();
+    for(const p of pts){
+      if(p.tier!==0||p.level<=LEVEL)continue;
+      const cur=p.items.slice(0,n);const k=cur.map(x=>x[0]).join();
+      if(k!==prev&&cur.length){ev.push({lv:p.level,slot,id:cur[0][0],score:cur[0][1]});}
+      prev=k;
+    }
+  }
+  ev.sort((a,b)=>a.lv-b.lv);
+  $("#up").innerHTML=ev.slice(0,10).map(e=>`<li><span class="lv num">Lvl ${e.lv}</span><span>${SLOT_LABEL[e.slot]}: ${link(e.id,GEAR.items[e.id])} <span class="num">${e.score}</span></span></li>`).join("");
+}
+function renderNotes(picks){
+  const unc=picks.filter(p=>allReasons(p.info).length).length, one=picks.filter(p=>isSingle(p.info)).length;
+  $("#notes").innerHTML=`<p><b class="num">${unc}</b>Uncertain picks. Our databases disagree on these, so check the reason before you travel.</p>
+  <p><b class="num">${one}</b>picks from only 1 source. They are not cross-checked.</p>
+  <p class="fine">Data: Blizzard is the source of truth, cross-checked with warcraftdb and ForeverDB. Items link to Wowhead Forever.</p>`;
+}
+function renderFilters(){
+  const f=$("#filters");
+  f.innerHTML=[["all","All"],["quest","Quest"],["drop","Dungeon / drop"],["vendor","Vendor / rep"],["craft","Crafted"]]
+    .map(([k,l])=>`<button class="cap ${k==="all"?"":"t-"+k}" data-f="${k}" aria-pressed="${k==="all"}">${l}</button>`).join("");
+  f.addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;
+    f.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    document.querySelectorAll(".row").forEach(r=>r.hidden=b.dataset.f!=="all"&&r.dataset.type!==b.dataset.f);
+    document.querySelectorAll(".grp").forEach(g=>g.hidden=![...g.querySelectorAll(".row")].some(r=>!r.hidden));
+  });
+}
+function toggle(btn,panel,other){
+  btn.addEventListener("click",()=>{
+    const open=panel.hidden;
+    if(open){other.btn.setAttribute("aria-expanded","false");other.panel.hidden=true}
+    panel.hidden=!open;btn.setAttribute("aria-expanded",String(open));
+  });
+}
+(async()=>{
+  [META,GEAR]=await Promise.all([fetch("../data/meta.json").then(r=>r.json()),fetch("../data/gear/druid.feral_cat.H.json").then(r=>r.json())]);
+  $("#spec").innerHTML=Object.entries(META.classes["11"].specs).map(([k,v])=>`<option value="${k}"${k==="feral_cat"?" selected":""}>${esc(v)}</option>`).join("");
+  const picks=build();
+  renderGear(picks);renderTodo(picks);renderUp(picks);renderNotes(picks);renderFilters();
+})().catch(e=>{console.error(e);document.body.insertAdjacentHTML("beforeend",`<p style="padding:24px">Could not load the gear data: ${esc(e.message)}</p>`)});
+
+const L={btn:$("#lvlbtn"),panel:$("#lvlpanel")},C={btn:$("#chgbtn"),panel:$("#chgpanel")};
+toggle(L.btn,L.panel,C);toggle(C.btn,C.panel,L);
+$("#lvl").addEventListener("input",e=>{const v=e.target.value;$("#lvlnum").textContent=v;$("#lvlout").textContent=v;const t=$("#tier");t.hidden=v!=="60";t.style.display=v==="60"?"flex":"none"});
+$("#manbtn").addEventListener("click",e=>{const m=$("#manual");m.hidden=!m.hidden;e.target.setAttribute("aria-expanded",String(!m.hidden))});
+</script>
+</body>
+</html>

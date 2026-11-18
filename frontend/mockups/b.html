@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WowGear Forever - Quartermaster's ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#10141c; --rail:#131925; --panel:#171e2b; --panel2:#1d2635; --line:#28324a;
+  --text:#ebe3d1; --muted:#a3abbb; --copper:#d98f58; --copper-d:#2a1d14; --ok:#8fcf9a;
+  --unc:#f2c46d; --unc-bg:rgba(242,196,109,.13);
+  --q0:#fff; --q2:#1eff00; --q3:#3d9bff; --q4:#b86bff;
+  --serif:"Fraunces",Georgia,serif; --sans:"IBM Plex Sans",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scrollbar-color:#3a4660 var(--bg);scrollbar-width:thin}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#3a4660;border-radius:6px}::-webkit-scrollbar-track{background:var(--bg)}
+::selection{background:var(--copper);color:#1a1008}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 var(--sans);font-variant-numeric:tabular-nums}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--copper);outline-offset:2px;border-radius:4px}
+h1,h2,h3{font-family:var(--serif);font-weight:650;margin:0;letter-spacing:.005em}
+button,input,select{font:inherit;color:inherit}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:border-color .15s,background .15s}
+.btn:hover{border-color:var(--copper);background:#222d40}
+.btn.primary{background:var(--copper);color:#1a1008;border-color:var(--copper);font-weight:600}
+.btn.primary:hover{background:#e6a068}
+svg.i{width:15px;height:15px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+.app{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100vh}
+.rail{background:var(--rail);border-right:1px solid var(--line);padding:18px 16px;display:flex;flex-direction:column;gap:14px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{font-family:var(--serif);font-size:18px;font-weight:650;color:var(--copper);display:flex;align-items:center;gap:8px}
+.card h2{font-size:20px;line-height:1.15}
+.card .sub{color:var(--muted);margin:3px 0 10px}
+.card .sample{font-size:12px;color:var(--muted);margin-top:2px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:7px 10px;align-items:center;font-size:13px}
+.kv dt{color:var(--muted)}.kv dd{margin:0}
+select,input[type=text]{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;width:100%}
+select:hover,input:hover{border-color:#3b4864}
+.hr{height:1px;background:var(--line);margin:0}
+.disc{display:flex;flex-direction:column;gap:8px}
+.disc>.btn{justify-content:space-between;width:100%}
+.disc>.btn svg.chev{transition:transform .2s}
+.disc>.btn[aria-expanded=true] svg.chev{transform:rotate(180deg)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.panel[hidden]{display:none}
+.panel label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.linkbtn{background:none;border:0;color:var(--copper);padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-align:left;font-size:13px}
+.linkbtn:hover{color:#f0b07c}
+input[type=range]{accent-color:var(--copper);width:100%}
+.tiers{display:flex;gap:6px;flex-wrap:wrap}.tiers[hidden]{display:none}
+.tiers label{flex-direction:row;align-items:center;gap:5px;color:var(--text)}
+.filters{display:flex;flex-direction:column;gap:2px}
+.filters h3{font-size:14px;color:var(--muted);margin-bottom:4px}
+.filters button{background:none;border:0;text-align:left;padding:6px 8px;border-radius:6px;cursor:pointer;color:var(--text);display:flex;justify-content:space-between}
+.filters button:hover{background:var(--panel2)}
+.filters button[aria-pressed=true]{background:var(--copper-d);color:var(--copper)}
+.filters .n{color:var(--muted)}
+
+.topbar{display:none}
+main{padding:20px 28px 16px;min-width:0}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.sec-h h2{font-size:22px}.sec-h span{color:var(--muted);font-size:13px}
+
+.tiles{display:flex;gap:10px;margin-bottom:20px}
+.tile{flex:var(--g) 1 0;min-width:170px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;text-decoration:none;transition:border-color .15s,background .15s}
+.tile:hover{border-color:var(--copper);background:var(--panel2)}
+.tile:nth-child(1){background:#1c2433;border-color:#3a4660}
+.tile h3{font-size:16px;line-height:1.2}
+.tile:nth-child(1) h3{font-size:21px}
+.tile .gain{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:baseline}
+.tile .gain b{color:var(--copper);font-size:20px;font-weight:600}
+.tile:nth-child(1) .gain b{font-size:28px}
+.tile ul{list-style:none;margin:0;padding:0;font-size:12.5px;display:flex;flex-direction:column;gap:1px}
+.ruler{margin-top:auto;padding-top:4px}
+.rl-top{position:relative;height:15px;font-size:11.5px;color:var(--muted)}
+.rl-track{position:relative;height:10px}
+.rl-track::before{content:"";position:absolute;left:0;right:0;top:4px;height:2px;background:#2d3850;border-radius:1px}
+.rl-bar{position:absolute;top:1px;height:8px;background:var(--copper);border-radius:2px;min-width:4px}
+.rl-me{position:absolute;top:-2px;width:2px;height:14px;background:var(--text);transform:translateX(-1px)}
+.rl-bot{position:relative;height:15px;font-size:11.5px;color:var(--text)}
+.rl-top span,.rl-bot span{position:absolute;white-space:nowrap}
+.tile-more{color:var(--muted);font-size:12px}
+
+.tablewrap{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--sans);font-size:12px;font-weight:500;color:var(--muted);text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);background:#141a26;white-space:nowrap}
+td{padding:5px 10px;border-bottom:1px solid #212a3b;vertical-align:top;font-size:13px}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#1b2332}
+.num{text-align:right;white-space:nowrap}
+td.slot{color:var(--muted);white-space:nowrap}
+.q0{color:var(--q0)}.q2{color:var(--q2)}.q3{color:var(--q3)}.q4{color:var(--q4)}
+.item{font-weight:500;text-decoration:none}.item:hover{text-decoration:underline;text-underline-offset:2px}
+.tag{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-left:5px;white-space:nowrap}
+.one-src{font-size:11px;color:var(--muted);margin-left:6px;opacity:.9}
+details.inline{display:inline}
+details.inline>summary{display:inline-flex;align-items:center;gap:4px;cursor:pointer;list-style:none;font-size:11px;border-radius:4px;padding:0 5px;margin-left:5px;vertical-align:baseline}
+details.inline>summary::-webkit-details-marker{display:none}
+summary.unc{color:var(--unc);background:var(--unc-bg)}
+summary.alt{color:var(--muted);border:1px solid var(--line)}
+summary:hover{filter:brightness(1.25)}
+details.inline[open]>summary.unc{outline:1px solid var(--unc)}
+.dbody{display:block;margin:4px 0 3px;font-size:12px;color:var(--muted)}
+.dbody.u{color:var(--unc)}
+.dbody ul{margin:0;padding-left:16px}
+.dbody li+li{margin-top:2px}
+.where{color:var(--muted);max-width:480px}
+.now{white-space:nowrap}.now small{color:var(--muted)}
+.cant{color:var(--muted);font-style:italic}
+.gainc{color:var(--ok);font-weight:600}.gainc.zero{color:var(--muted);font-weight:400}
+
+.coming{margin-top:20px}
+.coming ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.coming li{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
+.coming .lv{font-family:var(--serif);font-size:20px;color:var(--copper);grid-row:span 2;align-self:center}
+.coming .slotn{color:var(--muted);font-size:12px}
+footer{margin-top:22px;color:var(--muted);font-size:12px}
+
+@media (prefers-reduced-motion:no-preference){
+  .tile{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+  .tile:nth-child(2){animation-delay:.06s}.tile:nth-child(3){animation-delay:.12s}.tile:nth-child(4){animation-delay:.18s}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+}
+@media (max-width:1300px){.where{max-width:300px}}
+@media (max-width:820px){
+  .app{display:block}
+  .topbar{display:flex;position:sticky;top:0;z-index:5;background:var(--rail);border-bottom:1px solid var(--line);padding:10px 16px;align-items:center;justify-content:space-between;gap:10px}
+  .topbar b{font-family:var(--serif);font-size:16px;display:block}
+  .topbar span{color:var(--muted);font-size:12px}
+  .rail{display:none;position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .rail.open{display:flex}
+  main{padding:16px}
+  .tiles{flex-direction:column}
+  .tile{flex:none}
+  .tablewrap{border:0;background:none}
+  table,tbody,tr,td{display:block}
+  thead{display:none}
+  tr{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin-bottom:8px;padding:8px 10px;display:grid;grid-template-columns:1fr auto;gap:2px 8px}
+  td{border:0;padding:0}
+  tbody tr:hover td{background:none}
+  td.slot{grid-column:1;font-size:12px}
+  td.sc{grid-column:2;grid-row:1;text-align:right}
+  td.nm,td.where,td.now{grid-column:1/-1;max-width:none}
+  td.dl{grid-column:1/-1;text-align:left}
+  td[data-l]::before{content:attr(data-l) ": ";color:var(--muted);font-size:12px}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.01"/></symbol>
+<symbol id="i-ledger" viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M9 9h6M9 13h6"/></symbol>
+</defs></svg>
+
+<div class="topbar">
+  <div><b>Testa Exampleton</b><span>Level 29 Tauren Druid, Feral (Cat) · Sample</span></div>
+  <button class="btn" id="menu" aria-expanded="false" aria-controls="rail"><svg class="i"><use href="#i-menu"/></svg>Menu</button>
+</div>
+
+<div class="app">
+<aside class="rail" id="rail">
+  <div class="brand"><svg class="i" style="width:20px;height:20px"><use href="#i-ledger"/></svg>WowGear Forever</div>
+  <section class="card">
+    <h2>Testa Exampleton</h2>
+    <div class="sub">Level 29 Tauren Druid · Horde</div>
+    <dl class="kv">
+      <dt>Spec</dt><dd><select aria-label="Spec"><option>Feral (Cat)</option><option>Feral (Bear)</option><option>Balance</option><option>Restoration</option></select></dd>
+      <dt>Ruleset</dt><dd>Normal</dd>
+      <dt>Region</dt><dd>EU</dd>
+    </dl>
+    <div class="sample">Sample character, not a real player.</div>
+  </section>
+  <div class="hr"></div>
+  <div class="disc">
+    <button class="btn" id="lvlBtn" aria-expanded="false" aria-controls="lvlPanel"><span id="lvlTxt">Level 29</span><svg class="i chev"><use href="#i-chev"/></svg></button>
+    <div class="panel" id="lvlPanel" hidden>
+      <label>Level <input type="range" id="lvl" min="10" max="60" value="29" aria-label="Level"></label>
+      <div class="tiers" id="tiers" hidden role="radiogroup" aria-label="Level 60 tier">
+        <label><input type="radio" name="tier" checked>Pre-raid</label><label><input type="radio" name="tier">Raid tier 1</label>
+      </div>
+    </div>
+  </div>
+  <div class="disc">
+    <button class="btn" id="chBtn" aria-expanded="false" aria-controls="chPanel"><span style="display:inline-flex;gap:7px;align-items:center"><svg class="i"><use href="#i-user"/></svg>Change character</span><svg class="i chev"><use href="#i-chev"/></svg></button>
+    <form class="panel" id="chPanel" hidden onsubmit="return false">
+      <label>Region <select><option>EU</option><option>US</option></select></label>
+      <label>First name <input type="text" placeholder="Testa"></label>
+      <label>Surname <input type="text" placeholder="Exampleton"></label>
+      <button class="btn primary" style="justify-content:center">Look up</button>
+      <button type="button" class="linkbtn" id="manBtn" aria-expanded="false">Enter manually</button>
+      <div id="manual" hidden style="display:none;flex-direction:column;gap:8px">
+        <label>Race <select><option>Tauren</option></select></label>
+        <label>Class <select><option>Druid</option></select></label>
+      </div>
+    </form>
+  </div>
+  <div class="hr"></div>
+  <nav class="filters" aria-label="Slot filter">
+    <h3>Slots</h3>
+    <button aria-pressed="true" data-f="all">All <span class="n" id="n-all"></span></button>
+    <button aria-pressed="false" data-f="armour">Armour <span class="n" id="n-armour"></span></button>
+    <button aria-pressed="false" data-f="weapons">Weapons <span class="n" id="n-weapons"></span></button>
+    <button aria-pressed="false" data-f="jewellery">Jewellery <span class="n" id="n-jewellery"></span></button>
+  </nav>
+</aside>
+
+<main>
+  <section aria-labelledby="h-next">
+    <div class="sec-h"><h2 id="h-next">What to do next</h2><span id="next-sum"></span></div>
+    <div class="tiles" id="tiles"></div>
+  </section>
+  <section aria-labelledby="h-best">
+    <div class="sec-h"><h2 id="h-best">Best gear</h2><span>Level 29, Feral (Cat)</span></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Slot</th><th>Best item</th><th class="num">Score</th><th>Where to get it</th><th>You wear</th><th class="num">Gain</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+  </section>
+  <section class="coming" aria-labelledby="h-up">
+    <div class="sec-h"><h2 id="h-up">Coming up</h2><span>Levels where a better item appears</span></div>
+    <ol id="coming"></ol>
+  </section>
+  <footer>Mock-up b: Quartermaster's ledger. Sample character, real Forever data.</footer>
+</main>
+</div>
+
+<script>
+const LEVEL = 29, TIER = 0;
+const STANDINGS = ["Hated","Hostile","Unfriendly","Neutral","Friendly","Honored","Revered","Exalted"];
+const ORDER = ["head","neck","shoulders","back","chest","wrist","hands","waist","legs","feet","ring","trinket","two_hand"];
+const GROUP = {head:"armour",shoulders:"armour",back:"armour",chest:"armour",wrist:"armour",hands:"armour",waist:"armour",legs:"armour",feet:"armour",neck:"jewellery",ring:"jewellery",trinket:"jewellery",two_hand:"weapons"};
+const SLOTN = {head:"Head",neck:"Neck",shoulders:"Shoulders",back:"Back",chest:"Chest",wrist:"Wrists",hands:"Hands",waist:"Waist",legs:"Legs",feet:"Feet",ring:"Ring",trinket:"Trinket",two_hand:"Two-hand"};
+const UNKNOWN = {neck:"Charm of the Wandering Monkey", waist:"Frayed Pathfinder's Sash", back:"Tattered Cloak of the Bear"};
+let meta, gear;
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $ = (s) => document.querySelector(s);
+const fmt = (n) => Number(n).toFixed(1);
+function formatMoney(copper){const c=Number(copper),g=Math.floor(c/10000),s=Math.floor(c/100)%100;return g?`${g}g ${s}s`:`${s}s ${c%100}c`}
+const instanceName = (k) => meta.instances[k]?.name || k;
+function instanceLevels(k){const i=meta.instances[k];if(!i||i.type.startsWith("raid")||i.type==="world_boss")return "";return ` (level ${i.levels[0]}–${i.levels[1]})`}
+function describeSource(src){
+  const inst=src.instance;
+  const chance=src.chance!=null?` — ${src.chance<1?src.chance.toFixed(1):Math.round(src.chance)}% drop chance`:"";
+  switch(src.type){
+    case "drop":{const rank=src.rank&&src.rank!=="normal"?` (${src.rank})`:"";
+      if(inst)return{label:`Run ${instanceName(inst)}${instanceLevels(inst)}`,text:`Dropped by ${src.name}${rank}${chance}`};
+      return{label:`Kill ${src.name}${src.zone?` in ${src.zone}`:""}`,text:`Dropped by ${src.name}${rank}${src.level?.[0]?`, level ${src.level[0]}`:""}${chance}`}}
+    case "boss":return{label:`Run ${instanceName(inst)}${instanceLevels(inst)}`,text:`Dropped by ${src.name}`};
+    case "instance_trash":return{label:`Run ${instanceName(inst)}${instanceLevels(inst)}`,text:`Random drop from the normal monsters (trash)${chance}`};
+    case "object":
+      if(inst)return{label:`Run ${instanceName(inst)}${instanceLevels(inst)}`,text:`Found in ${src.name||"a chest"}${chance}`};
+      return{label:`Open ${src.name||"a chest"}${src.zone?` in ${src.zone}`:""}`,text:`Found in ${src.name||"a chest"}${chance}`};
+    case "quest":{const where=src.zone?` in ${src.zone}`:"",from=src.start_npc?` from ${src.start_npc}`:"",lvl=src.level?` (level ${src.level})`:"";
+      const label=inst&&meta.instances[inst]?.tier?`Quest: ${src.name} — needs ${instanceName(inst)}`:`Quest: ${src.name}${lvl}`;
+      return{label,text:`Quest reward${where}${from}. Can be picked up at level ${src.min_level||1}.`}}
+    case "vendor":{const st=STANDINGS[Number(src.reputation?.standing)];
+      if(src.reputation)return{label:`Buy from ${src.name} quartermaster`,text:`Needs ${st||"some"} reputation with ${src.name}.`};
+      const who=src.name||"a vendor",price=src.copper?` Costs about ${formatMoney(src.copper)}.`:"";
+      return{label:`Buy from ${who}${src.zone?` (${src.zone})`:""}`,text:`Sold by ${who}${src.title?` <${src.title}>`:""}.${price}`}}
+    case "craft":{const recipe=src.recipe?` Recipe: ${src.recipe.name}${src.recipe.from?.length?` (${src.recipe.from.join(" / ")})`:""}.`:" Recipe from the profession trainer.";
+      const raid=inst?` Needs materials from ${instanceName(inst)}.`:"",prof=src.name||"a profession";
+      return{label:`Craft with ${prof}`,text:`Crafted with ${prof}${src.skill?` (skill ${src.skill})`:""}.${recipe}${raid}`}}
+    case "world_drop":return{label:"Auction House / world drops",text:"Random drop from many monsters. It is Bind on Equip, so you can often buy it on the Auction House."};
+    case "container":return{label:`Open ${src.name||"a container"}`,text:`Found in ${src.name||"a container"}${chance}`};
+    default:return{label:src.type,text:src.type};
+  }
+}
+const pointAt=(slot,lv)=>{let f=null;for(const p of gear.slots[slot]||[])if(p.tier===0&&p.level<=lv)f=p;return f};
+const link=(id,info)=>`<a class="item q${info.quality}" href="https://www.wowhead.com/forever/item=${id}" target="_blank" rel="noopener">${esc(info.name)}</a>`;
+
+function flags(info,src){
+  const reasons=[...(info.uncertain||[])];
+  if(src?.conflict&&src.conflict_reason)reasons.push(src.conflict_reason);
+  if(reasons.length)return `<details class="inline"><summary class="unc"><svg class="i" style="width:11px;height:11px"><use href="#i-warn"/></svg>Uncertain</summary><span class="dbody u"><ul>${reasons.map((r)=>`<li>${esc(r)}</li>`).join("")}</ul></span></details>`;
+  const c=Object.values(info.checks||{});
+  return c.length&&c.every((x)=>x==="single")?`<span class="one-src" title="Only one database has this item, so it is not cross-checked.">1 source</span>`:"";
+}
+
+function build(){
+  const I=gear.items;
+  const entries=[]; // one per displayed row
+  for(const slot of ORDER){
+    const best=pointAt(slot,LEVEL), worn=pointAt(slot,18);
+    const n=(slot==="ring"||slot==="trinket")?2:1;
+    for(let k=0;k<n;k++){
+      const b=best.items[k]; if(!b)continue;
+      const w=worn?.items[k];
+      const unknown=UNKNOWN[slot]&&k===0;
+      const have=unknown?null:(w?w[1]:0);
+      entries.push({slot,id:b[0],score:b[1],info:I[b[0]],alts:best.items.slice(n),wId:w?.[0],have,unknown,
+        gain:unknown?null:Math.max(0,b[1]-(w?w[1]:0)),same:!unknown&&w&&w[0]===b[0]});
+    }
+  }
+  // rows
+  $("#rows").innerHTML=entries.map((e)=>{
+    const info=e.info,src=info.sources.find((s)=>!s.conflict)||info.sources[0];
+    const d=src?describeSource(src):{text:"Unknown"};
+    const alts=e.alts.slice(0,2).map(([id,sc])=>`<li>${link(id,I[id])} <span style="color:var(--text)">${fmt(sc)}</span></li>`).join("");
+    const bop=info.binding==="ON_ACQUIRE"?"BoP":info.binding==="ON_EQUIP"?"BoE":"";
+    const from=pointAt(e.slot,LEVEL).level;
+    const wInfo=e.wId&&I[e.wId];
+    const now=e.unknown?`<span class="cant" title="Random-stat items have no fixed score. Compare the stats yourself.">${esc(UNKNOWN[e.slot])} <small>Can't score</small></span>`
+      :e.same?`<small>Already wearing it</small>`:wInfo?`${link(e.wId,wInfo)} <small>${fmt(e.have)}</small>`:`<small>Empty slot</small>`;
+    const gain=e.unknown?`<span class="gainc zero">?</span>`:e.same?`<span class="gainc zero">0</span>`:`<span class="gainc">+${fmt(e.gain)}</span>`;
+    return `<tr data-g="${GROUP[e.slot]}"><td class="slot">${SLOTN[e.slot]}</td>
+      <td class="nm">${link(e.id,info)}${from>10?`<span class="tag">from lvl ${from}</span>`:""}${bop?`<span class="tag" title="${bop==="BoP"?"Binds when picked up":"Binds when equipped"}">${bop}</span>`:""}${flags(info,src)}${alts?`<details class="inline"><summary class="alt">${e.alts.slice(0,2).length} alternatives</summary><span class="dbody"><ul style="list-style:none;padding:0">${alts}</ul></span></details>`:""}</td>
+      <td class="num sc" data-l="Score">${fmt(e.score)}</td><td class="where" data-l="Get it">${esc(d.text)}</td><td class="now" data-l="You wear">${now}</td><td class="num dl" data-l="Gain">${gain}</td></tr>`;
+  }).join("");
+  // filter counts
+  for(const g of ["armour","weapons","jewellery"])$("#n-"+g).textContent=entries.filter((e)=>GROUP[e.slot]===g).length;
+  $("#n-all").textContent=entries.length;
+
+  // tiles: group upgrades by source label
+  const groups=new Map();
+  for(const e of entries){
+    if(e.same)continue;
+    const src=e.info.sources.find((s)=>!s.conflict)||e.info.sources[0]; if(!src)continue;
+    const d=describeSource(src), g=groups.get(d.label)||{label:d.label,gain:0,items:[],lv:[]};
+    g.gain+=e.gain||0; g.items.push(e);
+    const inst=src.instance&&meta.instances[src.instance];
+    if(inst)g.lv.push(...inst.levels);
+    else g.lv.push(...[src.level,src.min_level,e.info.required_level,src.level?.[0]].flat().filter((v)=>v>1));
+    groups.set(d.label,g);
+  }
+  const top=[...groups.values()].sort((a,b)=>b.gain-a.gain);
+  $("#next-sum").textContent=`${top.length} places, ${top.reduce((s,g)=>s+g.items.length,0)} upgrades`;
+  $("#tiles").innerHTML=top.slice(0,4).map((g)=>{
+    let lo=Math.min(...g.lv),hi=Math.max(...g.lv);if(!isFinite(lo)){lo=LEVEL-2;hi=LEVEL+2}if(hi-lo<2){lo-=1;hi+=1}
+    const a=Math.min(lo,LEVEL)-3,b=Math.max(hi,LEVEL)+3,p=(v)=>((v-a)/(b-a)*100);
+    const title=g.label.replace(/ \(level [^)]*\)$/,"");
+    const names=g.items.slice(0,2).map((e)=>`<li>${link(e.id,e.info)}</li>`).join("");
+    const more=g.items.length>2?`<div class="tile-more">and ${g.items.length-2} more</div>`:"";
+    const gtxt=g.gain>0?`<b>+${fmt(g.gain)}</b> total gain`:`<b>?</b> can't score`;
+    return `<div class="tile" style="--g:${Math.max(1,Math.sqrt(g.gain)).toFixed(2)}"><h3>${esc(title)}</h3>
+      <div class="gain">${gtxt} <span>${g.items.length} item${g.items.length>1?"s":""}</span></div>
+      <ul>${names}</ul>${more}
+      <div class="ruler" role="img" aria-label="Level range ${lo} to ${hi}; you are level ${LEVEL}">
+        <div class="rl-top"><span style="left:${p(lo)}%">${lo}–${hi}</span></div>
+        <div class="rl-track"><div class="rl-bar" style="left:${p(lo)}%;width:${p(hi)-p(lo)}%"></div><div class="rl-me" style="left:${p(LEVEL)}%"></div></div>
+        <div class="rl-bot"><span style="left:${p(LEVEL)}%;transform:translateX(${p(LEVEL)>85?"-100":p(LEVEL)<15?"0":"-50"}%)">You, ${LEVEL}</span></div>
+      </div></div>`;
+  }).join("");
+
+  // coming up: next breakpoints after LEVEL where best item changes
+  const up=[];
+  for(const slot of ORDER){
+    const cur=pointAt(slot,LEVEL).items[0][0];
+    const nxt=(gear.slots[slot]||[]).find((p)=>p.tier===0&&p.level>LEVEL&&p.items[0][0]!==cur);
+    if(nxt)up.push({slot,level:nxt.level,id:nxt.items[0][0],score:nxt.items[0][1]});
+  }
+  up.sort((x,y)=>x.level-y.level);
+  $("#coming").innerHTML=up.slice(0,9).map((u)=>`<li><span class="lv">${u.level}</span><span>${link(u.id,I[u.id])}</span><span class="slotn">${SLOTN[u.slot]}, score ${fmt(u.score)}</span></li>`).join("");
+}
+
+// controls
+function toggle(btn,panel,flex){btn.addEventListener("click",()=>{const o=btn.getAttribute("aria-expanded")==="true";btn.setAttribute("aria-expanded",!o);panel.hidden=o;if(flex)panel.style.display=o?"none":"flex"})}
+toggle($("#lvlBtn"),$("#lvlPanel"));toggle($("#chBtn"),$("#chPanel"));toggle($("#manBtn"),$("#manual"),true);
+$("#lvl").addEventListener("input",(e)=>{$("#lvlTxt").textContent="Level "+e.target.value;$("#tiers").hidden=e.target.value!=="60"});
+$("#menu").addEventListener("click",(e)=>{const o=$("#rail").classList.toggle("open");e.currentTarget.setAttribute("aria-expanded",o)});
+document.querySelectorAll(".filters button").forEach((b)=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".filters button").forEach((x)=>x.setAttribute("aria-pressed",x===b));
+  document.querySelectorAll("#rows tr").forEach((r)=>r.hidden=b.dataset.f!=="all"&&r.dataset.g!==b.dataset.f);
+}));
+
+Promise.all([fetch("../data/meta.json").then((r)=>r.json()),fetch("../data/gear/druid.feral_cat.H.json").then((r)=>r.json())])
+  .then(([m,g])=>{meta=m;gear=g;build()}).catch((e)=>{console.error(e);document.querySelector("main").insertAdjacentHTML("afterbegin","<p>Could not load the gear data.</p>")});
+</script>
+</body>
+</html>

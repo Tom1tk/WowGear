@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WowGear Forever — Mock-up A</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Tauren race theme, copied from frontend/style.css */
+  --r-tint: #7a6a3a; --r-gold: #d8b46a; --r-gold2: #efd59b; --r-accent: #5cc6c8;
+  --bg: color-mix(in oklab, var(--r-tint) 10%, #0c0b0e);
+  --card: color-mix(in oklab, var(--r-tint) 13%, #19171d);
+  --card-2: color-mix(in oklab, var(--r-tint) 18%, #211e26);
+  --line: color-mix(in oklab, var(--r-tint) 30%, #34303a);
+  --text: #ece4d6; --muted: #a89c8b;
+  --gold: var(--r-gold); --gold-2: var(--r-gold2); --accent: var(--r-accent);
+  --ok: #5fbf6a; --warn: #e3a63c; --bad: #e06a5a;
+  --unc: #f2c46d; --unc-bg: rgba(242,196,109,.14);
+  --q-common: #fff; --q-uncommon: #1eff00; --q-rare: #3d9bff; --q-epic: #b86bff;
+  --horde: #c8392f;
+  --bar-h: 52px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
+body { margin: 0; font: 400 14px/1.4 "Outfit", system-ui, sans-serif; color: var(--text); background: var(--bg); min-height: 100vh; }
+::selection { background: color-mix(in oklab, var(--gold) 45%, #000); color: #fff; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 6px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--gold) 50%, var(--line)); }
+a { color: var(--gold); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.ico { width: 14px; height: 14px; flex: none; }
+
+.scene { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.scene::before { content: ""; position: absolute; inset: -12px; background: url("../bg/tauren.jpg") center 30% / cover; opacity: .2; filter: saturate(.75) blur(2px); }
+.scene::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, transparent 0%, var(--bg) 85%), linear-gradient(180deg, transparent 0%, var(--bg) 92%); }
+
+/* ---------- top bar ---------- */
+.topbar { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 94%, transparent); border-bottom: 1px solid var(--line); }
+.topbar-in { height: var(--bar-h); display: flex; align-items: center; gap: 14px; padding: 0 20px; max-width: 1840px; margin: 0 auto; }
+.logo { font: 800 19px "Cinzel", serif; color: var(--gold-2); margin: 0; display: flex; align-items: center; gap: 8px; white-space: nowrap; letter-spacing: .02em; }
+.logo svg { width: 20px; height: 20px; color: var(--gold); }
+.logo span { color: var(--accent); }
+.charline { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; font-size: 14px; white-space: nowrap; overflow: hidden; }
+.charline b { font: 700 15px "Cinzel", serif; }
+.charline .sep { color: var(--line); }
+.charline .meta { overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
+.faction { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 99px; background: var(--horde); color: #fff; }
+.sample { font-size: 12px; color: var(--muted); font-style: italic; }
+select { height: 32px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--card-2); }
+select:hover, .tbtn:hover { border-color: var(--gold); }
+.tbtn { height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card-2); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; white-space: nowrap; }
+.tbtn[aria-expanded="true"] { border-color: var(--gold); color: var(--gold-2); }
+.tbtn .chev { transition: transform .15s; }
+.tbtn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.tbtn b { color: var(--accent); font-variant-numeric: tabular-nums; }
+.drop { position: absolute; left: 0; right: 0; top: 100%; background: var(--card); border-bottom: 1px solid var(--line); box-shadow: 0 14px 30px rgba(0,0,0,.45); }
+.drop[hidden] { display: none; }
+.drop-in { max-width: 1840px; margin: 0 auto; padding: 14px 20px; }
+.tabs { display: flex; gap: 4px; margin-bottom: 10px; border-bottom: 1px solid var(--line); }
+.tab { background: none; border: 0; padding: 6px 12px; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 600; }
+.tab[aria-selected="true"] { color: var(--gold-2); border-bottom-color: var(--gold); }
+.form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.form[hidden] { display: none; }
+.field { display: flex; flex-direction: column; gap: 3px; }
+.field label { font-size: 12px; color: var(--muted); }
+.field input { height: 36px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--card-2); width: 170px; }
+.field select { height: 36px; }
+.btn-primary { height: 36px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--gold); background: var(--gold); color: #231a0c; font-weight: 700; cursor: pointer; }
+.btn-primary:hover { background: var(--gold-2); }
+.slider { width: min(560px, 100%); }
+.slider input { width: 100%; accent-color: var(--gold); }
+.ticks { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; padding: 0 2px; }
+.lvl-wrap { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+.lvl-wrap output { font: 700 22px "Cinzel", serif; color: var(--accent); }
+.segmented { display: flex; gap: 4px; align-items: center; }
+.segmented button { border: 1px solid var(--line); background: var(--card-2); border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+.segmented button[aria-checked="true"] { border-color: var(--gold); color: var(--gold-2); font-weight: 600; }
+.hint { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+
+/* ---------- work area ---------- */
+.work { max-width: 1840px; margin: 0 auto; padding: 14px 20px 8px; display: grid; grid-template-columns: minmax(0, 62fr) minmax(0, 38fr); gap: 20px; align-items: start; }
+h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
+.sec-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.sec-head p { margin: 0; font-size: 13px; color: var(--muted); }
+.panel { background: color-mix(in srgb, var(--card) 88%, transparent); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.legend { margin: 0 0 6px; font-size: 12.5px; color: var(--muted); }
+
+/* gear table */
+.cols, .row-main { display: grid; grid-template-columns: 78px minmax(0, 1.5fr) 44px minmax(0, .8fr) minmax(0, 1.3fr) 20px; gap: 10px; align-items: center; }
+.cols { padding: 0 6px 6px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--line); }
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { border-bottom: 1px solid color-mix(in oklab, var(--line) 60%, transparent); }
+.row:last-child { border-bottom: 0; }
+.row-main { min-height: 40px; padding: 0 6px; cursor: pointer; border-radius: 6px; }
+.row:hover .row-main { background: color-mix(in oklab, var(--gold) 7%, transparent); }
+.slot { color: var(--muted); font-size: 13px; }
+.item { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.item-link { font-weight: 600; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.item-link:hover { text-decoration: underline; }
+.q-common { color: var(--q-common); } .q-uncommon { color: var(--q-uncommon); } .q-rare { color: var(--q-rare); } .q-epic { color: var(--q-epic); }
+.score { font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; }
+.badge { flex: none; font-size: 11px; line-height: 16px; border-radius: 99px; padding: 0 6px; background: var(--card-2); color: var(--muted); border: 1px solid var(--line); white-space: nowrap; }
+.badge-bop { color: var(--warn); }
+.badge-unc { display: inline-flex; align-items: center; gap: 3px; color: var(--unc); background: var(--unc-bg); border-color: var(--unc); }
+.badge-unc .ico { width: 11px; height: 11px; }
+.src { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.worn { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; }
+.worn-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.worn-name a { text-decoration: none; }
+.worn-name a:hover { text-decoration: underline; }
+.worn .score { color: var(--muted); }
+.delta { flex: none; width: 74px; display: flex; align-items: center; gap: 6px; justify-content: flex-end; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.bar { height: 8px; border-radius: 4px; background: var(--gold); transform-origin: left; animation: grow .7s cubic-bezier(.2,.7,.2,1) both; }
+.delta .gain { color: var(--gold-2); min-width: 32px; text-align: right; }
+.delta .none { color: var(--muted); font-weight: 400; font-size: 12px; white-space: nowrap; }
+@keyframes grow { from { transform: scaleX(0); } }
+.chev-btn { background: none; border: 0; padding: 0; width: 22px; height: 28px; cursor: pointer; color: var(--muted); display: grid; place-items: center; }
+.chev-btn:hover { color: var(--gold-2); }
+.chev-btn .ico { transition: transform .15s; }
+.row.open .chev-btn .ico { transform: rotate(180deg); }
+.detail { display: none; padding: 4px 6px 12px 88px; font-size: 13px; }
+.row.open .detail { display: block; }
+.detail p { margin: 2px 0; }
+.detail ul { margin: 2px 0 6px; padding-left: 18px; }
+.detail h3 { margin: 8px 0 2px; font: 600 12px "Outfit", sans-serif; color: var(--muted); }
+.reasons { background: var(--unc-bg); border: 1px solid color-mix(in oklab, var(--unc) 45%, transparent); border-radius: 8px; padding: 6px 10px 6px 26px; margin: 4px 0; color: var(--text); }
+.reasons li { margin: 2px 0; }
+.one-src { font-size: 12px; color: var(--muted); }
+.ext { font-size: 12px; color: var(--muted); }
+
+/* rail */
+.rail { position: sticky; top: calc(var(--bar-h) + 12px); max-height: calc(100vh - var(--bar-h) - 24px); overflow: auto; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.group { padding: 8px 0; border-top: 1px solid var(--line); }
+.group:first-of-type { border-top: 0; padding-top: 4px; }
+.g-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.g-head strong { font-weight: 600; font-size: 14px; }
+.g-gain { color: var(--gold-2); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 13px; }
+.g-list { list-style: none; margin: 3px 0 0; padding: 0; }
+.g-list li { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; font-size: 13px; line-height: 1.5; }
+.g-list .slot { font-size: 12px; }
+.g-list .g-it { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.g-list .g-it a { font-weight: 600; text-decoration: none; }
+.g-list .g-it a:hover { text-decoration: underline; }
+.g-list .g-it .where { color: var(--muted); }
+.g-list .g-d { color: var(--gold-2); font-variant-numeric: tabular-nums; }
+.up-list { list-style: none; margin: 6px 0 0; padding: 0; }
+.up-list li { display: flex; gap: 8px; align-items: center; font-size: 13px; padding: 2px 0; min-width: 0; }
+.up-list .slot { width: 68px; flex: none; font-size: 12px; }
+.up-list a { font-weight: 600; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.up-list a:hover { text-decoration: underline; }
+.jump { flex: none; width: 52px; border: 1px solid var(--line); background: var(--card-2); border-radius: 6px; padding: 0 6px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--gold-2); font-variant-numeric: tabular-nums; }
+.jump:hover { border-color: var(--gold); }
+.status { max-width: 1840px; margin: 0 auto; padding: 20px; color: var(--muted); }
+.foot { text-align: center; color: var(--muted); font-size: 12.5px; padding: 8px 16px 24px; }
+
+/* mobile */
+@media (max-width: 900px) {
+  .work { grid-template-columns: 1fr; padding: 10px 12px; gap: 14px; }
+  .rail { position: static; max-height: none; overflow: visible; order: -1; }
+  .topbar-in { height: auto; flex-wrap: wrap; padding: 8px 12px; gap: 8px; }
+  .charline { flex: 1 1 100%; order: 3; flex-wrap: wrap; white-space: normal; }
+  .charline .meta { white-space: normal; }
+  .logo { flex: 1; }
+  .drop-in { padding: 12px; }
+  .cols { display: none; }
+  .row-main { grid-template-columns: 70px minmax(0, 1fr) 40px 22px; grid-template-areas: "slot item score chev" ". src src ." ". worn worn ."; gap: 2px 8px; padding: 6px; }
+  .row-main > .slot { grid-area: slot; } .row-main > .item { grid-area: item; } .row-main > .score { grid-area: score; }
+  .row-main > .src { grid-area: src; } .row-main > .worn { grid-area: worn; } .row-main > .chev-btn { grid-area: chev; }
+  .detail { padding-left: 12px; }
+  .field input { width: 100%; } .field { flex: 1 1 140px; }
+  .sample { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .bar { animation: none; } .tbtn .chev, .chev-btn .ico { transition: none; } }
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <h1 class="logo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 17 14 6l3-3 .5 2.5L15 8 4.5 18.5 3 17Zm0 0-1.5 1.5M12 4l4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>WowGear <span>Forever</span></h1>
+    <div class="charline" id="charline"></div>
+    <button type="button" class="tbtn" id="lvl-btn" aria-expanded="false" aria-controls="lvl-drop"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 12h12M2 12V9m4 3V7m4 5V5m4 7V3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Level <b id="lvl-btn-n">29</b><svg class="ico chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="tbtn" id="chg-btn" aria-expanded="false" aria-controls="chg-drop"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 14c.6-2.8 2.7-4.2 5.5-4.2s4.9 1.4 5.5 4.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Change character<svg class="ico chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+  <div class="drop" id="lvl-drop" hidden><div class="drop-in lvl-wrap">
+    <label for="lvl-slider" style="font-weight:600">Gear for level <output id="lvl-out">29</output></label>
+    <div class="slider"><input type="range" id="lvl-slider" min="10" max="60" value="29"><div class="ticks" aria-hidden="true"><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span></div></div>
+    <div class="segmented" id="tier-row" role="radiogroup" aria-label="Level 60 content" hidden>
+      <span class="muted">Level 60 content:</span>
+      <button type="button" role="radio" aria-checked="true">Pre-raid</button>
+      <button type="button" role="radio" aria-checked="false" title="Raid tier 1: Barrow Deeps, Hyjal Summit, Onyxia's Lair">Raid tier 1</button>
+    </div>
+    <span class="muted">This mock-up always shows level 29.</span>
+  </div></div>
+  <div class="drop" id="chg-drop" hidden><div class="drop-in">
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab" role="tab" id="tab-lookup" aria-selected="true">Look up character</button>
+      <button type="button" class="tab" role="tab" id="tab-manual" aria-selected="false">Enter manually</button>
+    </div>
+    <form class="form" id="f-lookup" onsubmit="return false" autocomplete="off">
+      <div class="field"><label for="region">Region</label><select id="region"><option>EU</option><option>US</option><option>KR</option><option>TW</option></select></div>
+      <div class="field"><label for="fn">First name</label><input id="fn" type="text" placeholder="First name"></div>
+      <div class="field"><label for="sn">Surname</label><input id="sn" type="text" placeholder="Surname"></div>
+      <button class="btn-primary" type="submit">Show my gear</button>
+    </form>
+    <form class="form" id="f-manual" onsubmit="return false" hidden>
+      <div class="field"><label for="m-race">Race</label><select id="m-race"><option>Tauren (Horde)</option><option>Orc (Horde)</option></select></div>
+      <div class="field"><label for="m-class">Class</label><select id="m-class"><option>Druid</option><option>Hunter</option></select></div>
+      <div class="field"><label for="m-spec">Spec</label><select id="m-spec"><option>Feral (Cat)</option><option>Balance</option></select></div>
+      <div class="field"><label for="m-level">Level</label><input id="m-level" type="number" min="1" max="60" value="29" style="width:80px"></div>
+      <button class="btn-primary" type="submit">Show gear</button>
+    </form>
+    <p class="hint" id="hint">Forever characters have a first name and a surname, and no realm. No login needed.</p>
+  </div></div>
+</header>
+
+<div class="status" id="status">Loading gear data…</div>
+<main class="work" id="work" hidden>
+  <section class="panel" aria-labelledby="gear-t">
+    <div class="sec-head"><h2 id="gear-t">Best gear at level 29</h2><p>Feral (Cat) Druid · Horde. Click a row for where to get it and alternatives.</p></div>
+    <p class="legend"><span class="badge badge-unc"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Uncertain</span> our data sources disagree; open the row to see why. The gold bar is the score gained over what you wear.</p>
+    <div class="cols" aria-hidden="true"><span>Slot</span><span>Best item</span><span style="text-align:right">Score</span><span>Where to get it</span><span>You wear / gain</span><span></span></div>
+    <ol class="rows" id="rows"></ol>
+  </section>
+  <aside class="rail" aria-label="Next steps">
+    <section class="panel" aria-labelledby="todo-t">
+      <div class="sec-head"><h2 id="todo-t">What to do next</h2><p>Grouped by where to go, biggest gains first.</p></div>
+      <div id="todo"></div>
+    </section>
+    <section class="panel" aria-labelledby="up-t">
+      <div class="sec-head"><h2 id="up-t">Coming up</h2><p>Levels where a better item appears.</p></div>
+      <ol class="up-list" id="upcoming"></ol>
+    </section>
+  </aside>
+</main>
+<footer class="foot">Mock-up a: Same world, new layout. Sample character, real Forever data.</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const LEVEL = 29;
+const QUALITY = { 1: "common", 2: "uncommon", 3: "rare", 4: "epic" };
+const SLOT_LABEL = { head: "Head", neck: "Neck", shoulders: "Shoulders", back: "Back", chest: "Chest", wrist: "Wrist", hands: "Hands", waist: "Waist", legs: "Legs", feet: "Feet", ring: "Ring", trinket: "Trinket", main_hand: "Main hand", off_hand: "Off hand", two_hand: "Two-hand" };
+const ARMOR_ORDER = ["head", "neck", "shoulders", "back", "chest", "wrist", "hands", "waist", "legs", "feet"];
+const WOWHEAD = "https://www.wowhead.com/forever/item=";
+const ICON_WARN = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+const ICON_CHEV = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// Worn items we invent: slots where the sample character wears something with no fixed score.
+const UNKNOWN_WORN = { waist: "Frayed Sash of the Whale", wrist: "Weathered Bracers of the Monkey", shoulders: "Patchwork Pauldrons of the Eagle" };
+
+let meta, gear;
+
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) { if (v == null || v === false) continue; if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v === true ? "" : v); }
+  for (const c of kids.flat()) { if (c == null || c === false) continue; n.append(c instanceof Node ? c : document.createTextNode(String(c))); }
+  return n;
+}
+function link(id, name, quality) {
+  return el("a", { class: `item-link q-${QUALITY[quality] || "common"}`, href: WOWHEAD + id, target: "_blank", rel: "noopener" }, name || `Item ${id}`);
+}
+
+// ---- copied from frontend/app.js
+const STANDINGS = ["Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"];
+function formatMoney(copper) { const c = Number(copper), g = Math.floor(c / 10000), s = Math.floor(c / 100) % 100; return g ? `${g}g ${s}s` : `${s}s ${c % 100}c`; }
+function instanceName(key) { const i = meta.instances[key]; return i ? i.name : key; }
+function instanceLevels(key) { const i = meta.instances[key]; if (!i || i.type.startsWith("raid") || i.type === "world_boss") return ""; return ` (level ${i.levels[0]}–${i.levels[1]})`; }
+function describeSource(src) {
+  const inst = src.instance;
+  const chance = src.chance != null ? ` — ${src.chance < 1 ? src.chance.toFixed(1) : Math.round(src.chance)}% drop chance` : "";
+  switch (src.type) {
+    case "drop": {
+      const rank = src.rank && src.rank !== "normal" ? ` (${src.rank})` : "";
+      if (inst) return { key: `inst:${inst}`, label: `Run ${instanceName(inst)}${instanceLevels(inst)}`, text: `Dropped by ${src.name}${rank}${chance}` };
+      return { key: `npc:${src.id}`, label: `Kill ${src.name}${src.zone ? ` in ${src.zone}` : ""}`, text: `Dropped by ${src.name}${rank}${src.level?.[0] ? `, level ${src.level[0]}` : ""}${chance}` };
+    }
+    case "boss": return { key: `inst:${inst}`, label: `Run ${instanceName(inst)}${instanceLevels(inst)}`, text: `Dropped by ${src.name}` };
+    case "instance_trash": return { key: `inst:${inst}`, label: `Run ${instanceName(inst)}${instanceLevels(inst)}`, text: `Random drop from the normal monsters (trash)${chance}` };
+    case "object":
+      if (inst) return { key: `inst:${inst}`, label: `Run ${instanceName(inst)}${instanceLevels(inst)}`, text: `Found in ${src.name || "a chest"}${chance}` };
+      return { key: `obj:${src.id}`, label: `Open ${src.name || "a chest"}${src.zone ? ` in ${src.zone}` : ""}`, text: `Found in ${src.name || "a chest"}${chance}` };
+    case "quest": {
+      const where = src.zone ? ` in ${src.zone}` : "", from = src.start_npc ? ` from ${src.start_npc}` : "", lvl = src.level ? ` (level ${src.level})` : "";
+      const label = inst && meta.instances[inst]?.tier ? `Quest: ${src.name} — needs ${instanceName(inst)}` : `Quest: ${src.name}${lvl}`;
+      return { key: `quest:${src.id}`, label, text: `Quest reward${where}${from}. Can be picked up at level ${src.min_level || 1}.` };
+    }
+    case "vendor": {
+      const standing = STANDINGS[Number(src.reputation?.standing)];
+      if (src.reputation) return { key: `rep:${src.name}`, label: `Buy from ${src.name} quartermaster`, text: `Needs ${standing || "some"} reputation with ${src.name}.` };
+      const who = src.name || "a vendor", price = src.copper ? ` Costs about ${formatMoney(src.copper)}.` : "";
+      return { key: src.name ? `vendor:${src.id}` : "vendor", label: `Buy from ${who}${src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${who}${src.title ? ` <${src.title}>` : ""}.${price}` };
+    }
+    case "craft": {
+      const recipe = src.recipe ? ` Recipe: ${src.recipe.name}${src.recipe.from?.length ? ` (${src.recipe.from.join(" / ")})` : ""}.` : " Recipe from the profession trainer.";
+      const raid = inst ? ` Needs materials from ${instanceName(inst)}.` : "";
+      const prof = src.name || "a profession";
+      return { key: `craft:${prof}`, label: `Craft with ${prof}`, text: `Crafted with ${prof}${src.skill ? ` (skill ${src.skill})` : ""}.${recipe}${raid}` };
+    }
+    case "world_drop": return { key: "ah", label: "Auction House / world drops", text: "Random drop from many monsters. It is Bind on Equip, so you can often buy it on the Auction House." };
+    case "container": return { key: `cont:${src.id}`, label: `Open ${src.name || "a container"}`, text: `Found in ${src.name || "a container"}${chance}` };
+    default: return { key: src.type, label: src.type, text: src.type };
+  }
+}
+// ----
+
+function pointAt(slot, level) { let f = null; for (const p of gear.slots[slot] || []) if (p.tier === 0 && p.level <= level) f = p; return f; }
+function firstSeen(slot, iid) { return (gear.slots[slot] || []).find((p) => p.items.some(([id]) => id === iid)); }
+function sourceReasons(src) {
+  const inst = src.instance && meta.instances[src.instance];
+  return [...(src.conflict ? [src.conflict_reason || "Our databases disagree about this source."] : []), ...(inst?.uncertain || []).map((r) => `${inst.name}: ${r}`)];
+}
+const reasonsOf = (info) => [...(info.uncertain || []), ...(info.sources?.[0] ? sourceReasons(info.sources[0]) : [])];
+
+function buildRows() {
+  const two = pointAt("two_hand", LEVEL)?.items[0], mh = pointAt("main_hand", LEVEL)?.items[0], oh = pointAt("off_hand", LEVEL)?.items[0];
+  const useTwo = two && two[1] >= (mh?.[1] || 0) + (oh?.[1] || 0);
+  const slots = [...ARMOR_ORDER, "ring", "ring", "trinket", "trinket", ...(useTwo ? ["two_hand"] : ["main_hand", "off_hand"])];
+  const seen = {};
+  return slots.filter((s) => gear.slots[s]).map((slot) => {
+    const index = seen[slot] = (seen[slot] ?? -1) + 1;
+    const pair = slot === "ring" || slot === "trinket";
+    const items = pointAt(slot, LEVEL)?.items || [], worn = pointAt(slot, 18)?.items || [];
+    const pick = items[pair ? index : 0] || null;
+    const w = worn[pair ? index : 0] || null;
+    const row = { slot, label: pair ? `${SLOT_LABEL[slot]} ${index + 1}` : SLOT_LABEL[slot], pick, alts: items.slice(pair ? 2 : 1), worn: null, gain: 0 };
+    if (UNKNOWN_WORN[slot] && !pair) row.worn = { unknown: UNKNOWN_WORN[slot] };
+    else if (w) row.worn = { id: w[0], score: w[1] };
+    if (pick) row.gain = !row.worn ? pick[1] : row.worn.unknown ? 0 : Math.max(0, Math.round((pick[1] - row.worn.score) * 10) / 10);
+    return row;
+  });
+}
+
+function renderRows(rows) {
+  const CAP = 30; // bars cap at +30 so one outlier (real data: +263) does not flatten the rest
+  const ol = $("rows");
+  for (const r of rows) {
+    const li = el("li", { class: "row" });
+    const main = el("div", { class: "row-main" });
+    main.append(el("span", { class: "slot" }, r.label));
+    if (!r.pick) {
+      main.append(el("span", { class: "item muted" }, "No known item at this level."), el("span"), el("span"), el("span"), el("span"));
+      li.append(main); ol.append(li); continue;
+    }
+    const [iid, score] = r.pick, info = gear.items[iid], seen = firstSeen(r.slot, iid);
+    const reasons = reasonsOf(info);
+    const checks = Object.values(info.checks || {});
+    const single = !info.uncertain.length && checks.length && checks.every((c) => c === "single");
+    const item = el("span", { class: "item" }, link(iid, info.name, info.quality),
+      seen && seen.level > 10 ? el("span", { class: "badge" }, `lvl ${seen.level}`) : null,
+      info.binding === "ON_ACQUIRE" ? el("span", { class: "badge badge-bop", title: "Binds when picked up" }, "BoP") : el("span", { class: "badge", title: "Binds when equipped" }, "BoE"),
+      reasons.length ? Object.assign(el("span", { class: "badge badge-unc", title: reasons.join("\n") }), { innerHTML: `${ICON_WARN}Uncertain` }) : null);
+    main.append(item, el("span", { class: "score" }, String(score)));
+    const srcs = info.sources || [];
+    const d = srcs[0] ? describeSource(srcs[0]) : null;
+    main.append(el("span", { class: "src", title: d ? `${d.label}. ${d.text}` : "" }, d ? d.label : "Source unknown"));
+    // worn + inline gain bar
+    const wornCell = el("span", { class: "worn" });
+    if (!r.worn) wornCell.append(el("span", { class: "worn-name muted" }, "Empty slot"));
+    else if (r.worn.unknown) wornCell.append(el("span", { class: "worn-name" }, r.worn.unknown));
+    else { const wi = gear.items[r.worn.id]; wornCell.append(el("span", { class: "worn-name" }, link(r.worn.id, wi.name, wi.quality)), el("span", { class: "score" }, String(r.worn.score))); }
+    wornCell.append(r.gain > 0
+      ? el("span", { class: "delta", title: `Upgrade +${r.gain}` }, el("span", { class: "bar", style: `width:${Math.max(4, Math.round(Math.min(r.gain, CAP) / CAP * 34))}px` }), el("span", { class: "gain" }, `+${r.gain}`))
+      : el("span", { class: "delta" }, el("span", { class: "none" }, r.worn?.unknown ? "Can't score" : "none")));
+    main.append(wornCell);
+    const btn = el("button", { type: "button", class: "chev-btn", "aria-expanded": "false", "aria-label": `Details for ${r.label}` });
+    btn.innerHTML = ICON_CHEV;
+    main.append(btn);
+    li.append(main, buildDetail(r, info, iid, srcs, reasons, single));
+    const toggle = () => { const open = li.classList.toggle("open"); btn.setAttribute("aria-expanded", String(open)); };
+    main.addEventListener("click", (e) => { if (!e.target.closest("a")) toggle(); });
+    btn.addEventListener("click", (e) => { e.stopPropagation(); toggle(); });
+    ol.append(li);
+  }
+}
+
+function buildDetail(r, info, iid, srcs, reasons, single) {
+  const d = el("div", { class: "detail" });
+  if (reasons.length) d.append(el("ul", { class: "reasons" }, reasons.map((x) => el("li", {}, x))));
+  if (srcs[0]) { const s = describeSource(srcs[0]); d.append(el("p", {}, `${s.label}. ${s.text} `, el("a", { class: "ext", href: `https://forever.warcraftdb.com/data/item/${iid}`, target: "_blank", rel: "noopener" }, "warcraftdb"))); }
+  if (srcs.length > 1) d.append(el("h3", {}, `${srcs.length - 1} more source${srcs.length > 2 ? "s" : ""}`), el("ul", {}, srcs.slice(1).map((s) => { const x = describeSource(s); return el("li", {}, `${x.label}. ${x.text}`); })));
+  if (single) d.append(el("p", { class: "one-src" }, "1 source: only one database has this item, so it is not cross-checked."));
+  if (r.worn?.unknown) d.append(el("p", { class: "muted" }, "Random-stat items (e.g. “… of the Monkey”) have no fixed score. Compare the stats yourself."));
+  if (r.alts.length) d.append(el("h3", {}, `${r.alts.length} alternative${r.alts.length > 1 ? "s" : ""}`), el("ul", {}, r.alts.map(([aid, as]) => {
+    const ai = gear.items[aid], s = ai.sources?.[0] ? describeSource(ai.sources[0]) : null;
+    return el("li", {}, link(aid, ai.name, ai.quality), el("span", { class: "num muted" }, ` ${as}`), s ? el("span", { class: "muted" }, ` — ${s.label}`) : null, reasonsOf(ai).length ? el("span", { class: "muted" }, " (Uncertain)") : null);
+  })));
+  return d;
+}
+
+function renderTodo(rows) {
+  const groups = new Map();
+  for (const r of rows) {
+    if (!r.pick || r.gain <= 0) continue;
+    const info = gear.items[r.pick[0]], src = info.sources?.[0];
+    if (!src) continue;
+    const d = describeSource(src);
+    const g = groups.get(d.label) || { label: d.label, gain: 0, items: [] };
+    g.gain += r.gain; g.items.push({ r, info, text: d.text });
+    groups.set(d.label, g);
+  }
+  const sorted = [...groups.values()].sort((a, b) => b.gain - a.gain).slice(0, 8);
+  const box = $("todo");
+  for (const g of sorted) {
+    const ul = el("ul", { class: "g-list" }, g.items.map(({ r, info, text }) => el("li", { title: text },
+      el("span", { class: "slot" }, r.label),
+      el("span", { class: "g-it" }, link(r.pick[0], info.name, info.quality), reasonsOf(info).length ? Object.assign(el("span", { class: "badge badge-unc", style: "margin-left:6px" }), { innerHTML: `${ICON_WARN}Uncertain` }) : null),
+      el("span", { class: "g-d" }, `+${r.gain}`))));
+    box.append(el("div", { class: "group" }, el("div", { class: "g-head" }, el("strong", {}, g.label), el("span", { class: "g-gain", title: "Total score gain" }, `+${Math.round(g.gain)}`)), ul));
+  }
+  if (!sorted.length) box.append(el("p", { class: "muted" }, "Nothing to do at this level."));
+}
+
+function renderUpcoming() {
+  const ev = [];
+  for (const [slot, pts] of Object.entries(gear.slots)) {
+    let prev = pointAt(slot, LEVEL)?.items[0]?.[0];
+    for (const p of pts) { if (p.tier !== 0 || p.level <= LEVEL) continue; const top = p.items[0]?.[0]; if (top && top !== prev) { ev.push({ p, slot, iid: top }); prev = top; } }
+  }
+  ev.sort((a, b) => a.p.level - b.p.level);
+  const ol = $("upcoming");
+  for (const e of ev.slice(0, 6)) {
+    const i = gear.items[e.iid];
+    ol.append(el("li", {}, el("button", { type: "button", class: "jump", title: "In the real page this jumps the level" }, `Lv ${e.p.level}`), el("span", { class: "slot" }, SLOT_LABEL[e.slot]), link(e.iid, i.name, i.quality)));
+  }
+}
+
+function setupControls() {
+  const pairs = [["lvl-btn", "lvl-drop"], ["chg-btn", "chg-drop"]];
+  const close = (except) => pairs.forEach(([b, d]) => { if (d !== except) { $(d).hidden = true; $(b).setAttribute("aria-expanded", "false"); } });
+  for (const [b, d] of pairs) $(b).addEventListener("click", () => {
+    const open = $(d).hidden; close(d); $(d).hidden = !open; $(b).setAttribute("aria-expanded", String(open));
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  const tab = (lookup) => { $("tab-lookup").setAttribute("aria-selected", lookup); $("tab-manual").setAttribute("aria-selected", !lookup); $("f-lookup").hidden = !lookup; $("f-manual").hidden = lookup;
+    $("hint").textContent = lookup ? "Forever characters have a first name and a surname, and no realm. No login needed." : "No character needed: pick race, class, spec and level, then tick the items you have."; };
+  $("tab-lookup").onclick = () => tab(true); $("tab-manual").onclick = () => tab(false);
+  $("lvl-slider").addEventListener("input", (e) => { $("lvl-out").textContent = e.target.value; $("lvl-btn-n").textContent = e.target.value; $("tier-row").hidden = Number(e.target.value) < 60; });
+}
+
+function renderCharline() {
+  const specs = Object.entries(meta.classes["11"].specs);
+  const sel = el("select", { id: "spec-select", "aria-label": "Spec" }, specs.map(([k, n]) => el("option", { value: k, selected: k === "feral_cat" }, n)));
+  $("charline").append(el("b", {}, "Testa Exampleton"), el("span", { class: "sep" }, "|"), el("span", { class: "meta" }, "Level 29 Tauren Druid"), sel,
+    el("span", { class: "faction" }, "Horde"), el("span", { class: "meta" }, "Normal · EU"), el("span", { class: "sample" }, "(sample character)"));
+}
+
+(async () => {
+  try {
+    [meta, gear] = await Promise.all([fetch("../data/meta.json").then((r) => r.json()), fetch("../data/gear/druid.feral_cat.H.json").then((r) => r.json())]);
+  } catch (e) { $("status").textContent = "Could not load the gear data."; console.error(e); return; }
+  setupControls(); renderCharline();
+  const rows = buildRows();
+  renderRows(rows); renderTodo(rows); renderUpcoming();
+  $("status").hidden = true; $("work").hidden = false;
+})();
+</script>
+</body>
+</html>
