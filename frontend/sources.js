@@ -60,7 +60,7 @@ function describeBase(meta, src) {
       if (src.reputation && !src.id) return { key: `rep:${src.name}`, label: `Buy from ${src.name} quartermaster`, text: `Needs ${standing || "some"} reputation with ${src.name}.` };
       const who = src.name || "a vendor";
       const price = Number(src.copper) > 0 ? ` Costs about ${formatMoney(src.copper)}.` : "";
-      return { key: src.name ? `vendor:${src.id}` : "vendor", label: `Buy from ${who}${src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${who}${src.title ? ` <${src.title}>` : ""}.${price}${repNeed}` };
+      return { key: src.name ? `vendor:${src.id}` : "vendor", label: `Buy from ${who}${src.reputation ? ` (${standing ? `${standing} with ` : ""}${src.rep_name || "faction"}${standing ? "" : " rep"})` : src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${who}${src.title ? ` <${src.title}>` : ""}.${price}${repNeed}` };
     }
     case "craft": {
       const recipe = src.recipe ? ` Recipe: ${src.recipe.name}${src.recipe.from?.length ? ` (${src.recipe.from.join(" / ")})` : ""}.` : " Recipe from the profession trainer.";

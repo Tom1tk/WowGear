@@ -1,7 +1,7 @@
 """Cross-reference warcraftdb, Blizzard and ForeverDB into the data files the build reads.
 
 Inputs (data/forever/staging/, made by parse_warcraftdb.py, parse_blizzard.py, parse_foreverdb.py)
-plus hand tables data/forever/instances.json, exclude.json and the ForeverDB boss lists (Loot.lua).
+plus hand tables data/forever/instances.json, exclude.json, rep_vendors.json and the ForeverDB boss lists (Loot.lua).
 Outputs: data/forever/items.json, sources.json, reports/conflicts.md.
 
 Rules (tasks/forever-plan.md section 2): missing in a source is not a conflict; a field is
@@ -53,6 +53,7 @@ REP_SIDE = {"509": "A", "510": "H", "730": "A", "729": "H", "890": "A", "889": "
             "72": "A", "930": "A", "76": "H", "81": "H", "530": "H", "68": "H", "911": "H"}
 FOLD = {"hit_rating": "hit", "crit_rating": "crit", "dodge_rating": "dodge", "parry_rating": "parry",
         "block_rating": "block", "bonus_armor": "armor"}  # Blizzard folds EXTRA_ARMOR into armor
+STANDINGS = ["Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"]
 PRIO = ("blizzard", "warcraftdb", "foreverdb")
 LABEL = {"blizzard": "Blizzard", "warcraftdb": "warcraftdb", "foreverdb": "ForeverDB"}
 FIELDS = ("name", "required_level", "item_level", "inventory_type", "type", "stats", "weapon", "binding", "classes")
@@ -454,6 +455,20 @@ class Merger:
 
     # ---------- run ----------
     @staticmethod
+    def hand_rep(sources):
+        """Battleground quartermasters: no source gives their items' reputation; data/forever/rep_vendors.json does."""
+        table = {k: v for k, v in read_json(FOREVER / "rep_vendors.json").items() if not k.startswith("_")}
+        for iid, rows in sources.items():
+            for r in rows:
+                v = table.get(str(r.get("id"))) if r["type"] == "vendor" else None
+                if v and not r.get("reputation"):
+                    standing = v["standing"].get(iid)
+                    r["reputation"] = {"faction_id": v["faction_id"]}
+                    if standing:
+                        r["reputation"]["standing"] = str(STANDINGS.index(standing))
+                    r["rep_name"] = v["faction"]
+
+    @staticmethod
     def fold_rep(items, sources):
         """Reputation vendors: ForeverDB lists some only by faction ("The League of Arathor", no NPC). Give named
         vendors of rep items the requirement, drop the faction-only row next to them, and name the rest after the
@@ -502,6 +517,7 @@ class Merger:
                     continue
                 items[iid] = self.build_item(iid, recs)
                 sources[iid] = srcs
+        self.hand_rep(sources)
         self.fold_rep(items, sources)
         for iid in self.f:
             if iid not in self.w and iid not in self.b:

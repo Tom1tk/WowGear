@@ -1,0 +1,7 @@
+{
+ "_about": "Reputation quartermasters whose items no source marks with a reputation requirement (npc id -> faction). 'standing' holds per-item standings checked in-game (item id -> standing); items not listed show 'Needs some reputation'.",
+ "14754": {"name": "Kelm Hargunth", "faction": "Warsong Outriders", "faction_id": "889",
+           "standing": {"20442": "Honored", "19513": "Honored"}},
+ "14753": {"name": "Illiyana Moonblaze", "faction": "Silverwing Sentinels", "faction_id": "890", "standing": {}},
+ "13217": {"name": "Thanthaldis Snowgleam", "faction": "Stormpike Guard", "faction_id": "730", "standing": {}}
+}
