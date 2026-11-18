@@ -92,3 +92,23 @@ Fetching rules: obey robots.txt, identify with a generic UA (`WowGearBot/1.0 (+h
 7. Page loads with no console errors; manual mode works without an API key; mobile width OK.
 8. No Wowhead fetching anywhere in scripts.
 9. No Era data left anywhere: `data/era/` deleted, every `frontend/data/` file regenerated from Forever sources, no code path reads or falls back to Era data (grep for `era` / `classic1x` is clean apart from docs history).
+
+## 7. Phase 2: lessons from Pawn and GearQuest Forever (owner decisions, 2026-11-18)
+
+Reviewed: Pawn (item scoring, upgrade arrows) and GearQuest Forever (closest competitor; owner finds its data often wrong, no sorting, weak filtering).
+Our edge to keep: cross-checked sources, open "Uncertain", real sort/filter, works outside the game.
+
+| # | Item | Decision | Where |
+|---|---|---|---|
+| P1 | Upgrade shown as **% over what you wear** | Do. Replaces the points delta in the gain column (not both). No worn item → "new". Score column unchanged. | frontend |
+| P2 | **Unscored stats marker** | Do. Stats the scorer can't use (Blizzard `unknown_stats`, unparsed effects) go into `items[id].unscored: [str]`; page shows `*` next to the score with the stat names on hover/expand. | merge/build + frontend |
+| P3 | Custom / imported stat weights (Pawn scale strings) | **Not now.** Data quality first; single user. | — |
+| P4 | Play-style presets | **No.** Keep the "Get it from" filter as is. | — |
+| P5 | **Item lookup** | Do. Own panel in the right column with a search bar: find an item, show which levels/slots it is best (or top 3) for in the current spec/faction, its score and source. Uses the loaded gear JSON. | frontend |
+| P6 | **Random-enchant items** ("of the Bear" …) | Do, matching GearQuest: rank on the best suffix roll for the spec, note "random enchant: best roll shown" (and which roll). First check how the pipeline handles them today (likely skipped or scored on base stats only). Suffix tables must come from Forever sources. | pipeline + frontend note |
+| P7 | **Set bonuses and use effects** | Do, as a **toggle**: "Raw stats" vs "Set bonuses and effects" (default: raw stats until values are reviewed). Set data: Blizzard `preview_item.set` (effects + required_count), cross-checked with ForeverDB GearSets.lua. Use effects (e.g. Manual Crowd Pummeler 9449 for druids) need a cited guide value per spec in `data/forever/effects.json`, like the retail site's guide-based picks; no guess values. Gear JSON carries both scores. | pipeline + scoring + frontend |
+| P8 | **Weapon-type selector** | Do. Simple select of the weapon types the class can use; default "Best" (no restriction). Filters weapon slots, What to do next and Coming up. | frontend |
+| P9 | **Richer source details** | Do. Quest chain position ("Quest 3 of 6: <name>", with the chain's first quest and level), crafting reagents with counts, vendor/NPC zone, drop zone. Sources: QuestieDB Forever quest chains (pre/next quest), warcraftdb `created-by` tabs, ForeverDB sources. Shown in the expanded row and What to do next. | pipeline + frontend |
+
+Order: P2, P6, P9, P7 data (pipeline agent) in parallel with P1, P5, P8 (frontend agent); then wire the new fields (P2 marker, P6 note, P7 toggle, P9 details) into the page; rebuild, validate, pytest, verify.mjs, screenshots, push.
+Output additions (gear JSON `items[id]`): `unscored: [str]`, `random_enchant: {suffix, note}`, `score_set` (score with set bonuses/effects, absent when equal), `set: {name, pieces, bonuses}`; source additions: `chain: {pos, len, first_id, first_name, first_level}`, `reagents: [[name, count, id]]`, `zone`.
