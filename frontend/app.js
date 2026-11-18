@@ -342,7 +342,9 @@ function wornScoreFor(slot) {
 }
 
 // Table view state (not part of the URL): source filter, sort, slot group, opened rows.
-const ui = { sort: "slot", src: new Set(), slot: "all", open: new Set(), boe: recall("boe", true), bop: recall("bop", true), epic: recall("epic", true) };
+// Filters, sort and open/closed sections are remembered in this browser.
+const ui = { sort: recall("sort", "slot"), src: new Set(recall("src", [])), slot: recall("slot", "all"), open: new Set(recall("open-rows", [])),
+  shut: new Set(recall("shut-groups", [])), boe: recall("boe", true), bop: recall("bop", true), epic: recall("epic", true) };
 const srcOk = (s) => !ui.src.size || catsOf(s).some((c) => ui.src.has(c));
 const narrowed = () => ui.src.size > 0 || !ui.boe || !ui.bop || !ui.epic;
 // Source filter plus the BoE / BoP / epic toggles (quality 4 = epic, 5 = legendary).
@@ -506,6 +508,7 @@ function renderRows(rows) {
       const open = li.classList.toggle("open");
       btn.setAttribute("aria-expanded", String(open));
       if (open) ui.open.add(r.label); else ui.open.delete(r.label);
+      store("open-rows", [...ui.open]);
     };
     main.addEventListener("click", (e) => { if (!e.target.closest("a, input, label")) toggle(); });
     btn.addEventListener("click", (e) => { e.stopPropagation(); toggle(); });
@@ -568,7 +571,7 @@ function renderTodo(rows) {
   for (const r of rows) {
     if (!r.pick || r.gain < UP || !r.srcs[0]) continue;
     const d = describeSource(r.srcs[0]);
-    const g = groups.get(d.key) || { label: d.label, src: r.srcs[0], items: [] };
+    const g = groups.get(d.key) || { key: d.key, label: d.label, src: r.srcs[0], items: [] };
     g.items.push({ r, d });
     groups.set(d.key, g);
   }
@@ -578,18 +581,70 @@ function renderTodo(rows) {
   const sorted = [...groups.values()].sort((a, b) => (top(a) === top(b) ? b.items.length - a.items.length : top(b) - top(a))).slice(0, 8);
   const box = $("todo-list");
   box.replaceChildren();
-  for (const g of sorted) {
-    const ul = el("ul", { class: "g-list" }, g.items.map(({ r, d }) => {
-      const info = state.gear.items[r.pick[0]];
-      return el("li", { title: `${d.text}${d.where ? ` ${d.where}.` : ""}` },
-        el("span", { class: "slot" }, r.label),
-        el("span", { class: "g-it" }, itemLink(r.pick[0], info), reasonsOf(info).length ? Object.assign(uncBadge(), { style: "margin-left:6px" }) : null),
-        el("span", { class: "g-d" }, fmtGain(r.gain)),
-        d.extra ? el("span", { class: "g-x muted" }, d.extra) : null);
-    }));
-    box.append(el("div", { class: "group" }, el("div", { class: "g-head" }, el("strong", {}, g.label, " ", pinBtn(g.src)), el("span", { class: "g-gain", title: "Slots to upgrade here" }, `${g.items.length} upgrade${g.items.length > 1 ? "s" : ""}`)), ul));
-  }
+  const sugg = suggestions(rows);
+  if (sugg.length) box.append(el("h3", { class: "g-sec" }, "Suggested"), ...sugg.map((g) => groupEl(g, `s:${g.kind}`)),
+    el("h3", { class: "g-sec" }, "Best picks by place"));
+  for (const g of sorted) box.append(groupEl({ ...g, items: g.items.map(({ r, d }) => ({ label: r.label, id: r.pick[0], gain: r.gain, d })) }, `p:${g.key}`));
   if (!sorted.length) box.append(el("p", { class: "muted" }, state.mode === "manual" ? "Tick the items you have. Then this list shows where to go for the rest." : "Nothing to do at this level: your gear matches the list. Try the next levels on the slider."));
+}
+
+// One "What to do next" group: a place, then the items to get there.
+// key: remembers if this group is folded (suggestions by activity, places by place).
+function groupEl(g, key) {
+  const ul = el("ul", { class: "g-list" }, g.items.map(({ label, id, gain, d }) => {
+    const info = state.gear.items[id];
+    return el("li", { title: `${d.text}${d.where ? ` ${d.where}.` : ""}` },
+      el("span", { class: "slot" }, label),
+      el("span", { class: "g-it" }, itemLink(id, info), reasonsOf(info).length ? Object.assign(uncBadge(), { style: "margin-left:6px" }) : null),
+      el("span", { class: "g-d" }, fmtGain(gain)),
+      d.extra ? el("span", { class: "g-x muted" }, d.extra) : null);
+  }));
+  const n = g.items.length;
+  const box = el("details", { class: "group", open: !ui.shut.has(key) },
+    el("summary", { class: "g-head" }, el("strong", {}, g.label, " ", pinBtn(g.src)),
+      el("span", { class: "g-gain", title: "Slots to upgrade here" }, `${n} upgrade${n > 1 ? "s" : ""}`)), ul);
+  box.addEventListener("toggle", () => {
+    if (box.open) ui.shut.delete(key); else ui.shut.add(key);
+    store("shut-groups", [...ui.shut]);
+  });
+  return box;
+}
+
+// Suggested place per activity: the dungeon (quest, vendor ...) with the most slot upgrades over what the player has,
+// counting every item that was a best pick up to this level, not only the top pick.
+const SUGGEST = [["Dungeon", ["ddrop"]], ["Quest", ["wq", "dq"]], ["Vendor", ["vendor", "rep"]], ["Craft", ["craft"]], ["Farm", ["wdrop"]]];
+function suggestions(rows) {
+  const base = {}; // per slot: score of what the player has (pairs: the weaker one)
+  const floor = {}; // only items close to the best pick (80%) count: far weaker ones are not worth the trip
+  for (const r of rows) {
+    if (!r.pick || r.worn?.unknown) continue;
+    const have = r.worn.gain === Infinity ? 0 : r.worn.score ?? r.pick[1];
+    base[r.slot] = Math.min(base[r.slot] ?? Infinity, have);
+    floor[r.slot] = Math.min(floor[r.slot] ?? Infinity, r.pick[1] * 0.8);
+  }
+  const places = new Map(); // describeSource key -> { kind, label, src, best: Map(slot -> item) }
+  for (const [slot, have] of Object.entries(base)) {
+    for (const [id, score] of slotPool(slot)) {
+      if (!itemOk(id) || score <= have || score < floor[slot]) continue;
+      const gain = have < score * 0.1 ? Infinity : (score - have) / have * 100;
+      if (gain < UP) continue;
+      for (const src of state.gear.items[id].sources || []) {
+        if (!srcOk(src)) continue;
+        const kind = SUGGEST.find(([, cats]) => catsOf(src).some((c) => cats.includes(c)))?.[0];
+        if (!kind) continue;
+        const d = describeSource(src);
+        const p = places.get(d.key) || { key: d.key, kind, label: d.label, src, best: new Map() };
+        const cur = p.best.get(slot);
+        if (!cur || gain > cur.gain) p.best.set(slot, { label: SLOT_LABEL[slot], id, gain, d });
+        places.set(d.key, p);
+      }
+    }
+  }
+  const value = (p) => [...p.best.values()].reduce((t, it) => t + Math.min(it.gain, 100), 0); // "new" counts as +100%
+  return SUGGEST.map(([kind]) => [...places.values()].filter((p) => p.kind === kind)
+      .sort((a, b) => b.best.size - a.best.size || value(b) - value(a))[0])
+    .filter(Boolean)
+    .map((p) => ({ ...p, items: [...p.best.values()].sort((a, b) => b.gain - a.gain) }));
 }
 
 function renderUpcoming() {
@@ -726,7 +781,7 @@ function setOpen(btn, open) {
   $($(btn).getAttribute("aria-controls")).hidden = !open;
 }
 function showCharacter() {
-  setOpen("lvl-btn", false);
+  setOpen("lvl-btn", recall("open:lvl-btn", false));
   setOpen("chg-btn", false);
   $("side").classList.remove("open");
   $("menu").setAttribute("aria-expanded", "false");
@@ -854,24 +909,37 @@ function selectTab(mode) {
 
 // Source picker, sort, slot filter, folding sections, mobile menu.
 function setupControls() {
-  for (const b of ["lvl-btn", "chg-btn", "set-btn"]) $(b).addEventListener("click", () => setOpen(b, $(b).getAttribute("aria-expanded") !== "true"));
+  for (const b of ["lvl-btn", "chg-btn", "set-btn"]) $(b).addEventListener("click", () => {
+    const open = $(b).getAttribute("aria-expanded") !== "true";
+    setOpen(b, open);
+    if (b !== "chg-btn") store(`open:${b}`, open);
+  });
+  for (const b of ["lvl-btn", "set-btn"]) { const o = recall(`open:${b}`); if (o != null) setOpen(b, o); }
   $("menu").addEventListener("click", (e) => { const o = $("side").classList.toggle("open"); e.currentTarget.setAttribute("aria-expanded", String(o)); });
   document.querySelectorAll("#slot-filters button").forEach((b) => b.addEventListener("click", () => {
     ui.slot = b.dataset.f;
+    store("slot", ui.slot);
     document.querySelectorAll("#slot-filters button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     document.querySelectorAll("#rows .row").forEach((li) => { li.hidden = ui.slot !== "all" && li.dataset.g !== ui.slot; });
   }));
   const boxes = [...document.querySelectorAll("#srcpick input")];
-  boxes.forEach((b) => b.addEventListener("change", () => {
-    ui.src = b.value === "all" ? new Set() : new Set(boxes.filter((x) => x.value !== "all" && x.checked).map((x) => x.value));
+  const showSrc = () => {
     boxes.forEach((x) => { x.checked = x.value === "all" ? !ui.src.size : ui.src.has(x.value); });
     $("src-sum").textContent = !ui.src.size ? "All sources" : ui.src.size <= 2 ? [...ui.src].map((c) => CATS[c]).join(", ") : `${ui.src.size} sources`;
+  };
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    ui.src = b.value === "all" ? new Set() : new Set(boxes.filter((x) => x.value !== "all" && x.checked).map((x) => x.value));
+    store("src", [...ui.src]);
+    showSrc();
     render();
   }));
+  showSrc();
+  document.querySelectorAll("#slot-filters button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.f === ui.slot)));
+  $("sort").value = ui.sort;
   const pick = $("srcpick");
   document.addEventListener("click", (e) => { if (pick.open && !pick.contains(e.target)) pick.open = false; });
   pick.addEventListener("keydown", (e) => { if (e.key === "Escape") { pick.open = false; pick.querySelector("summary").focus(); } });
-  $("sort").addEventListener("change", (e) => { ui.sort = e.target.value; render(); });
+  $("sort").addEventListener("change", (e) => { ui.sort = e.target.value; store("sort", ui.sort); render(); });
   for (const k of ["boe", "bop", "epic"]) {
     const box = $(`${k}-ok`);
     box.checked = ui[k];
