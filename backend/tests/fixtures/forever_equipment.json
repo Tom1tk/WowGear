@@ -1,24 +1,17 @@
 {
  "character": {
   "key": {
-   "href": "https://us.api.blizzard.com/profile/wow/character/whitemane/testchar?namespace=profile-classic1x-us"
+   "href": "https://us.api.blizzard.com/profile/wow/character/testa-exampleton?namespace=profile-forever-us"
   },
-  "name": "Testchar",
+  "name": "Testa",
   "id": 94318991,
-  "realm": {
-   "key": {
-    "href": "https://us.api.blizzard.com/data/wow/realm/5066?namespace=dynamic-classic1x-us"
-   },
-   "name": "Whitemane",
-   "id": 5066,
-   "slug": "whitemane"
-  }
+  "surname": "Exampleton"
  },
  "equipped_items": [
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/12640?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/12640?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 12640
    },
@@ -27,7 +20,7 @@
      "display_string": "Enchanted: Attack Speed +1%",
      "source_item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/18329?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/18329?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "Arcanum of Rapidity",
       "id": 18329
@@ -57,7 +50,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/21664?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/21664?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 21664
    },
@@ -80,7 +73,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/21330?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/21330?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 21330
    },
@@ -89,7 +82,7 @@
      "display_string": "Enchanted: +30 Attack Power",
      "source_item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/20077?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/20077?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "Zandalar Signet of Might",
       "id": 20077
@@ -119,7 +112,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/3427?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/3427?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 3427
    },
@@ -142,7 +135,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/21331?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/21331?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 21331
    },
@@ -151,7 +144,7 @@
      "display_string": "Enchanted: All Stats +4",
      "source_item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/22028?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/22028?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "QAEnchant Chest +4 Stats",
       "id": 22028
@@ -181,7 +174,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/13959?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/13959?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 13959
    },
@@ -203,7 +196,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/21332?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/21332?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 21332
    },
@@ -225,7 +218,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/13070?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/13070?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 13070
    },
@@ -234,7 +227,7 @@
      "display_string": "Enchanted: Minor Speed Increase",
      "source_item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/22587?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/22587?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "QAEnchant Boots +8% Speed",
       "id": 22587
@@ -264,7 +257,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/22204?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/22204?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 22204
    },
@@ -286,7 +279,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/14551?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/14551?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 14551
    },
@@ -295,7 +288,7 @@
      "display_string": "Enchanted: Agility +15",
      "source_item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/22033?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/22033?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "QAEnchant Gloves +15 Agility",
       "id": 22033
@@ -325,7 +318,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/19325?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/19325?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 19325
    },
@@ -349,7 +342,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/19384?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/19384?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 19384
    },
@@ -373,7 +366,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/18834?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/18834?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 18834
    },
@@ -397,7 +390,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/11815?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/11815?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 11815
    },
@@ -421,7 +414,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/21701?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/21701?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 21701
    },
@@ -454,7 +447,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/22802?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/22802?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 22802
    },
@@ -463,7 +456,7 @@
      "display_string": "Enchanted: Crusader",
      "source_item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/18666?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/18666?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "QAEnchant Weapon Crusader",
       "id": 18666
@@ -494,7 +487,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/22806?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/22806?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 22806
    },
@@ -503,7 +496,7 @@
      "display_string": "Enchanted: Crusader",
      "source_item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/18666?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/18666?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "QAEnchant Weapon Crusader",
       "id": 18666
@@ -534,7 +527,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/23557?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/23557?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 23557
    },
@@ -556,7 +549,7 @@
   {
    "item": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item/5976?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item/5976?namespace=static-1.15.9_68185-forever-us"
     },
     "id": 5976
    },
@@ -582,7 +575,7 @@
   {
    "item_set": {
     "key": {
-     "href": "https://us.api.blizzard.com/data/wow/item-set/496?namespace=static-1.15.9_68185-classic1x-us"
+     "href": "https://us.api.blizzard.com/data/wow/item-set/496?namespace=static-1.15.9_68185-forever-us"
     },
     "name": "Conqueror's Battlegear",
     "id": 496
@@ -591,7 +584,7 @@
     {
      "item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/21331?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/21331?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "Conqueror's Breastplate",
       "id": 21331
@@ -601,7 +594,7 @@
     {
      "item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/21329?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/21329?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "Conqueror's Crown",
       "id": 21329
@@ -610,7 +603,7 @@
     {
      "item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/21333?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/21333?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "Conqueror's Greaves",
       "id": 21333
@@ -619,7 +612,7 @@
     {
      "item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/21332?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/21332?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "Conqueror's Legguards",
       "id": 21332
@@ -629,7 +622,7 @@
     {
      "item": {
       "key": {
-       "href": "https://us.api.blizzard.com/data/wow/item/21330?namespace=static-1.15.9_68185-classic1x-us"
+       "href": "https://us.api.blizzard.com/data/wow/item/21330?namespace=static-1.15.9_68185-forever-us"
       },
       "name": "Conqueror's Spaulders",
       "id": 21330

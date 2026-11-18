@@ -1,4 +1,4 @@
-"""Shared data models for WowGearBis (Classic Era)."""
+"""Shared data models for WowGearBis (WoW Forever)."""
 
 from pydantic import BaseModel, Field
 
@@ -20,7 +20,7 @@ class TalentTree(BaseModel):
 
 class CharacterSummary(BaseModel):
     name: str
-    realm: str
+    surname: str | None = None
     region: str
     level: int = 0
     faction: str | None = None  # "A" | "H"
@@ -30,6 +30,7 @@ class CharacterSummary(BaseModel):
     class_id: int | None = None
     guild: str | None = None
     avatar_url: str | None = None
+    ruleset: str | None = None  # e.g. Normal / PvP / RP
 
 
 class CharacterResult(BaseModel):

@@ -1,8 +1,8 @@
-"""WowGearBis (Classic Era) FastAPI application.
+"""WowGearBis (WoW Forever) FastAPI application.
 
 The gear lists are static files (frontend/data/gear/*.json, made by
 scripts/data/build_gear.py). The API only does what needs the server:
-the Blizzard character lookup, the realm list, and item scores.
+the Blizzard character lookup, and item scores.
 """
 
 from pathlib import Path
@@ -24,13 +24,14 @@ from .models import CharacterResult, ScoreRequest
 from .scoring import scorer
 from .specs import detect_spec
 
-app = FastAPI(title="WowGearBis Classic Era")
+app = FastAPI(title="WowGearBis WoW Forever")
 blizzard = BlizzardClient(settings.blizzard_client_id, settings.blizzard_client_secret)
 
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 if FRONTEND_DIR.is_dir():  # on Vercel the frontend is served as static files instead
     app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 REGIONS = {"us", "eu", "kr", "tw"}
+MAX_NAME = 24
 
 
 @app.get("/")
@@ -40,7 +41,7 @@ async def index() -> FileResponse:
 
 @app.get("/api/health")
 async def health() -> dict:
-    return {"status": "ok", "game": "classic-era", "has_api_key": bool(settings.blizzard_client_id)}
+    return {"status": "ok", "game": "forever", "has_api_key": bool(settings.blizzard_client_id)}
 
 
 def _region(value: str | None) -> str:
@@ -48,6 +49,13 @@ def _region(value: str | None) -> str:
     if region not in REGIONS:
         raise HTTPException(status_code=422, detail="Unknown region.")
     return region
+
+
+def _name(value: str, label: str) -> str:
+    value = value.strip().lower()
+    if not value or len(value) > MAX_NAME or not value.isalpha():  # isalpha: unicode letters
+        raise HTTPException(status_code=422, detail=f"{label} must be 1-{MAX_NAME} letters.")
+    return value
 
 
 def _raise_http(exc: BlizzardError):
@@ -62,24 +70,12 @@ def _raise_http(exc: BlizzardError):
     raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@app.get("/api/realms")
-async def realms(region: str = "eu") -> dict:
-    region = _region(region)
-    try:
-        return {"region": region, "realms": await blizzard.realms(region)}
-    except BlizzardError as exc:
-        _raise_http(exc)
-
-
 @app.get("/api/character")
-async def character(realm: str, name: str, region: str = "eu", spec: str | None = None) -> CharacterResult:
+async def character(name: str, surname: str, region: str = "eu", spec: str | None = None) -> CharacterResult:
     region = _region(region)
-    realm = realm.strip().lower()
-    name = name.strip().lower()
-    if not realm or not name:
-        raise HTTPException(status_code=422, detail="Realm and character name are required.")
+    name, surname = _name(name, "First name"), _name(surname, "Surname")
     try:
-        summary, equipped, talents = await blizzard.character(region, realm, name)
+        summary, equipped, talents = await blizzard.character(region, name, surname)
     except BlizzardError as exc:
         _raise_http(exc)
     detected, reason = detect_spec(summary.class_id, summary.level, talents)

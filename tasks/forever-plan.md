@@ -59,7 +59,7 @@ Fetching rules: obey robots.txt, identify with a generic UA (`WowGearBot/1.0 (+h
   "tiers": {"1": "Raid tier 1: Barrow Deeps, Hyjal Summit, Onyxia's Lair"},
   "tier_notes": {"1": "Raids open 9 Dec 2026. Loot is from datamined data and may change."} }
 ```
-`frontend/data/gear/<class>.<spec>.<A|H>.json` — same keys as Era (`class, class_id, faction, items, profile, role, slots, spec, spec_name, weights`). Each `items[id]` adds **`uncertain: [str]`** and **`checks: {field: confirmed|single|conflict}`**; each source adds **`conflict: bool`**. `slots[slot]` = list of `{level, tier, items: [[id, score], …]}` breakpoints (unchanged).
+`frontend/data/gear/<class>.<spec>.<A|H>.json` — same keys as Era (`class, class_id, faction, items, profile, role, slots, spec, spec_name, weights`). Each `items[id]` adds **`uncertain: [str]`** and **`checks: {field: confirmed|single|conflict}`**; each source adds **`conflict: bool`** and, when true, **`conflict_reason: str`** (readable sentence, shown verbatim). Races: Skyborne is two races (95 High Order Skyborne, Alliance; 96 Windshaper Skyborne, Horde); each race in meta has `slug` (e.g. `high_order_skyborne`) and `classes`. Tier labels use the form `"Raid tier 1: …"` (text before the colon is the button). `slots[slot]` = list of `{level, tier, items: [[id, score], …]}` breakpoints (unchanged).
 
 ## 4. API (backend)
 
@@ -91,3 +91,4 @@ Fetching rules: obey robots.txt, identify with a generic UA (`WowGearBot/1.0 (+h
 6. Character lookup works against a mocked Forever API (unit test) and, if a key is available, a live character.
 7. Page loads with no console errors; manual mode works without an API key; mobile width OK.
 8. No Wowhead fetching anywhere in scripts.
+9. No Era data left anywhere: `data/era/` deleted, every `frontend/data/` file regenerated from Forever sources, no code path reads or falls back to Era data (grep for `era` / `classic1x` is clean apart from docs history).

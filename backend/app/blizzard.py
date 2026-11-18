@@ -1,12 +1,14 @@
-"""Blizzard Game Data / Profile API client for WoW Classic Era.
+"""Blizzard Profile API client for WoW Forever.
 
-Era realms use the `classic1x` namespaces (profile-classic1x-{region},
-dynamic-classic1x-{region}, static-classic1x-{region}).
+Forever has no realms. Namespaces are profile-forever-{region},
+static-forever-{region} and dynamic-forever-{region} (community-verified, not
+documented by Blizzard). A character is addressed by first name + surname.
 """
 
 import asyncio
 import base64
 import time
+from urllib.parse import quote
 
 import httpx
 
@@ -44,7 +46,7 @@ class RateLimitedError(BlizzardError):
 
 
 def namespace(kind: str, region: str) -> str:
-    return f"{kind}-classic1x-{region}"
+    return f"{kind}-forever-{region}"
 
 
 class BlizzardClient:
@@ -96,8 +98,8 @@ class BlizzardClient:
             break
         if resp.status_code == 404:
             raise CharacterNotFoundError(
-                "Character not found on this Classic Era realm. Check the name and realm, "
-                "and log in once in game if the character is new."
+                "Character not found. Forever characters show up from level 10, "
+                "after logging out. Check first name, surname and region."
             )
         if resp.status_code == 401:
             raise ApiKeyInvalidError("Blizzard rejected the API key (401).")
@@ -117,18 +119,9 @@ class BlizzardClient:
         self._response_cache[key] = (time.time(), data)
         return data
 
-    async def realms(self, region: str) -> list[dict]:
-        data = await self._get(region, "/data/wow/realm/index", namespace("dynamic", region))
-        realms = [
-            {"slug": r["slug"], "name": r["name"]}
-            for r in data.get("realms", [])
-            if r.get("slug") and not _is_internal_realm(r.get("name", ""))
-        ]
-        return sorted(realms, key=lambda r: r["name"].lower())
-
-    async def character(self, region: str, realm: str, name: str) -> tuple[
+    async def character(self, region: str, name: str, surname: str) -> tuple[
             CharacterSummary, dict[str, EquippedItem], list[TalentTree]]:
-        base = f"/profile/wow/character/{realm}/{name}"
+        base = "/profile/wow/character/" + quote(f"{name}-{surname}".lower())
         ns = namespace("profile", region)
         profile = await self._get(region, base, ns)
 
@@ -144,7 +137,7 @@ class BlizzardClient:
         assets = media.get("assets") or []
         summary = CharacterSummary(
             name=profile.get("name") or name,
-            realm=(profile.get("realm") or {}).get("name") or realm,
+            surname=profile.get("surname") or surname,
             region=region,
             level=profile.get("level") or 0,
             faction=((profile.get("faction") or {}).get("type") or "")[:1] or None,
@@ -154,14 +147,16 @@ class BlizzardClient:
             class_id=(profile.get("character_class") or {}).get("id"),
             guild=(profile.get("guild") or {}).get("name"),
             avatar_url=next((a.get("value") for a in assets if a.get("key") == "avatar"), None),
+            ruleset=parse_ruleset(profile.get("ruleset")),
         )
         return summary, parse_equipment(equipment), parse_talents(talents)
 
 
-def _is_internal_realm(name: str) -> bool:
-    """Blizzard lists a few internal test realms (e.g. 'EU4 CWOW GMSS 1')."""
-    upper = name.upper()
-    return "CWOW" in upper or "GMSS" in upper
+def parse_ruleset(value) -> str | None:
+    """Shape unknown: a plain string, or an object with a name."""
+    if isinstance(value, dict):
+        value = value.get("name")
+    return value if isinstance(value, str) and value else None
 
 
 def parse_equipment(data: dict) -> dict[str, EquippedItem]:
@@ -187,10 +182,20 @@ def parse_equipment(data: dict) -> dict[str, EquippedItem]:
 
 def parse_talents(data: dict) -> list[TalentTree]:
     groups = data.get("specialization_groups") or []
-    active = next((g for g in groups if g.get("is_active")), groups[0] if groups else None)
-    if not active:
-        return []
-    return [
-        TalentTree(name=s.get("specialization_name") or "", points=s.get("spent_points") or 0)
-        for s in active.get("specializations", [])
+    if groups:  # Era shape
+        active = next((g for g in groups if g.get("is_active")), groups[0])
+        specs = active.get("specializations") or []
+    else:  # retail-like shape; unknown shapes give []
+        specs = data.get("specializations") or []
+    trees = [
+        TalentTree(
+            name=s.get("specialization_name") or (s.get("specialization") or {}).get("name") or "",
+            points=s.get("spent_points") or len(s.get("talents") or []),
+        )
+        for s in specs if isinstance(s, dict)
     ]
+    if not trees and isinstance(data.get("active_specialization"), dict):
+        name = data["active_specialization"].get("name")
+        if name:
+            trees = [TalentTree(name=name, points=1)]
+    return trees

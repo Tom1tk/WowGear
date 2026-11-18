@@ -5,7 +5,7 @@
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "25mb",
-        "excludeFiles": "{frontend/**,data/raw/**,data/era/staging/**,data/era/sources.json,data/era/reference/**,reports/**,scripts/**,tasks/**,backend/tests/**}"
+        "excludeFiles": "{frontend/**,data/raw/**,data/forever/staging/**,data/forever/sources.json,data/forever/reference/**,reports/**,scripts/**,tasks/**,backend/tests/**}"
       }
     },
     { "src": "frontend/**", "use": "@vercel/static" }

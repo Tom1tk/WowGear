@@ -1,4 +1,4 @@
-/* WowGear Classic — dark "old parchment and gold" theme with a light variant. */
+/* WowGear Forever — dark "old parchment and gold" theme with a light variant. */
 /* Race themes: each scene sets three base colours (--r-tint, --r-gold, --r-gold2,
    --r-accent). They are registered so they animate, and every other colour is
    mixed from them — so the whole page fades to the new scheme with the image. */
@@ -25,6 +25,7 @@
   --warn: #e3a63c;
   --bad: #e06a5a;
   --info: #7aa7e0;
+  --unc: #f2c46d; --unc-bg: rgba(242, 196, 109, .14);
   --q-common: #ffffff;
   --q-uncommon: #1eff00;
   --q-rare: #3d9bff;
@@ -46,6 +47,7 @@
 :root[data-race="orc"]       { --r-tint: #8a3a22; --r-gold: #e89a5c; --r-gold2: #f6c38f; --r-accent: #d9533a; }
 :root[data-race="undead"]    { --r-tint: #3a5a48; --r-gold: #9fcf6a; --r-gold2: #cbe99e; --r-accent: #6fb06a; }
 :root[data-race="tauren"]    { --r-tint: #7a6a3a; --r-gold: #d8b46a; --r-gold2: #efd59b; --r-accent: #5cc6c8; }
+:root[data-race="skyborne"]  { --r-tint: #3f6fa0; --r-gold: #e6c872; --r-gold2: #f6e3a8; --r-accent: #7fc4f0; }
 :root[data-race="troll"]     { --r-tint: #8a4a3a; --r-gold: #f0b27a; --r-gold2: #f9d2ac; --r-accent: #3fb3a8; }
 
 @media (prefers-color-scheme: light) {
@@ -60,6 +62,7 @@
     --gold: color-mix(in oklab, var(--r-gold) 55%, #1a1208);
     --gold-2: color-mix(in oklab, var(--r-gold) 45%, #1a1208);
     --accent: color-mix(in oklab, var(--r-accent) 70%, #1a1208);
+    --unc: #7a4f00; --unc-bg: rgba(160, 100, 0, .12);
     --q-common: #2b2118;
     --q-uncommon: #1a8a00;
     --q-rare: #1466c4;
@@ -135,14 +138,13 @@ main { max-width: 1180px; margin: 0 auto; padding: 8px 16px 32px; }
 .panel { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
 .panel[hidden] { display: none; }
 .field { display: flex; flex-direction: column; gap: 4px; min-width: 120px; flex: 1 1 140px; }
-.field-realm { flex: 2 1 220px; }
 .field-narrow { flex: 0 1 90px; min-width: 80px; }
 .field label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-input[type="text"], input[type="number"], select, .combo-trigger {
+input[type="text"], input[type="number"], select {
   height: 40px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line);
   background: var(--card-2); width: 100%;
 }
-input:focus-visible, select:focus-visible, button:focus-visible, .combo-trigger:focus-visible {
+input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible {
   outline: 2px solid var(--gold); outline-offset: 1px;
 }
 .btn-primary {
@@ -152,24 +154,6 @@ input:focus-visible, select:focus-visible, button:focus-visible, .combo-trigger:
 }
 .btn-primary:disabled { opacity: .6; cursor: progress; }
 .hint { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
-
-/* realm combobox */
-.combo { position: relative; }
-.combo-trigger { display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left; }
-.combo-trigger:disabled { cursor: wait; opacity: .7; }
-.combo-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.combo-chevron { width: 18px; height: 18px; flex: none; color: var(--muted); }
-.combo-popover {
-  position: absolute; z-index: 20; top: calc(100% + 4px); left: 0; right: 0;
-  background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
-  padding: 6px;
-}
-.combo-search input { height: 36px; }
-.combo-list { list-style: none; margin: 6px 0 0; padding: 0; max-height: 260px; overflow: auto; }
-.combo-option { padding: 7px 10px; border-radius: 6px; cursor: pointer; }
-.combo-option:hover, .combo-option[data-active] { background: var(--card-2); }
-.combo-option.selected { color: var(--gold-2); font-weight: 600; }
-.combo-empty { margin: 8px; color: var(--muted); }
 
 .status {
   margin: 0 0 16px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line);
@@ -201,6 +185,7 @@ input[type="range"] { width: 100%; accent-color: var(--gold); height: 28px; }
 .ticks { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; padding: 0 4px; }
 .tier-row { margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .tier-row[hidden] { display: none; }
+.tier-note { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--muted); }
 .tier-label { color: var(--muted); font-size: 14px; }
 .segmented { display: flex; flex-wrap: wrap; gap: 4px; }
 .segmented button {
@@ -235,6 +220,15 @@ input[type="range"] { width: 100%; accent-color: var(--gold); height: 28px; }
 .badge { font-size: 11px; border-radius: 99px; padding: 1px 8px; background: var(--card-2); color: var(--muted); border: 1px solid var(--line); }
 .badge-bop { color: var(--warn); }
 .badge-fx { color: var(--info); cursor: help; }
+.badge-unc { display: inline-flex; align-items: center; gap: 4px; color: var(--unc); background: var(--unc-bg); border-color: var(--unc); cursor: pointer; list-style: none; }
+.badge-unc::-webkit-details-marker { display: none; }
+.ico { width: 12px; height: 12px; flex: none; }
+.unc { display: inline-block; vertical-align: middle; }
+.pick .unc[open] { flex-basis: 100%; }
+.unc-body { margin: 4px 0 2px; padding: 6px 8px 6px 24px; font-size: 13px; font-weight: 400; color: var(--text); border-left: 3px solid var(--unc); background: var(--unc-bg); border-radius: 4px; }
+.one-src { font-size: 11px; color: var(--muted); cursor: help; }
+.ext { font-size: 12px; color: var(--muted); }
+.legend { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
 .source { font-size: 13px; color: var(--muted); margin-top: 3px; overflow-wrap: anywhere; }
 .equipped { font-size: 13px; margin-top: 4px; }
 .own { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; margin-top: 6px; cursor: pointer; }

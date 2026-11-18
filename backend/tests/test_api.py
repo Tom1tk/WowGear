@@ -11,7 +11,7 @@ client = TestClient(main.app)
 
 def test_health():
     body = client.get("/api/health").json()
-    assert body["status"] == "ok" and body["game"] == "classic-era"
+    assert body["status"] == "ok" and body["game"] == "forever"
 
 
 def test_score_endpoint():
@@ -25,8 +25,8 @@ def test_score_rejects_unknown_spec():
 
 
 def test_character_detects_spec_and_scores_items(monkeypatch):
-    async def fake(region, realm, name):
-        summary = CharacterSummary(name="Testchar", realm="Whitemane", region=region, level=60,
+    async def fake(region, name, surname):
+        summary = CharacterSummary(name="Testa", surname="Exampleton", region=region, level=60,
                                    faction="H", race="Tauren", race_id=6, class_name="Shaman", class_id=7)
         equipped = {"two_hand": EquippedItem(slot="two_hand", item_id=12784, name="Arcanite Reaper")}
         talents = [TalentTree(name="Elemental", points=5), TalentTree(name="Enhancement", points=31),
@@ -34,19 +34,41 @@ def test_character_detects_spec_and_scores_items(monkeypatch):
         return summary, equipped, talents
 
     monkeypatch.setattr(main.blizzard, "character", fake)
-    body = client.get("/api/character", params={"region": "us", "realm": "whitemane", "name": "testchar"}).json()
+    body = client.get("/api/character", params={"region": "us", "name": "testa", "surname": "exampleton"}).json()
     assert body["spec"] == "enhancement"
     assert body["equipped"]["two_hand"]["score"] > 0
 
 
 def test_character_not_found(monkeypatch):
-    async def fake(region, realm, name):
+    async def fake(region, name, surname):
         raise CharacterNotFoundError("Character not found")
 
     monkeypatch.setattr(main.blizzard, "character", fake)
-    resp = client.get("/api/character", params={"region": "eu", "realm": "x", "name": "y"})
+    resp = client.get("/api/character", params={"region": "eu", "name": "x", "surname": "y"})
     assert resp.status_code == 404
 
 
 def test_bad_region():
-    assert client.get("/api/realms", params={"region": "mars"}).status_code == 422
+    assert client.get("/api/character", params={"region": "mars", "name": "a", "surname": "b"}).status_code == 422
+
+
+def test_name_validation():
+    for name, surname in [("", "b"), ("a", " "), ("a" * 25, "b"), ("a1", "b"), ("a", "b-c"), ("a b", "c")]:
+        resp = client.get("/api/character", params={"region": "eu", "name": name, "surname": surname})
+        assert resp.status_code == 422, (name, surname)
+
+
+def test_unicode_letters_accepted(monkeypatch):
+    seen = []
+
+    async def fake(region, name, surname):
+        seen.append((name, surname))
+        raise CharacterNotFoundError("Character not found")
+
+    monkeypatch.setattr(main.blizzard, "character", fake)
+    assert client.get("/api/character", params={"name": " Zoë ", "surname": "Müller"}).status_code == 404
+    assert seen == [("zoë", "müller")]
+
+
+def test_realms_endpoint_is_gone():
+    assert client.get("/api/realms", params={"region": "eu"}).status_code != 200

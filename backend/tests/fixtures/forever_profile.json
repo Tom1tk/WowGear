@@ -1,0 +1,71 @@
+{
+ "id": 94318991,
+ "name": "Testa",
+ "gender": {
+  "type": "MALE",
+  "name": "Male"
+ },
+ "faction": {
+  "type": "HORDE",
+  "name": "Horde"
+ },
+ "race": {
+  "key": {
+   "href": "https://us.api.blizzard.com/data/wow/playable-race/8?namespace=static-1.15.9_68185-forever-us"
+  },
+  "name": "Troll",
+  "id": 8
+ },
+ "character_class": {
+  "key": {
+   "href": "https://us.api.blizzard.com/data/wow/playable-class/1?namespace=static-1.15.9_68185-forever-us"
+  },
+  "name": "Warrior",
+  "id": 1
+ },
+ "guild": {
+  "key": {
+   "href": "https://us.api.blizzard.com/data/wow/guild/example-guild"
+  },
+  "name": "Example Guild",
+  "id": 1393012,
+  "faction": {
+   "type": "HORDE",
+   "name": "Horde"
+  }
+ },
+ "level": 60,
+ "experience": 0,
+ "titles": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/testa-exampleton/titles?namespace=profile-forever-us"
+ },
+ "pvp_summary": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/testa-exampleton/pvp-summary?namespace=profile-forever-us"
+ },
+ "media": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/testa-exampleton/character-media?namespace=profile-forever-us"
+ },
+ "last_login_timestamp": 1789482406000,
+ "average_item_level": 75,
+ "equipped_item_level": 66,
+ "specializations": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/testa-exampleton/specializations?namespace=profile-forever-us"
+ },
+ "statistics": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/testa-exampleton/statistics?namespace=profile-forever-us"
+ },
+ "equipment": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/testa-exampleton/equipment?namespace=profile-forever-us"
+ },
+ "appearance": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/testa-exampleton/appearance?namespace=profile-forever-us"
+ },
+ "reputations": {
+  "href": "https://us.api.blizzard.com/profile/wow/character/testa-exampleton/reputations?namespace=profile-forever-us"
+ },
+ "surname": "Exampleton",
+ "ruleset": {
+  "id": 1,
+  "name": "Normal"
+ }
+}

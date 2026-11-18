@@ -1,4 +1,4 @@
-"""Blizzard Era client: parsing and HTTP behaviour (mock transport)."""
+"""Blizzard Forever client: parsing and HTTP behaviour (mock transport)."""
 
 import asyncio
 import json
@@ -12,6 +12,7 @@ from app.blizzard import (
     BlizzardClient,
     CharacterNotFoundError,
     parse_equipment,
+    parse_ruleset,
     parse_talents,
 )
 
@@ -22,8 +23,8 @@ def load(name):
     return json.loads((FIX / name).read_text())
 
 
-def test_parse_equipment_maps_era_slots():
-    eq = parse_equipment(load("era_equipment.json"))
+def test_parse_equipment_maps_forever_slots():
+    eq = parse_equipment(load("forever_equipment.json"))
     assert "ranged" in eq  # Classic has a ranged / relic slot
     assert "shirt" not in eq and "tabard" not in eq
     assert eq["ring_1"].item_id and eq["trinket_2"].item_id
@@ -40,7 +41,7 @@ def test_parse_equipment_two_hander_goes_to_two_hand_slot():
 
 
 def test_parse_talents_uses_active_group():
-    trees = parse_talents(load("era_specializations.json"))
+    trees = parse_talents(load("forever_specializations.json"))
     assert [(t.name, t.points) for t in trees] == [("Fury", 34), ("Arms", 17)]
 
 
@@ -48,55 +49,82 @@ def mock_client(handler):
     return BlizzardClient("id", "secret", transport=httpx.MockTransport(handler))
 
 
-def test_character_uses_classic1x_namespace():
-    seen = []
-
+def ok_handler(seen, media=True, profile=None):
     def handler(request: httpx.Request):
         if request.url.host == "oauth.battle.net":
             return httpx.Response(200, json={"access_token": "t"})
-        seen.append(request.url.params["namespace"])
+        seen.append((request.url.raw_path.decode().split("?")[0], request.url.params["namespace"]))
         path = request.url.path
         if path.endswith("/equipment"):
-            return httpx.Response(200, json=load("era_equipment.json"))
+            return httpx.Response(200, json=load("forever_equipment.json"))
         if path.endswith("/specializations"):
-            return httpx.Response(200, json=load("era_specializations.json"))
+            return httpx.Response(200, json=load("forever_specializations.json"))
         if path.endswith("/character-media"):
+            if not media:
+                return httpx.Response(404, json={"code": 404})
             return httpx.Response(200, json={"assets": [{"key": "avatar", "value": "https://x/a.jpg"}]})
-        return httpx.Response(200, json=load("era_profile.json"))
+        return httpx.Response(200, json=profile or load("forever_profile.json"))
+    return handler
 
-    summary, equipped, talents = asyncio.run(mock_client(handler).character("us", "whitemane", "testchar"))
-    assert set(seen) == {"profile-classic1x-us"}
+
+def test_character_url_and_namespace():
+    seen = []
+    summary, equipped, talents = asyncio.run(
+        mock_client(ok_handler(seen)).character("us", "Testa", "Exampleton"))
+    assert {ns for _, ns in seen} == {"profile-forever-us"}
+    assert seen[0][0] == "/profile/wow/character/testa-exampleton"
     assert summary.level == 60 and summary.class_id == 1 and summary.faction == "H"
-    assert summary.avatar_url == "https://x/a.jpg"
+    assert summary.surname == "Exampleton" and summary.ruleset == "Normal"
+    assert summary.guild == "Example Guild" and summary.avatar_url == "https://x/a.jpg"
     assert len(equipped) >= 16 and talents[0].name == "Fury"
 
 
-def test_character_not_found():
+def test_character_url_encodes_accents():
+    seen = []
+    asyncio.run(mock_client(ok_handler(seen)).character("eu", "Zoë", "Müller"))
+    assert seen[0][0] == "/profile/wow/character/zo%C3%AB-m%C3%BCller"
+
+
+def test_character_without_media_is_fine():
+    summary, _, _ = asyncio.run(mock_client(ok_handler([], media=False)).character("us", "testa", "exampleton"))
+    assert summary.avatar_url is None
+
+
+def test_ruleset_shapes():
+    assert parse_ruleset({"id": 1, "name": "PvP"}) == "PvP"
+    assert parse_ruleset({"key": {"href": "https://x"}, "name": "RP", "id": 2}) == "RP"
+    assert parse_ruleset("Normal") == "Normal"
+    assert parse_ruleset(None) is None and parse_ruleset({"id": 3}) is None
+
+
+def test_profile_without_ruleset_or_spec():
+    profile = load("forever_profile.json")
+    del profile["ruleset"]
+    summary, _, _ = asyncio.run(mock_client(ok_handler([], profile=profile)).character("us", "testa", "exampleton"))
+    assert summary.ruleset is None
+
+
+def test_parse_talents_retail_like_and_unknown_shapes():
+    retail = {"specializations": [
+        {"specialization": {"name": "Arms"}, "talents": [{}, {}]},
+        {"specialization": {"name": "Fury"}, "talents": [{}, {}, {}]},
+    ]}
+    assert [(t.name, t.points) for t in parse_talents(retail)] == [("Arms", 2), ("Fury", 3)]
+    assert [(t.name, t.points) for t in parse_talents({"active_specialization": {"name": "Fury"}})] == [("Fury", 1)]
+    assert parse_talents({"something": "else"}) == []
+
+
+def test_character_not_found_message():
     def handler(request):
         if request.url.host == "oauth.battle.net":
             return httpx.Response(200, json={"access_token": "t"})
         return httpx.Response(404, json={"code": 404})
 
-    with pytest.raises(CharacterNotFoundError):
-        asyncio.run(mock_client(handler).character("eu", "firemaw", "nobody"))
+    with pytest.raises(CharacterNotFoundError, match="from level 10, after logging out"):
+        asyncio.run(mock_client(handler).character("eu", "nobody", "nobody"))
 
 
 def test_missing_key():
     client = BlizzardClient("", "")
     with pytest.raises(ApiKeyMissingError):
         asyncio.run(client.character("eu", "x", "y"))
-
-
-def test_realms_skip_internal_test_realms():
-    def handler(request):
-        if request.url.host == "oauth.battle.net":
-            return httpx.Response(200, json={"access_token": "t"})
-        assert request.url.params["namespace"] == "dynamic-classic1x-eu"
-        return httpx.Response(200, json={"realms": [
-            {"name": "Soulseeker", "slug": "soulseeker"},
-            {"name": "EU4 CWOW GMSS 1", "slug": "eu4-cwow-gmss-1"},
-            {"name": "Mirage Raceway", "slug": "mirage-raceway"},
-        ]})
-
-    realms = asyncio.run(mock_client(handler).realms("eu"))
-    assert [r["slug"] for r in realms] == ["mirage-raceway", "soulseeker"]

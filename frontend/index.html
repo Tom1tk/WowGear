@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WowGear Classic — Best gear for every level</title>
-  <meta name="description" content="Best-in-slot gear for every level from 10 to 60 in WoW Classic Era, for every class and spec, with where to get each item.">
+  <title>WowGear Forever — Best gear for every level</title>
+  <meta name="description" content="Best-in-slot gear for every level from 10 to 60 in WoW Forever, for every class and spec, with where to get each item.">
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,8 +20,8 @@
   </div>
 
   <header class="site-header">
-    <h1 class="wordmark"><span class="wm-sword" aria-hidden="true">⚔</span> WowGear <span class="wm-era">Classic</span></h1>
-    <p class="tagline">The best gear for every level from 10 to 60 in WoW Classic Era — and where to get it.</p>
+    <h1 class="wordmark"><span class="wm-sword" aria-hidden="true">⚔</span> WowGear <span class="wm-era">Forever</span></h1>
+    <p class="tagline">The best gear for every level from 10 to 60 in WoW Forever — and where to get it.</p>
   </header>
 
   <main>
@@ -41,28 +41,13 @@
             <option value="tw">TW</option>
           </select>
         </div>
-        <div class="field field-realm">
-          <label for="realm-trigger">Realm</label>
-          <div class="combo" id="realm-combo">
-            <button type="button" class="combo-trigger" id="realm-trigger" role="combobox"
-                    aria-expanded="false" aria-haspopup="listbox" aria-controls="realm-list" disabled>
-              <span class="combo-value" id="realm-label">Loading realms…</span>
-              <svg class="combo-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5.5 7.5L10 12l4.5-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-            <div class="combo-popover" id="realm-popover" hidden>
-              <div class="combo-search">
-                <input id="realm-search" type="text" placeholder="Search realms…" autocomplete="off" aria-label="Search realms">
-              </div>
-              <ul class="combo-list" id="realm-list" role="listbox" aria-label="Realms"></ul>
-              <p class="combo-empty" id="realm-empty" hidden>No realm matches your search.</p>
-            </div>
-            <input type="text" id="realm-fallback" class="realm-fallback" placeholder="Realm name (e.g. Soulseeker)" hidden>
-            <input type="hidden" id="realm" value="">
-          </div>
+        <div class="field">
+          <label for="character">First name</label>
+          <input id="character" type="text" placeholder="First name" autocapitalize="words" required>
         </div>
         <div class="field">
-          <label for="character">Character</label>
-          <input id="character" type="text" placeholder="Character name" required>
+          <label for="surname">Surname</label>
+          <input id="surname" type="text" placeholder="Surname" autocapitalize="words" required>
         </div>
         <button type="submit" class="btn-primary" id="lookup-btn">Show my gear</button>
       </form>
@@ -86,7 +71,7 @@
         </div>
         <button type="submit" class="btn-primary">Show gear</button>
       </form>
-      <p class="hint" id="input-hint">Classic Era realms only. No login needed.</p>
+      <p class="hint" id="input-hint">Forever characters have a first name and a surname, and no realm. No login needed.</p>
     </section>
 
     <div id="status" class="status" role="status" hidden></div>
@@ -111,6 +96,7 @@
         <div class="tier-row" id="tier-row" hidden>
           <span class="tier-label" id="tier-label">Level 60 content:</span>
           <div class="segmented" id="tier-buttons" role="radiogroup" aria-labelledby="tier-label"></div>
+          <p class="tier-note" id="tier-note" hidden></p>
         </div>
       </div>
 
@@ -120,6 +106,7 @@
             <h2 id="gear-title">Best gear</h2>
             <span class="card-sub" id="gear-sub"></span>
           </div>
+          <p class="legend" id="legend"><span class="badge badge-unc"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Uncertain</span> our data sources disagree about this item or where to get it; tap the badge to see why. <span class="badge badge-one">1 source</span> only one database has this item, so it is not cross-checked.</p>
           <div id="weapon-note" class="weapon-note" hidden></div>
           <ol id="slot-list" class="slot-list"></ol>
         </section>
@@ -136,16 +123,19 @@
             <ol id="upcoming-list" class="upcoming-list"></ol>
           </section>
           <details class="card glossary">
-            <summary>New to Classic? Words on this page</summary>
+            <summary>New to Forever? Words on this page</summary>
             <dl>
               <dt>BiS</dt><dd>"Best in slot": the best item for that equipment slot.</dd>
               <dt>BoP / BoE</dt><dd>Binds when picked up (only you can use it) / binds when equipped (you can buy or sell it on the Auction House).</dd>
               <dt>Elite</dt><dd>A strong monster (gold dragon on its portrait). Usually needs a group.</dd>
-              <dt>Instance / dungeon</dt><dd>A private area for your group of 5 (raids: 20 or 40 players).</dd>
+              <dt>Instance / dungeon</dt><dd>A private area for your group of 5 (raids: 10, 20 or 40 players).</dd>
               <dt>Trash</dt><dd>The normal monsters in a dungeon, not the bosses.</dd>
-              <dt>Attunement</dt><dd>A quest or item you need before you can enter some raids.</dd>
+              <dt>Forever</dt><dd>WoW Forever: the Classic-based game where level 60 is the permanent cap and new content (dungeons, zones, the Skyborne race) is added over time.</dd>
+              <dt>Skyborne</dt><dd>The new playable race in Forever. It starts on Zephras Isle.</dd>
               <dt>Reputation</dt><dd>Your standing with a faction. Higher standing opens more rewards.</dd>
-              <dt>Pre-raid</dt><dd>Gear from level-60 dungeons, quests, crafting and reputation — before raiding.</dd>
+              <dt>Pre-raid</dt><dd>Gear from dungeons, quests, crafting and reputation — before raiding.</dd>
+              <dt>Raid tier</dt><dd>A set of raids that open together. The first Forever raids open on 9 December 2026.</dd>
+              <dt>Uncertain / 1 source</dt><dd>We compare several item databases. "Uncertain" means they disagree (or the loot is datamined and may change). "1 source" means only one had the item.</dd>
               <dt>Score</dt><dd>How good an item is for your spec, from stat weights. Higher is better. Compare only within one slot.</dd>
             </dl>
           </details>
@@ -155,10 +145,9 @@
   </main>
 
   <footer class="site-footer">
-    <p>Data: Blizzard Game Data API (Classic Era), <a href="https://github.com/Questie/QuestieDB" target="_blank" rel="noopener">QuestieDB</a>,
-      <a href="https://github.com/cmangos/classic-db" target="_blank" rel="noopener">CMaNGOS</a>, VMaNGOS and
-      <a href="https://github.com/Hoizame/AtlasLootClassic" target="_blank" rel="noopener">AtlasLootClassic</a>.
-      Item tooltips by <a href="https://www.wowhead.com/classic" target="_blank" rel="noopener">Wowhead</a>.
+    <p>Data: Blizzard Game Data API (Forever), <a href="https://forever.warcraftdb.com/" target="_blank" rel="noopener">warcraftdb</a> and
+      <a href="https://github.com/Questie/QuestieDB" target="_blank" rel="noopener">QuestieDB</a>.
+      Item tooltips by <a href="https://www.wowhead.com/forever" target="_blank" rel="noopener">Wowhead</a>.
       Background art © Blizzard Entertainment.
       Not affiliated with Blizzard Entertainment.</p>
     <p><a id="report-link" href="https://github.com/Tom1tk/WowGear/issues/new" target="_blank" rel="noopener">Report a wrong item</a> · <span id="data-date"></span></p>

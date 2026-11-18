@@ -1,9 +1,9 @@
-"""Find a Classic Era character's spec from its talent points."""
+"""Find a WoW Forever character's spec from its talent points."""
 
 from .models import TalentTree
 from .scoring import scorer
 
-# Talent tree name (as the API returns it) -> spec key in data/era/classes.json
+# Talent tree name (as the API returns it) -> spec key in data/forever/classes.json
 TREE_TO_SPEC = {
     "Feral Combat": "feral_cat",
     "Beast Mastery": "beast_mastery",

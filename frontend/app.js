@@ -1,6 +1,6 @@
-// WowGear Classic — per-level best-in-slot planner for WoW Classic Era.
+// WowGear Forever — per-level best-in-slot planner for WoW Forever.
 // Gear lists are static JSON (frontend/data/gear, built by scripts/data/build_gear.py);
-// the API is only used for the Blizzard character lookup and item scores.
+// the API is only used for the character lookup and item scores.
 
 const $ = (id) => document.getElementById(id);
 const DATA = "/static/data";
@@ -14,9 +14,9 @@ const SLOT_LABEL = {
   two_hand: "Two-hand", ranged: "Ranged", relic: "Relic",
 };
 const ARMOR_ORDER = ["head", "neck", "shoulders", "back", "chest", "wrist", "hands", "waist", "legs", "feet"];
-// Race id -> background scene (the race's home area) and colour theme.
-const RACE_SCENE = { 1: "human", 3: "dwarf", 4: "night-elf", 7: "gnome", 2: "orc", 5: "undead", 6: "tauren", 8: "troll" };
-const TIER_SHORT = { 0: "Pre-raid", 1: "MC / Ony", 2: "BWL / ZG", 3: "AQ", 4: "Naxx" };
+const WOWHEAD = "https://www.wowhead.com/forever/item=";
+const WARCRAFTDB = "https://forever.warcraftdb.com/data/item/";
+const ICON_WARN = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 
 const state = {
   meta: null,
@@ -48,8 +48,13 @@ let sceneKey = "default";
 let sceneToken = 0;
 
 // Cross-fade the background to a race's home area and switch the colour theme.
+// Scene key = race slug from meta (bg/<slug>.jpg; missing image falls back to default.jpg).
+function raceSlug(raceId) {
+  const r = state.meta?.races[String(raceId)];
+  return r ? r.slug || r.name.toLowerCase().replace(/\s+/g, "-") : null;
+}
 function setScene(raceId) {
-  const key = RACE_SCENE[raceId] || "default";
+  const key = raceSlug(raceId) || "default";
   if (key === sceneKey) return;
   sceneKey = key;
   const token = ++sceneToken;
@@ -62,6 +67,7 @@ function setScene(raceId) {
     hidden.classList.add("on");
     shown.classList.remove("on");
   };
+  img.onerror = () => { img.onerror = null; img.src = "/static/bg/default.jpg"; };
   img.src = `/static/bg/${key}.jpg`;
   if (key === "default") delete document.documentElement.dataset.race;
   else document.documentElement.dataset.race = key;
@@ -95,13 +101,37 @@ function hideStatus() { $("status").hidden = true; }
 function itemLink(id, info) {
   const q = QUALITY[info?.quality] || "common";
   return el("a", {
-    class: `item-link q-${q}`, href: `https://www.wowhead.com/classic/item=${id}`,
+    class: `item-link q-${q}`, href: `${WOWHEAD}${id}`, "data-wowhead": `item=${id}&domain=forever`,
     target: "_blank", rel: "noopener", "data-wh-icon-size": "small",
   }, info?.name || `Item ${id}`);
 }
 
 function refreshTooltips() {
   try { window.$WowheadPower?.refreshLinks(); } catch { /* tooltips are optional */ }
+}
+
+// "Uncertain" badge: a <details> so the reasons open on tap/keyboard; title is a desktop hover extra.
+function uncBadge(reasons) {
+  if (!reasons?.length) return null;
+  const d = el("details", { class: "unc" },
+    el("summary", { class: "badge badge-unc", title: reasons.join("\n") }));
+  d.querySelector("summary").innerHTML = `${ICON_WARN}Uncertain`;
+  d.append(el("ul", { class: "unc-body" }, reasons.map((r) => el("li", {}, r))));
+  return d;
+}
+// Item-level flags: Uncertain badge, or a quiet "1 source" when only one database had the item.
+function itemFlags(info) {
+  const unc = info?.uncertain?.length ? uncBadge(info.uncertain) : null;
+  const checks = Object.values(info?.checks || {});
+  const single = !unc && checks.length && checks.every((c) => c === "single");
+  return [unc, single ? el("span", { class: "one-src", title: "Only one database has this item, so it is not cross-checked." }, "1 source") : null];
+}
+function sourceReasons(src) {
+  const inst = src.instance && state.meta.instances[src.instance];
+  return [
+    ...(src.conflict ? ["Our databases disagree about this source (for example the drop chance, or which monster or quest it comes from)."] : []),
+    ...(inst?.uncertain || []).map((r) => `${inst.name}: ${r}`),
+  ];
 }
 
 function instanceName(key) {
@@ -304,6 +334,9 @@ function render() {
   $("level-out").textContent = String(lvl);
   $("level-slider").value = String(lvl);
   $("tier-row").hidden = lvl < 60;
+  const tierNote = state.meta.tier_notes?.[state.tier];
+  $("tier-note").hidden = !tierNote;
+  $("tier-note").textContent = tierNote || "";
   document.querySelectorAll("#tier-buttons button").forEach((b) => {
     b.setAttribute("aria-checked", String(Number(b.dataset.tier) === state.tier));
   });
@@ -353,12 +386,22 @@ function renderSlots() {
         seen && seen.tier === 0 && seen.level > 10 ? el("span", { class: "badge" }, `from lvl ${seen.level}`) : null,
         info.binding === "ON_ACQUIRE" ? el("span", { class: "badge badge-bop", title: "Binds when picked up" }, "BoP") : null,
         info.special ? el("span", { class: "badge badge-fx", title: info.special }, "special effect") : null,
+        ...itemFlags(info),
       ));
       const srcs = info.sources || [];
       if (srcs.length) {
         const d = describeSource(srcs[0]);
         main.append(el("div", { class: "source" }, d.label === d.text ? d.text : `${d.label}. ${d.text}`,
-          srcs.length > 1 ? el("span", { class: "muted" }, ` (+${srcs.length - 1} more source${srcs.length > 2 ? "s" : ""})`) : null));
+          " ", uncBadge(sourceReasons(srcs[0])), " ",
+          el("a", { class: "ext", href: `${WARCRAFTDB}${iid}`, target: "_blank", rel: "noopener", title: "Open this item on forever.warcraftdb.com" }, "warcraftdb")));
+        if (srcs.length > 1) {
+          const more = el("details", { class: "alts" }, el("summary", {}, `${srcs.length - 1} more source${srcs.length > 2 ? "s" : ""}`));
+          more.append(el("ul", {}, srcs.slice(1).map((s2) => {
+            const d2 = describeSource(s2);
+            return el("li", {}, d2.label === d2.text ? d2.text : `${d2.label}. ${d2.text}`, " ", uncBadge(sourceReasons(s2)));
+          })));
+          main.append(more);
+        }
       }
       const eq = equippedFor(row);
       if (state.mode === "lookup") {
@@ -377,7 +420,7 @@ function renderSlots() {
         for (const [aid, ascore] of row.alts) {
           const ainfo = state.gear.items[aid];
           const d = ainfo.sources?.[0] ? describeSource(ainfo.sources[0]) : null;
-          const altLi = el("li", {}, itemLink(aid, ainfo), el("span", { class: "score" }, String(ascore)),
+          const altLi = el("li", {}, itemLink(aid, ainfo), el("span", { class: "score" }, String(ascore)), ...itemFlags(ainfo),
             d ? el("span", { class: "muted" }, ` — ${d.label}`) : null);
           if (state.mode === "manual") {
             altLi.append(el("label", { class: "own own-small" },
@@ -429,7 +472,7 @@ function renderTodo() {
   }
   for (const g of sorted) {
     const ul = el("ul");
-    for (const it of g.items) ul.append(el("li", {}, itemLink(it.iid, it.info), el("span", { class: "muted" }, ` — ${SLOT_LABEL[it.slot]}. ${it.text}`)));
+    for (const it of g.items) ul.append(el("li", {}, itemLink(it.iid, it.info), " ", ...itemFlags(it.info), el("span", { class: "muted" }, ` — ${SLOT_LABEL[it.slot]}. ${it.text}`)));
     list.append(el("li", {}, el("div", { class: "todo-head" }, el("strong", {}, g.label),
       el("span", { class: "gain", title: "Total score gain" }, `+${Math.round(g.gain)}`)), ul));
   }
@@ -453,7 +496,7 @@ function renderUpcoming() {
   }
   events.sort((a, b) => a.key - b.key);
   for (const ev of events.slice(0, 10)) {
-    const when = ev.p.tier ? TIER_SHORT[ev.p.tier] : `Level ${ev.p.level}`;
+    const when = ev.p.tier ? tierShort(ev.p.tier) : `Level ${ev.p.level}`;
     list.append(el("li", {},
       el("button", { type: "button", class: "jump", onclick: () => jumpTo(ev.p) }, when),
       el("span", {}, ` ${SLOT_LABEL[ev.slot]}: `), itemLink(ev.iid, state.gear.items[ev.iid])));
@@ -485,8 +528,8 @@ function renderCharBar() {
     bar.append(
       c.avatar_url ? el("img", { class: "avatar", src: c.avatar_url, alt: "" }) : el("div", { class: "avatar avatar-empty" }),
       el("div", { class: "char-info" },
-        el("div", { class: "char-name" }, c.name, el("span", { class: `faction f-${c.faction}` }, c.faction === "H" ? "Horde" : "Alliance")),
-        el("div", { class: "char-meta" }, `Level ${c.level} ${c.race || ""} ${c.class_name || ""} · ${c.realm} (${c.region.toUpperCase()})${c.guild ? ` · <${c.guild}>` : ""}`),
+        el("div", { class: "char-name" }, `${c.name}${c.surname ? ` ${c.surname}` : ""}`, el("span", { class: `faction f-${c.faction}` }, c.faction === "H" ? "Horde" : "Alliance")),
+        el("div", { class: "char-meta" }, `Level ${c.level} ${c.race || ""} ${c.class_name || ""}${c.ruleset ? ` · ${c.ruleset}` : ""} · ${c.region.toUpperCase()}${c.guild ? ` · <${c.guild}>` : ""}`),
         el("div", { class: "char-spec" }, el("label", { for: "spec-select" }, "Spec: "), specSel,
           el("span", { class: "muted" }, ` ${state.char.spec_reason || ""}`))),
     );
@@ -502,15 +545,29 @@ function renderCharBar() {
   }
 }
 
+// Button text = the label up to ":" ("Raid tier 1: Barrow Deeps, ..." -> "Raid tier 1"); the full label is the tooltip.
+function tierShort(tier) {
+  return tier === 0 || tier === "0" ? "Pre-raid" : String(state.meta.tiers[tier] ?? `Tier ${tier}`).split(":")[0];
+}
 function renderTierButtons() {
   const wrap = $("tier-buttons");
   wrap.innerHTML = "";
-  for (const [tier, label] of Object.entries(TIER_SHORT)) {
+  const tiers = [0, ...Object.keys(state.meta.tiers).map(Number).filter((t) => t > 0).sort((a, b) => a - b)];
+  for (const tier of tiers) {
     wrap.append(el("button", {
       type: "button", role: "radio", "data-tier": tier, title: state.meta.tiers[tier],
-      onclick: () => { state.tier = Number(tier); render(); },
-    }, label));
+      onclick: () => { state.tier = tier; render(); },
+    }, tierShort(tier)));
   }
+}
+
+function uncertainLines() {
+  return displayRows().rows.filter((r) => r.pick).flatMap((r) => {
+    const [iid] = r.pick;
+    const info = state.gear.items[iid];
+    const reasons = [...(info.uncertain || []), ...(info.sources?.[0] ? sourceReasons(info.sources[0]) : [])];
+    return reasons.length ? [`- ${info.name || iid} (${iid}, ${SLOT_LABEL[r.slot]}): ${reasons.join("; ")}`] : [];
+  });
 }
 
 function updateReportLink() {
@@ -519,6 +576,7 @@ function updateReportLink() {
   const body = [
     `Class/spec: ${g.class} ${g.spec_name} (${g.faction === "A" ? "Alliance" : "Horde"})`,
     `Level: ${state.level}${state.tier ? `, tier ${state.tier}` : ""}`,
+    ...(uncertainLines().length ? ["", "Items on this page flagged Uncertain (reasons from our data):", ...uncertainLines(), ""] : []),
     "Slot and item that looks wrong:",
     "What should it be instead (and where did you see that)?",
     `Data built: ${state.meta.built}`,
@@ -530,7 +588,7 @@ function updateUrl() {
   const p = new URLSearchParams();
   if (state.mode === "lookup" && state.char) {
     const c = state.char.character;
-    p.set("region", c.region); p.set("realm", $("realm").value || c.realm); p.set("name", c.name);
+    p.set("region", c.region); p.set("name", c.name); p.set("surname", c.surname);
   } else if (state.manual) {
     p.set("race", state.manual.raceId); p.set("class", state.manual.classId); p.set("lvl", state.manual.level);
   }
@@ -569,16 +627,16 @@ async function rescoreEquipped() {
 async function lookup(event) {
   event?.preventDefault();
   const region = $("region").value;
-  const realm = $("realm").value.trim();
   const name = $("character").value.trim();
-  if (!realm || !name) { showStatus("Choose a realm and type a character name.", true); return; }
+  const surname = $("surname").value.trim();
+  if (!/^\p{L}+$/u.test(name) || !/^\p{L}+$/u.test(surname)) { showStatus("Type the first name and the surname, letters only (no spaces or numbers).", true); return; }
   const btn = $("lookup-btn");
   btn.disabled = true;
-  showStatus(`Looking up ${name} on ${$("realm-label").textContent}…`);
+  showStatus(`Looking up ${name} ${surname}…`);
   try {
-    const resp = await fetch(`/api/character?${new URLSearchParams({ region, realm, name })}`);
+    const resp = await fetch(`/api/character?${new URLSearchParams({ region, name, surname })}`);
     const body = await resp.json().catch(() => ({}));
-    if (!resp.ok) throw new Error(body.detail || `Lookup failed (HTTP ${resp.status}).`);
+    if (!resp.ok) throw new Error(body.detail || body.message || `Lookup failed (HTTP ${resp.status}).`);
     state.mode = "lookup";
     state.char = body;
     setScene(body.character.race_id);
@@ -588,7 +646,7 @@ async function lookup(event) {
     state.spec = urlSpec && cls?.specs[urlSpec] ? urlSpec : body.spec || cls?.leveling_spec;
     state.level = Math.max(10, Math.min(60, body.character.level || 10));
     state.tier = 0;
-    store("lookup", { region, realm, name });
+    store("lookup", { region, name, surname });
     await refreshAll();
   } catch (e) {
     showStatus(e.message, true);
@@ -623,7 +681,7 @@ function fillManualForm(saved) {
     const clsSel = $("m-class");
     const prev = clsSel.value || String(saved?.classId || "");
     clsSel.innerHTML = "";
-    for (const cid of race.classes) clsSel.append(el("option", { value: cid }, state.meta.classes[String(cid)].name));
+    for (const cid of race.classes || Object.keys(state.meta.classes)) clsSel.append(el("option", { value: cid }, state.meta.classes[String(cid)].name));
     if ([...clsSel.options].some((o) => o.value === prev)) clsSel.value = prev;
     fillSpecs();
   };
@@ -650,116 +708,11 @@ function selectTab(mode) {
   $("panel-lookup").hidden = !lookupOn;
   $("panel-manual").hidden = lookupOn;
   $("input-hint").textContent = lookupOn
-    ? "Classic Era realms only. No login needed."
+    ? "Forever characters have a first name and a surname, and no realm. No login needed."
     : "No character needed: pick race, class, spec and level, then tick the items you have.";
   store("tab", mode);
   if (lookupOn) setScene(state.mode === "lookup" ? state.char?.character.race_id : null);
   else setScene(Number($("m-race").value));
-}
-
-// ---------------------------------------------------------------- realm combobox
-const realmState = { items: [], filtered: [], active: -1, ready: false, fallback: false };
-
-function selectRealm(slug, name) {
-  $("realm").value = slug;
-  $("realm-label").textContent = name || slug;
-  store(`realm:${$("region").value}`, slug);
-}
-
-function renderRealmOptions(items) {
-  const list = $("realm-list");
-  list.innerHTML = "";
-  realmState.filtered = items;
-  realmState.active = -1;
-  $("realm-empty").hidden = items.length > 0;
-  for (const realm of items) {
-    const selected = realm.slug === $("realm").value;
-    const li = el("li", { class: `combo-option${selected ? " selected" : ""}`, role: "option", "aria-selected": String(selected) }, realm.name);
-    li.addEventListener("mousedown", (e) => { e.preventDefault(); selectRealm(realm.slug, realm.name); closeRealmCombo(); });
-    list.append(li);
-  }
-}
-
-function openRealmCombo() {
-  if (!realmState.ready || realmState.fallback) return;
-  $("realm-popover").hidden = false;
-  $("realm-trigger").setAttribute("aria-expanded", "true");
-  $("realm-search").value = "";
-  renderRealmOptions(realmState.items);
-  $("realm-search").focus();
-}
-
-function closeRealmCombo() {
-  $("realm-popover").hidden = true;
-  $("realm-trigger").setAttribute("aria-expanded", "false");
-}
-
-function setActive(index) {
-  const n = realmState.filtered.length;
-  if (!n) return;
-  realmState.active = (index + n) % n;
-  $("realm-list").querySelectorAll(".combo-option").forEach((li, i) => {
-    li.toggleAttribute("data-active", i === realmState.active);
-    if (i === realmState.active) li.scrollIntoView({ block: "nearest" });
-  });
-}
-
-async function loadRealms(region) {
-  const cacheKey = `realms:${region}`;
-  const cached = recall(cacheKey);
-  const apply = (realms) => {
-    realmState.items = realms;
-    realmState.ready = true;
-    $("realm-trigger").disabled = false;
-    const saved = recall(`realm:${region}`);
-    const pick = realms.find((r) => r.slug === ($("realm").value || saved)) || null;
-    if (pick) selectRealm(pick.slug, pick.name);
-    else { $("realm").value = ""; $("realm-label").textContent = "Choose a realm"; }
-  };
-  if (cached && Date.now() - cached.ts < 7 * 864e5) apply(cached.realms);
-  try {
-    const resp = await fetch(`/api/realms?region=${encodeURIComponent(region)}`);
-    if (!resp.ok) throw new Error();
-    const data = await resp.json();
-    apply(data.realms);
-    store(cacheKey, { ts: Date.now(), realms: data.realms });
-  } catch {
-    if (!realmState.ready) {
-      realmState.fallback = true;
-      $("realm-trigger").hidden = true;
-      $("realm-fallback").hidden = false;
-    }
-  }
-}
-
-function wireRealmCombo() {
-  $("realm-trigger").addEventListener("click", () => ($("realm-popover").hidden ? openRealmCombo() : closeRealmCombo()));
-  $("realm-search").addEventListener("input", () => {
-    const q = $("realm-search").value.trim().toLowerCase();
-    renderRealmOptions(q ? realmState.items.filter((r) => r.name.toLowerCase().includes(q) || r.slug.includes(q)) : realmState.items);
-  });
-  $("realm-search").addEventListener("keydown", (e) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); setActive(realmState.active + 1); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setActive(realmState.active - 1); }
-    else if (e.key === "Enter") {
-      e.preventDefault();
-      const item = realmState.filtered[Math.max(0, realmState.active)];
-      if (item) { selectRealm(item.slug, item.name); closeRealmCombo(); $("character").focus(); }
-    } else if (e.key === "Escape") { closeRealmCombo(); $("realm-trigger").focus(); }
-  });
-  $("realm-fallback").addEventListener("input", () => {
-    $("realm").value = $("realm-fallback").value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  });
-  document.addEventListener("click", (e) => {
-    if (!$("realm-popover").hidden && !$("realm-combo").contains(e.target)) closeRealmCombo();
-  });
-  $("region").addEventListener("change", () => {
-    $("realm").value = "";
-    $("realm-label").textContent = "Loading realms…";
-    $("realm-trigger").disabled = true;
-    realmState.ready = false;
-    loadRealms($("region").value);
-  });
 }
 
 // ---------------------------------------------------------------- init
@@ -773,7 +726,6 @@ async function init() {
   }
   $("data-date").textContent = `Data built ${state.meta.built}`;
   renderTierButtons();
-  wireRealmCombo();
   $("tab-lookup").addEventListener("click", () => selectTab("lookup"));
   $("tab-manual").addEventListener("click", () => selectTab("manual"));
   $("panel-lookup").addEventListener("submit", lookup);
@@ -800,15 +752,15 @@ async function init() {
   const savedLookup = recall("lookup");
   const region = params.get("region") || savedLookup?.region || "eu";
   $("region").value = region;
-  if (params.get("realm")) store(`realm:${region}`, params.get("realm"));
-  if (params.get("name") || savedLookup?.name) $("character").value = params.get("name") || savedLookup.name;
-  await loadRealms(region);
+  const fromUrl = params.get("name") && params.get("surname");
+  $("character").value = (fromUrl ? params.get("name") : savedLookup?.name) || "";
+  $("surname").value = (fromUrl ? params.get("surname") : savedLookup?.surname) || "";
 
   if (params.get("class")) {
     selectTab("manual");
     await manualSubmit();
     applyUrlLevel(params);
-  } else if (params.get("name") && $("realm").value) {
+  } else if (fromUrl) {
     selectTab("lookup");
     await lookup();
     applyUrlLevel(params);
@@ -822,7 +774,7 @@ function applyUrlLevel(params) {
   const lvl = Number(params.get("level"));
   if (lvl >= 10 && lvl <= 60) state.level = lvl;
   const tier = Number(params.get("tier"));
-  if (state.level >= 60 && tier >= 0 && tier <= 4) state.tier = tier;
+  if (state.level >= 60 && (tier === 0 || state.meta.tiers[tier])) state.tier = tier;
   render();
 }
 
