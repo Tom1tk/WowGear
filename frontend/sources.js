@@ -45,10 +45,11 @@ function describeBase(meta, src) {
     case "vendor": {
       // Forever data: rep vendors are named by faction with {standing: 0-7}; plain vendors may have no name.
       const standing = STANDINGS[Number(src.reputation?.standing)];
-      if (src.reputation) return { key: `rep:${src.name}`, label: `Buy from ${src.name} quartermaster`, text: `Needs ${standing || "some"} reputation with ${src.name}.` };
+      const repNeed = src.reputation ? ` Needs ${standing || "some"} reputation with ${src.rep_name || "their faction"}.` : "";
+      if (src.reputation && !src.id) return { key: `rep:${src.name}`, label: `Buy from ${src.name} quartermaster`, text: `Needs ${standing || "some"} reputation with ${src.name}.` };
       const who = src.name || "a vendor";
       const price = Number(src.copper) > 0 ? ` Costs about ${formatMoney(src.copper)}.` : "";
-      return { key: src.name ? `vendor:${src.id}` : "vendor", label: `Buy from ${who}${src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${who}${src.title ? ` <${src.title}>` : ""}.${price}` };
+      return { key: src.name ? `vendor:${src.id}` : "vendor", label: `Buy from ${who}${src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${who}${src.title ? ` <${src.title}>` : ""}.${price}${repNeed}` };
     }
     case "craft": {
       const recipe = src.recipe ? ` Recipe: ${src.recipe.name}${src.recipe.from?.length ? ` (${src.recipe.from.join(" / ")})` : ""}.` : " Recipe from the profession trainer.";
@@ -78,11 +79,11 @@ export function describeSource(meta, src) {
   return { ...d, text: `${d.text}${/[.!?]$/.test(d.text) ? "" : "."} ${extra}`, extra };
 }
 
-export const CATS = { vendor: "Vendor / AH", ddrop: "Dungeon drops", wdrop: "World drops", craft: "Crafted", wq: "World quests", dq: "Dungeon quests" };
-export const EFFORT = { vendor: 1, craft: 2, wq: 3, wdrop: 4, dq: 5, ddrop: 6 };
+export const CATS = { vendor: "Vendor / AH", rep: "Reputation vendors", ddrop: "Dungeon drops", wdrop: "World drops", craft: "Crafted", wq: "World quests", dq: "Dungeon quests" };
+export const EFFORT = { vendor: 1, rep: 2, craft: 2, wq: 3, wdrop: 4, dq: 5, ddrop: 6 };
 export function catsOf(src) {
   switch (src.type) {
-    case "vendor": return ["vendor"];
+    case "vendor": return [src.reputation ? "rep" : "vendor"];
     case "craft": return ["craft"];
     case "world_drop": return ["wdrop", "vendor"]; // BoE: also on the Auction House
     case "quest": return [src.instance ? "dq" : "wq"];

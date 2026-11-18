@@ -36,12 +36,24 @@ def parse_gear_sets(text: str) -> dict[int, dict]:
     return {s[0]: {"name": s[1], "kind": s[2], "level": s[5], "pieces": s[6][0::3]} for s in table["sets"]}
 
 
+def parse_vendors(text: str) -> dict[int, dict]:
+    """ns.gfVendor {npc id = "Name^uiMapId^x^y"} -> {id: {name, map, x, y}}; "NPC 123" placeholders get no name."""
+    table, _ = lua_value(text, text.index("ns.gfVendor = ") + len("ns.gfVendor = "))
+    out = {}
+    for k, v in table.items():
+        name, m, x, y = v.split("^")
+        out[int(k)] = {"name": None if name.startswith("NPC ") else name, "map": int(m), "x": float(x), "y": float(y)}
+    return out
+
+
 def main() -> None:
     items = parse_gear_sources((RAW / "foreverdb" / "GearSources.lua").read_text(encoding="utf-8"))
     write_json(STAGING / "foreverdb.json", items, compact=True)
+    vendors = parse_vendors((RAW / "foreverdb" / "GearSources.lua").read_text(encoding="utf-8"))
+    write_json(STAGING / "foreverdb_vendors.json", vendors, compact=True)
     sets = parse_gear_sets((RAW / "foreverdb" / "GearSets.lua").read_text(encoding="utf-8"))
     write_json(STAGING / "foreverdb_sets.json", sets, compact=True)
-    print(f"{len(sets)} sets, {len(items)} items, {sum(i['classic_labelled'] for i in items.values())} with Classic-labelled sources")
+    print(f"{len(vendors)} vendors, {len(sets)} sets, {len(items)} items, {sum(i['classic_labelled'] for i in items.values())} with Classic-labelled sources")
 
 
 if __name__ == "__main__":

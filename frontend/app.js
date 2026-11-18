@@ -241,6 +241,16 @@ function pointAt(slot, level = state.level, tier = state.tier) {
   return found;
 }
 
+// First later level where this slot (2nd ring/trinket: index 1) gets a pick: shown on an empty row.
+function nextFill(slot, index) {
+  const target = state.level >= 60 && state.tier > 0 ? 60 + state.tier : state.level;
+  for (const p of slotPoints(slot)) {
+    const ok = p.items.filter(([id]) => (state.gear.items[id].sources || []).some(srcOk));
+    if (pointKey(p) > target && ok[index]) return { p, id: ok[index][0] };
+  }
+  return null;
+}
+
 function firstSeen(slot, iid) {
   for (const p of slotPoints(slot)) {
     if (p.items.some(([id]) => id === iid)) return p;
@@ -368,7 +378,7 @@ function buildRows() {
     // With a source filter on, look beyond the top picks: the whole slotPool.
     const ok = (ui.src.size ? slotPool(slot) : cands).filter(([id]) => (state.gear.items[id].sources || []).some(srcOk));
     const top = ok.slice(0, pair ? 2 : 1), pick = ok[pair ? index : 0] || null;
-    const row = { slot, order, index, pair, cands, pick, alts: cands.filter((c) => !top.includes(c)), gain: 0, filtered: !pick && cands.length > 0,
+    const row = { slot, order, index, pair, cands, pick, next: pick ? null : nextFill(slot, index), alts: cands.filter((c) => !top.includes(c)), gain: 0, filtered: !pick && ui.src.size > 0 && cands.length > 0,
       label: pair ? `${SLOT_LABEL[slot]} ${index + 1}` : SLOT_LABEL[slot] };
     if (pick) {
       row.srcs = orderedSrcs(state.gear.items[pick[0]]);
@@ -445,7 +455,9 @@ function renderRows(rows) {
     const main = el("div", { class: "row-main" }, el("span", { class: "slot" }, r.label));
     ol.append(li);
     if (!r.pick) {
-      main.append(el("span", { class: "item muted nopick" }, r.filtered ? `No pick from these sources at level ${state.level}` : "No known item at this level."), el("span"), el("span"), el("span"), el("span"));
+      const none = r.filtered ? `No pick from these sources at level ${state.level}.` : `Nothing with useful stats at level ${state.level}.`;
+      const n = r.next, nInfo = n && state.gear.items[n.id], nSrc = n && describeSource(orderedSrcs(nInfo)[0]);
+      main.append(el("span", { class: "item muted nopick" }, none, ...(n ? [" Next: ", itemLink(n.id, nInfo), ` at ${n.p.tier > 0 ? `raid tier ${n.p.tier}` : `level ${n.p.level}`}${nSrc ? ` (${nSrc.label})` : ""}.`] : [])));
       li.append(main);
       continue;
     }

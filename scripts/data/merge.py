@@ -127,6 +127,9 @@ class Merger:
         self.quests, self.npcs, self.zones = qd["quests"], qd["npcs"], qd.get("zones", {})
         fs = STAGING / "foreverdb_sets.json"
         self.f_sets = read_json(fs) if fs.exists() else {}
+        fv = STAGING / "foreverdb_vendors.json"
+        self.f_vendors = read_json(fv) if fv.exists() else {}  # Forever-only vendors QuestieDB lacks
+        self.map_zone = {str(z["map"]): z["name"] for z in self.zones.values()}
         self.zone_names = {}  # area id -> name, learned from warcraftdb quest / vendor rows
         self.zone_names.update({k: z["name"] for k, z in self.zones.items()})  # QuestieDB Forever zone table
         for rec in self.w.values():
@@ -170,6 +173,8 @@ class Merger:
         if field == "name":
             return v.strip().lower() if v else None
         if field == "stats":
+            if v and src == "blizzard":  # Blizzard's block figure is always armor x 2.5 (all 186 shields), not the shield's block stat
+                v = {k: x for k, x in v.items() if k != "block_value"}
             return canon_stats(v) if v is not None else None
         if field == "weapon":
             return None if not v else (round(v["min"]), round(v["max"]), round(v["speed"], 1))
@@ -214,8 +219,6 @@ class Merger:
                 continue
             if field == "stats":
                 bad, reason = self.stat_diff(vals)
-                if bad and "block_value" in reason:
-                    reason += " (the Blizzard block figure looks like a different field; warcraftdb's is used for scoring)"
             else:
                 distinct = {repr(v) for v in vals.values()}
                 bad = len(distinct) > 1
@@ -245,7 +248,7 @@ class Merger:
         if wc and recs.get("blizzard") and recs["blizzard"].get("unparsed_effects"):
             for k, v in wc["stats"].items():  # effect text Blizzard's parser could not read
                 stats.setdefault(k, v)
-        stats.pop("block_value", None)  # Blizzard shield_block is not the in-game block value: warcraftdb only
+        stats.pop("block_value", None)  # Blizzard's figure is armor x 2.5, not the block stat: warcraftdb only
         if wc and wc["stats"].get("block_value"):
             stats["block_value"] = wc["stats"]["block_value"]
         item["stats"] = stats
@@ -420,6 +423,14 @@ class Merger:
                     r.setdefault("title", npc["title"])
                 if r["type"] == "vendor" and npc.get("side") in ("A", "H") and not r.get("faction"):
                     r["faction"] = npc["side"]
+            elif r["type"] == "vendor" and str(r["id"]) in self.f_vendors:
+                v = self.f_vendors[str(r["id"])]
+                if v["name"]:
+                    r.setdefault("name", v["name"])
+                zone = self.map_zone.get(str(v["map"]))
+                if zone and not r.get("instance"):
+                    r.setdefault("zone", zone)
+                    r["loc"] = {"zone": zone, "x": v["x"], "y": v["y"], "map": v["map"]}
         if npc and npc.get("zone") and not r.get("instance"):
             z = self.zones.get(str(npc["zone"]))
             if not r.get("zone") and str(npc["zone"]) in self.zone_names:
@@ -442,6 +453,35 @@ class Merger:
                     r["conflict"], r["conflict_reason"] = True, reason
 
     # ---------- run ----------
+    @staticmethod
+    def fold_rep(items, sources):
+        """Reputation vendors: ForeverDB lists some only by faction ("The League of Arathor", no NPC). Give named
+        vendors of rep items the requirement, drop the faction-only row next to them, and name the rest after the
+        quartermaster that faction's other items are sold by."""
+        qm = {}
+        for iid, rows in sources.items():
+            anon = [r for r in rows if r["type"] == "vendor" and r.get("reputation") and not r.get("id")]
+            need = items[iid].get("reputation")
+            rep = ({"faction_id": str(need["faction_id"]), "standing": str(need["level"])} if need and need.get("faction_id")
+                   else anon[0]["reputation"] if anon else None)
+            rep_name = (need or {}).get("faction") or (anon[0]["name"] if anon else None)
+            named = [r for r in rows if r["type"] == "vendor" and r.get("id")]
+            if not rep or not named:
+                continue
+            for r in named:
+                r["reputation"], r["rep_name"] = rep, rep_name
+                qm.setdefault(rep["faction_id"], Counter())[r["id"]] += 1
+                qm.setdefault(("row", r["id"]), r)
+            sources[iid] = [r for r in rows if r not in anon]
+        for rows in sources.values():
+            for r in rows:
+                if r["type"] == "vendor" and r.get("reputation") and not r.get("id"):
+                    fid = str(r["reputation"]["faction_id"])
+                    if fid in qm:
+                        t = qm[("row", qm[fid].most_common(1)[0][0])]
+                        r["rep_name"] = r["name"]
+                        r.update({k: t[k] for k in ("id", "name", "title", "faction", "zone", "loc") if k in t})
+
     def run(self):
         items, sources, dropped = {}, {}, Counter()
         for iid in sorted(set(self.w) | set(self.b), key=int):
@@ -462,6 +502,7 @@ class Merger:
                     continue
                 items[iid] = self.build_item(iid, recs)
                 sources[iid] = srcs
+        self.fold_rep(items, sources)
         for iid in self.f:
             if iid not in self.w and iid not in self.b:
                 dropped["ForeverDB only (no stats from Blizzard/warcraftdb yet)"] += 1

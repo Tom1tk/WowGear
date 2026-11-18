@@ -249,7 +249,7 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .srcmenu .n { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
 .sort { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 .sort select { height: 26px; font-size: 12.5px; }
-.nopick { font-size: 13px; }
+.nopick { font-size: 13px; display: block; grid-column: 2 / -1; }
 /* Wowhead icon (iconizeLinks): keep it inside the one-line, ellipsised link */
 .item-link ins, .worn-name a ins, .g-it a ins { vertical-align: middle; }
 .item-link, .g-it a, .up-list a, .worn-name a { display: inline-block; max-width: 100%; vertical-align: middle; }
