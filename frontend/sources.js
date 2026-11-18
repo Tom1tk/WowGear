@@ -9,15 +9,17 @@ export const locText = (l) => `${l.zone} ${l.x.toFixed(1)}, ${l.y.toFixed(1)}`;
 export const pinCommand = (l, kind) => kind === "builtin"
   ? `/run C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(${l.map},${l.x / 100},${l.y / 100}))`
   : `/way ${l.zone} ${l.x.toFixed(1)} ${l.y.toFixed(1)}`;
-// Zone and dungeon pages on wowforevermap.com (from its sitemap, 2026-11-18). The site has no coordinate links, so we open the zone page.
-const MAP_ZONES = new Set("alterac-mountains arathi-highlands ashenvale azshara badlands blasted-lands burning-steppes darkshore darnassus deadwind-pass desolace dun-morogh durotar duskwood dustwallow-marsh eastern-plaguelands elwynn-forest felwood feralas hillsbrad-foothills ironforge loch-modan moonglade mount-hyjal mulgore orgrimmar redridge-mountains riverglades searing-gorge shendralas silithus silverpine-forest stonetalon-mountains stormwind-city stranglethorn-vale swamp-of-sorrows tanaris teldrassil the-barrens the-hinterlands thousand-needles thunder-bluff tirisfal-glades undercity ungoro-crater western-plaguelands westfall wetlands winterspring zephras-isle".split(" "));
-const MAP_DUNGEONS = new Set("blackfathom-deeps blackrock-spire city-of-dalaran dire-maul excavation-site-wetlands gnomeregan maraudon onyxias-lair ragefire-chasm razorfen-downs razorfen-kraul ruins-of-lordaeron scarlet-monastery scholomance shadowfang-keep stormwind-stockade stratholme sunken-temple the-hall-of-thanes uldaman wailing-caverns zulfarrak".split(" "));
-export function mapUrl(zone) {
-  const s = zone === "The Stockade" ? "stormwind-stockade" : zone.toLowerCase().replace(/'/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  if (MAP_ZONES.has(s)) return `https://wowforevermap.com/zone/${s}`;
-  if (MAP_DUNGEONS.has(s)) return `https://wowforevermap.com/dungeons/${s}`;
-  return null;
-}
+// Wowhead Classic zone map images, keyed by zone name -> Wowhead zone (area) id. Pins use the same 0-100 coordinates.
+// ponytail: Forever-only zones (Riverglades, Zephras Isle) have no Wowhead map, so they get no hover map.
+const MAP_AREA = { "Alterac Mountains": 36, "Arathi Highlands": 45, "Ashenvale": 331, "Azshara": 16, "Badlands": 3, "Blasted Lands": 4,
+  "Burning Steppes": 46, "Darkshore": 148, "Darnassus": 1657, "Deadwind Pass": 41, "Desolace": 405, "Dun Morogh": 1, "Durotar": 14,
+  "Duskwood": 10, "Dustwallow Marsh": 15, "Eastern Plaguelands": 139, "Elwynn Forest": 12, "Felwood": 361, "Feralas": 357,
+  "Hillsbrad Foothills": 267, "Ironforge": 1537, "Loch Modan": 38, "Moonglade": 493, "Mulgore": 215, "Orgrimmar": 1637,
+  "Redridge Mountains": 44, "Searing Gorge": 51, "Silithus": 1377, "Silverpine Forest": 130, "Stonetalon Mountains": 406,
+  "Stormwind City": 1519, "Stranglethorn Vale": 33, "Swamp of Sorrows": 8, "Tanaris": 440, "Teldrassil": 141, "The Barrens": 17,
+  "The Hinterlands": 47, "Thousand Needles": 400, "Thunder Bluff": 1638, "Tirisfal Glades": 85, "Un'Goro Crater": 490,
+  "Undercity": 1497, "Western Plaguelands": 28, "Westfall": 40, "Wetlands": 11, "Winterspring": 618 };
+export const mapImage = (zone) => MAP_AREA[zone] ? `https://wow.zamimg.com/images/wow/classic/maps/enus/original/${MAP_AREA[zone]}.jpg` : null;
 export function formatMoney(copper) {
   const c = Number(copper), g = Math.floor(c / 10000), s = Math.floor(c / 100) % 100;
   return g ? `${g}g ${s}s` : `${s}s ${c % 100}c`;

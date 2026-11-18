@@ -1,4 +1,4 @@
-import { describeSource as describeIn, catsOf, CATS, EFFORT, locText, pinCommand, mapUrl } from "./sources.js";
+import { describeSource as describeIn, catsOf, CATS, EFFORT, locText, pinCommand, mapImage } from "./sources.js";
 import { setupLookup } from "./lookup.js";
 
 const $ = (id) => document.getElementById(id);
@@ -135,7 +135,8 @@ function initSettings() {
 function pinBtn(src) {
   const l = src?.loc;
   if (!l) return null;
-  const b = el("button", { type: "button", class: "pin", title: `${locText(l)}. Click to copy a map-pin command, then paste it into game chat.` }, `📍 ${locText(l)}`);
+  const img = mapImage(l.zone);
+  const b = el("button", { type: "button", class: "pin", title: img ? null : `${locText(l)}. Click to copy a map-pin command, then paste it into game chat.` }, `📍 ${locText(l)}`);
   b.addEventListener("click", async (e) => {
     e.stopPropagation();
     const cmd = pinCommand(l, recall("pin", "tomtom"));
@@ -143,12 +144,28 @@ function pinBtn(src) {
     catch { window.prompt("Copy this, then paste it into game chat:", cmd); }
     setTimeout(() => delete b.dataset.done, 2500);
   });
-  const url = mapUrl(l.zone);
-  if (!url) return b;
-  const a = el("a", { class: "ext", href: url, target: "_blank", rel: "noopener", title: `Open ${l.zone} on wowforevermap.com (zone page; find ${l.x.toFixed(1)}, ${l.y.toFixed(1)} there)` }, "map");
-  a.addEventListener("click", (e) => e.stopPropagation());
-  return el("span", { class: "pin-wrap" }, b, " ", a);
+  if (img) {
+    b.addEventListener("mouseenter", () => showMap(b, img, l));
+    b.addEventListener("focus", () => showMap(b, img, l));
+    b.addEventListener("mouseleave", hideMap);
+    b.addEventListener("blur", hideMap);
+  }
+  return b;
 }
+
+// Hover map: the zone's map with a dot on the spot, like Wowhead's vendor/quest maps.
+let mapPop;
+function showMap(anchor, img, l) {
+  mapPop ??= document.body.appendChild(el("div", { class: "map-pop", role: "tooltip" }));
+  mapPop.replaceChildren(
+    el("div", { class: "map-box" }, el("img", { src: img, alt: `${l.zone} map` }), el("span", { class: "map-dot", style: `left:${l.x}%;top:${l.y}%` })),
+    el("div", { class: "map-cap" }, `${locText(l)}. Click the pin to copy a map-pin command.`));
+  const r = anchor.getBoundingClientRect(), w = Math.min(420, innerWidth - 16), h = w * 2 / 3 + 30;
+  const left = Math.max(8, Math.min(r.left, innerWidth - w - 8));
+  const top = r.bottom + 6 + h < innerHeight ? r.bottom + 6 : Math.max(8, r.top - 6 - h);
+  Object.assign(mapPop.style, { width: `${w}px`, left: `${left}px`, top: `${top}px`, display: "block" });
+}
+function hideMap() { if (mapPop) mapPop.style.display = "none"; }
 
 // ---------------------------------------------------------------- helpers
 function el(tag, attrs = {}, ...children) {
@@ -325,12 +342,12 @@ function wornScoreFor(slot) {
 }
 
 // Table view state (not part of the URL): source filter, sort, slot group, opened rows.
-const ui = { sort: "slot", src: new Set(), slot: "all", open: new Set(), boe: recall("boe", true), epic: recall("epic", true) };
+const ui = { sort: "slot", src: new Set(), slot: "all", open: new Set(), boe: recall("boe", true), bop: recall("bop", true), epic: recall("epic", true) };
 const srcOk = (s) => !ui.src.size || catsOf(s).some((c) => ui.src.has(c));
-const narrowed = () => ui.src.size > 0 || !ui.boe || !ui.epic;
-// Source filter plus the BoE / epic toggles (quality 4 = epic, 5 = legendary).
+const narrowed = () => ui.src.size > 0 || !ui.boe || !ui.bop || !ui.epic;
+// Source filter plus the BoE / BoP / epic toggles (quality 4 = epic, 5 = legendary).
 const itemOk = (id) => { const it = state.gear.items[id];
-  return (ui.boe || it.binding !== "ON_EQUIP") && (ui.epic || it.quality < 4) && (it.sources || []).some(srcOk); };
+  return (ui.boe || it.binding !== "ON_EQUIP") && (ui.bop || it.binding !== "ON_ACQUIRE") && (ui.epic || it.quality < 4) && (it.sources || []).some(srcOk); };
 // sources with the allowed ones first, so the shown source is one the filter lets through
 const orderedSrcs = (info) => { const all = info.sources || []; return [...all.filter(srcOk), ...all.filter((s) => !srcOk(s))]; };
 function effort(srcs) {
@@ -855,7 +872,7 @@ function setupControls() {
   document.addEventListener("click", (e) => { if (pick.open && !pick.contains(e.target)) pick.open = false; });
   pick.addEventListener("keydown", (e) => { if (e.key === "Escape") { pick.open = false; pick.querySelector("summary").focus(); } });
   $("sort").addEventListener("change", (e) => { ui.sort = e.target.value; render(); });
-  for (const k of ["boe", "epic"]) {
+  for (const k of ["boe", "bop", "epic"]) {
     const box = $(`${k}-ok`);
     box.checked = ui[k];
     box.addEventListener("change", () => { ui[k] = box.checked; store(k, box.checked); render(); });

@@ -337,3 +337,10 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .pin:hover, .pin:focus-visible { color: var(--text); border-color: var(--accent); }
 .pin[data-done]::after { content: attr(data-done); position: absolute; left: 0; top: 120%; background: var(--bg); color: var(--text); padding: .2em .5em; border-radius: 4px; z-index: 5; }
 .g-head .pin { font-weight: 400; margin-left: .3em; }
+.map-pop { position: fixed; z-index: 50; display: none; pointer-events: none; background: var(--bg); border: 1px solid var(--gold); border-radius: 6px; padding: 4px; box-shadow: 0 6px 24px rgb(0 0 0 / .6); }
+.map-box { position: relative; aspect-ratio: 3 / 2; background: #000; }
+.map-box img { width: 100%; height: 100%; display: block; }
+.map-dot { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: #ffd200; border: 2px solid #000; box-shadow: 0 0 0 3px rgb(255 210 0 / .5); animation: map-ping 1.2s ease-out infinite; }
+@keyframes map-ping { 50% { box-shadow: 0 0 0 7px rgb(255 210 0 / 0); } }
+@media (prefers-reduced-motion: reduce) { .map-dot { animation: none; } }
+.map-cap { font-size: 12px; color: var(--muted); padding: 4px 2px 0; }
