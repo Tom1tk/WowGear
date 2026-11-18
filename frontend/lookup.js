@@ -111,7 +111,7 @@ export function setupLookup(ctx) {
       return el("li", {}, el("strong", {}, ctx.SLOT_LABEL[slot]), `: score ${entry[1]}${info.unscored?.length ? "*" : ""} at level ${state.level}${cmp}. `, where(slot, sel.id), ".");
     })));
     const srcs = info.sources || [];
-    if (srcs.length) out.append(el("h3", {}, "Where to get it"), el("ul", {}, srcs.map((s) => { const d = ctx.describeSource(s); return el("li", {}, `${d.label}. ${d.text}`); })));
+    if (srcs.length) out.append(el("h3", {}, "Where to get it"), el("ul", {}, srcs.map((s) => { const d = ctx.describeSource(s); return el("li", {}, `${d.label}. ${d.text} `, ctx.pinBtn(s)); })));
     out.append(...ctx.extrasOf(info));
     ctx.refreshTooltips();
   }

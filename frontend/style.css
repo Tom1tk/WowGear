@@ -329,3 +329,9 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 #lk-out ul { padding-left: 18px; }
 .lk-name { font-size: 14px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 @media (max-width: 900px) { #lk-in { font-size: 16px; height: 38px; } }
+
+/* map-pin button: zone + coordinates; click copies a chat command */
+.pin { font: inherit; font-size: .85em; color: var(--muted); background: none; border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); border-radius: 999px; padding: 0 .5em; cursor: pointer; white-space: nowrap; position: relative; }
+.pin:hover, .pin:focus-visible { color: var(--text); border-color: var(--accent); }
+.pin[data-done]::after { content: attr(data-done); position: absolute; left: 0; top: 120%; background: var(--bg); color: var(--text); padding: .2em .5em; border-radius: 4px; z-index: 5; }
+.g-head .pin { font-weight: 400; margin-left: .3em; }

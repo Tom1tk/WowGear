@@ -3,6 +3,12 @@
 
 // ---------------------------------------------------------------- sources
 const STANDINGS = ["Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"];
+// Map spot of a source (QuestieDB Forever): {zone, x, y (percent of the zone map), map (uiMapId)}.
+export const locText = (l) => `${l.zone} ${l.x.toFixed(1)}, ${l.y.toFixed(1)}`;
+// Chat command that drops a map pin: TomTom's /way, or the built-in user waypoint (needs checking in the Forever client).
+export const pinCommand = (l, kind) => kind === "builtin"
+  ? `/run C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(${l.map},${l.x / 100},${l.y / 100}))`
+  : `/way ${l.zone} ${l.x.toFixed(1)} ${l.y.toFixed(1)}`;
 export function formatMoney(copper) {
   const c = Number(copper), g = Math.floor(c / 10000), s = Math.floor(c / 100) % 100;
   return g ? `${g}g ${s}s` : `${s}s ${c % 100}c`;
@@ -63,8 +69,10 @@ function describeBase(meta, src) {
 export function describeSource(meta, src) {
   const d = describeBase(meta, src), bits = [];
   if (src.chain) bits.push(`Quest ${src.chain.pos} of ${src.chain.len} — starts with ${src.chain.first_name}${src.chain.first_level != null ? ` (level ${src.chain.first_level})` : ""}.`);
+  if (src.giver && src.giver !== src.start_npc) bits.push(`From ${src.giver}.`);
+  if (src.loc) d.where = locText(src.loc);
   if (src.reagents?.length) bits.push(`Needs ${src.reagents.map(([n, c]) => `${c}× ${n}`).join(", ")}.`);
-  if (src.zone && !`${d.label} ${d.text}`.includes(src.zone)) bits.push(`Zone: ${src.zone}.`);
+  if (src.zone && !src.loc && !`${d.label} ${d.text}`.includes(src.zone)) bits.push(`Zone: ${src.zone}.`);
   if (!bits.length) return d;
   const extra = bits.join(" ");
   return { ...d, text: `${d.text}${/[.!?]$/.test(d.text) ? "" : "."} ${extra}`, extra };

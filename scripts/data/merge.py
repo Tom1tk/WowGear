@@ -48,6 +48,9 @@ UNSCORED_NAME = {"res_fire": "Fire Resistance", "res_nature": "Nature Resistance
                  "sp_holy": "Holy spell damage", "hp5": "health per 5 sec", "spell_pen": "spell penetration",
                  "spell_haste": "spell haste", "resilience": "Resilience", "armor_pen": "armor penetration"}
 EFFECT_MAX = 220
+# Faction-locked reputations (Blizzard reputation-faction ids): their vendors serve one side only.
+REP_SIDE = {"509": "A", "510": "H", "730": "A", "729": "H", "890": "A", "889": "H", "47": "A", "54": "A", "69": "A",
+            "72": "A", "930": "A", "76": "H", "81": "H", "530": "H", "68": "H", "911": "H"}
 FOLD = {"hit_rating": "hit", "crit_rating": "crit", "dodge_rating": "dodge", "parry_rating": "parry",
         "block_rating": "block", "bonus_armor": "armor"}  # Blizzard folds EXTRA_ARMOR into armor
 PRIO = ("blizzard", "warcraftdb", "foreverdb")
@@ -120,11 +123,12 @@ class Merger:
                 if n:
                     self.zone_inst[n.lower()] = k
         q = STAGING / "questie.json"
-        qd = read_json(q) if q.exists() else {"quests": {}, "npcs": {}}
-        self.quests, self.npc_zone = qd["quests"], qd["npcs"]
+        qd = read_json(q) if q.exists() else {"quests": {}, "npcs": {}, "zones": {}}
+        self.quests, self.npcs, self.zones = qd["quests"], qd["npcs"], qd.get("zones", {})
         fs = STAGING / "foreverdb_sets.json"
         self.f_sets = read_json(fs) if fs.exists() else {}
         self.zone_names = {}  # area id -> name, learned from warcraftdb quest / vendor rows
+        self.zone_names.update({k: z["name"] for k, z in self.zones.items()})  # QuestieDB Forever zone table
         for rec in self.w.values():
             for src in rec.get("sources", []):
                 if src.get("zone_id") and src.get("zone"):
@@ -392,7 +396,11 @@ class Merger:
         return out
 
     def enrich(self, r: dict) -> None:
-        """Quest chain position (QuestieDB Forever) and zone names for sources that lack one."""
+        """Quest chain position, NPC names / titles / zones / map spots (QuestieDB Forever) for sources that lack them."""
+        rep = (r.get("reputation") or {}).get("faction_id")
+        if rep and str(rep) in REP_SIDE and not r.get("faction"):
+            r["faction"] = REP_SIDE[str(rep)]
+        npc = None
         if r["type"] == "quest" and r.get("id") is not None:
             q = self.quests.get(str(r["id"]))
             if q:
@@ -400,10 +408,24 @@ class Merger:
                     r["chain"] = q["chain"]
                 if not r.get("zone") and q.get("zone") and str(q["zone"]) in self.zone_names:
                     r["zone"] = self.zone_names[str(q["zone"])]
-        elif r["type"] in ("drop", "vendor") and r.get("id") and not r.get("zone") and not r.get("instance"):
-            area = self.npc_zone.get(str(r["id"]))
-            if area and str(area) in self.zone_names:
-                r["zone"] = self.zone_names[str(area)]
+                if q.get("giver"):
+                    npc = self.npcs.get(str(q["giver"]))
+                    if npc:
+                        r["giver"] = npc["name"]
+        elif r["type"] in ("drop", "vendor") and r.get("id"):
+            npc = self.npcs.get(str(r["id"]))
+            if npc:
+                r.setdefault("name", npc["name"])
+                if r["type"] == "vendor" and npc.get("title"):
+                    r.setdefault("title", npc["title"])
+                if r["type"] == "vendor" and npc.get("side") in ("A", "H") and not r.get("faction"):
+                    r["faction"] = npc["side"]
+        if npc and npc.get("zone") and not r.get("instance"):
+            z = self.zones.get(str(npc["zone"]))
+            if not r.get("zone") and str(npc["zone"]) in self.zone_names:
+                r["zone"] = self.zone_names[str(npc["zone"])]
+            if z and npc.get("spot"):  # x, y in percent of that zone map; map = uiMapId for in-game pins
+                r["loc"] = {"zone": z["name"], "x": npc["spot"][0], "y": npc["spot"][1], "map": z["map"]}
 
     def disjoint_conflicts(self, out: list[dict]) -> None:
         """Both sources list this kind of source for the item but not one in common."""

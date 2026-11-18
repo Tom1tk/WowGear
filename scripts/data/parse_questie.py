@@ -3,7 +3,8 @@
 Reads data/raw/git/QuestieDB/data/Forever/foreverQuestDB.lua and foreverNpcDB.lua (GPL-3, see
 the repo's LICENSE). Output:
   quests: {id: {"name", "level", "zone" (area id or null), "chain" (see build_chains, only when in a chain)}}
-  npcs:   {id: area id}
+  npcs:   {id: {"name", "title", "side" ("A"/"H"/"AH"/None), "zone" (area id), "spot": [x, y] (first spawn)}}
+  zones:  {area id: {"name", "map" (uiMapId, for in-game map pins)}} from support/Forever/Zones/uiMapIdToAreaId.lua
 
     python scripts/data/parse_questie.py
 """
@@ -18,8 +19,31 @@ sys.path.insert(0, os.path.dirname(__file__))
 from _common import RAW, STAGING, lua_value, write_json  # noqa: E402
 
 DB = RAW / "git" / "QuestieDB" / "data" / "Forever"
+Q_START = 2
 Q_NAME, Q_LEVEL, Q_REQ, Q_PRE_GROUP, Q_PRE_SINGLE, Q_ZONE, Q_NEXT = 1, 5, 4, 12, 13, 17, 22
-N_ZONE = 9
+N_NAME, N_SPAWNS, N_ZONE, N_SIDE, N_TITLE = 1, 7, 9, 13, 14
+ZONES = RAW / "git" / "QuestieDB" / "support" / "Forever" / "Zones" / "uiMapIdToAreaId.lua"
+
+
+def read_zones() -> dict[int, dict]:
+    """'    [1417] = 45, -- Arathi Highlands' -> {45: {"name": "Arathi Highlands", "map": 1417}} (first map wins)."""
+    out = {}
+    for m in re.finditer(r"^\s*\[(\d+)\] = (\d+), -- (.+?)\s*$", ZONES.read_text(encoding="utf-8"), re.M):
+        out.setdefault(int(m.group(2)), {"name": m.group(3), "map": int(m.group(1))})
+    return out
+
+
+def npc_record(row: list) -> dict:
+    spawns = field(row, N_SPAWNS) or {}
+    zone = field(row, N_ZONE)
+    spots = spawns.get(zone) if isinstance(spawns, dict) else None
+    if not spots and isinstance(spawns, dict) and spawns:
+        zone, spots = next(iter(spawns.items()))
+    rec = {"name": field(row, N_NAME), "title": field(row, N_TITLE), "side": field(row, N_SIDE),
+           "zone": zone if (zone or 0) > 0 else None}
+    if spots and isinstance(spots[0], list) and len(spots[0]) == 2 and spots[0][0] >= 0:
+        rec["spot"] = [round(spots[0][0], 1), round(spots[0][1], 1)]
+    return {k: v for k, v in rec.items() if v not in (None, "")}
 def read_rows(path) -> dict[int, list]:
     """{id: [fields...]} from a Questie data file (lines like `[12] = {...},`)."""
     out = {}
@@ -82,16 +106,19 @@ def main() -> None:
     for qid, row in read_rows(DB / "foreverQuestDB.lua").items():
         pre = (field(row, Q_PRE_SINGLE) or []) or (field(row, Q_PRE_GROUP) or [])
         quests[qid] = {"name": field(row, Q_NAME), "level": field(row, Q_LEVEL) or field(row, Q_REQ),
-                       "zone": field(row, Q_ZONE), "pre": pre, "next": field(row, Q_NEXT)}
+                       "zone": field(row, Q_ZONE), "pre": pre, "next": field(row, Q_NEXT),
+                       "giver": ((field(row, Q_START) or [None])[0] or [None])[0]}
     chains = build_chains(quests)
     out_q = {}
     for qid, q in quests.items():
         rec = {"name": q["name"], "level": q["level"], "zone": q["zone"] if (q["zone"] or 0) > 0 else None}
+        if q.get("giver"):
+            rec["giver"] = q["giver"]
         if qid in chains:
             rec["chain"] = chains[qid]
         out_q[qid] = rec
-    npcs = {nid: field(row, N_ZONE) for nid, row in read_rows(DB / "foreverNpcDB.lua").items()}
-    write_json(STAGING / "questie.json", {"quests": out_q, "npcs": {k: v for k, v in npcs.items() if v}}, compact=True)
+    npcs = {nid: npc_record(row) for nid, row in read_rows(DB / "foreverNpcDB.lua").items()}
+    write_json(STAGING / "questie.json", {"quests": out_q, "npcs": npcs, "zones": read_zones()}, compact=True)
     print(f"{len(out_q)} quests ({len(chains)} in a chain), {len(npcs)} npcs")
 
 

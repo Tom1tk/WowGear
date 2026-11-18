@@ -1,4 +1,4 @@
-import { describeSource as describeIn, catsOf, CATS, EFFORT } from "./sources.js";
+import { describeSource as describeIn, catsOf, CATS, EFFORT, locText, pinCommand } from "./sources.js";
 import { setupLookup } from "./lookup.js";
 
 const $ = (id) => document.getElementById(id);
@@ -125,7 +125,25 @@ function initSettings() {
   state.scoreSet = recall("scoremode", "raw") === "set";
   sm.value = state.scoreSet ? "set" : "raw";
   sm.onchange = () => { state.scoreSet = sm.value === "set"; store("scoremode", sm.value); render(); };
+  const pin = $("pin-pick");
+  pin.value = recall("pin", "tomtom");
+  pin.onchange = () => store("pin", pin.value);
   refreshScene();
+}
+
+// Map-pin button for a source with a known spot: hover shows where, click copies a chat command for the game.
+function pinBtn(src) {
+  const l = src?.loc;
+  if (!l) return null;
+  const b = el("button", { type: "button", class: "pin", title: `${locText(l)}. Click to copy a map-pin command, then paste it into game chat.` }, `📍 ${locText(l)}`);
+  b.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    const cmd = pinCommand(l, recall("pin", "tomtom"));
+    try { await navigator.clipboard.writeText(cmd); b.dataset.done = "Copied: paste in game chat"; }
+    catch { window.prompt("Copy this, then paste it into game chat:", cmd); }
+    setTimeout(() => delete b.dataset.done, 2500);
+  });
+  return b;
 }
 
 // ---------------------------------------------------------------- helpers
@@ -320,7 +338,8 @@ function slotPool(slot) {
 function wornFor(r, pick) {
   const [pid, best] = pick;
   // percent over the worn item; Infinity ("new") when its score is 0
-  const gainOver = (score) => { if (!(score > 0)) return Infinity; const g = (best - score) / score * 100; return g >= UP ? g : 0; };
+  // worn items under 10% of the best pick count as nothing useful ("new"): a percent over ~0 is meaningless
+  const gainOver = (score) => { if (!(score > 0) || score < best * 0.1) return Infinity; const g = (best - score) / score * 100; return g >= UP ? g : 0; };
   const named = (id) => ({ id, name: state.gear.items[id]?.name, quality: state.gear.items[id]?.quality });
   if (state.mode === "manual") {
     const owned = ownedSet();
@@ -440,7 +459,7 @@ function renderRows(rows) {
         reasons.length ? Object.assign(uncBadge(), { title: reasons.join("\n") }) : null),
       scoreCell(score, info));
     const d = r.srcs[0] ? describeSource(r.srcs[0]) : null;
-    main.append(el("span", { class: "src", title: d ? `${d.label}. ${d.text}` : "" }, d ? d.label : "Source unknown"));
+    main.append(el("span", { class: "src", title: d ? `${d.label}. ${d.text}${d.where ? ` ${d.where}.` : ""}` : "" }, d ? d.label : "Source unknown"));
     main.append(wornCell(r, iid));
     const btn = el("button", { type: "button", class: "chev-btn", "aria-expanded": String(ui.open.has(r.label)), "aria-label": `Details for ${r.label}` });
     btn.innerHTML = ICON_CHEV;
@@ -490,8 +509,8 @@ function buildDetail(r, info, iid, reasons) {
   const srcs = r.srcs, d = el("div", { class: "detail" });
   if (reasons.length) d.append(el("ul", { class: "reasons" }, reasons.map((x) => el("li", {}, x))));
   d.append(...extrasOf(info));
-  if (srcs[0]) { const s = describeSource(srcs[0]); d.append(el("p", {}, `${s.label}. ${s.text} `, el("a", { class: "ext", href: `${WARCRAFTDB}${iid}`, target: "_blank", rel: "noopener", title: "Open this item on forever.warcraftdb.com" }, "warcraftdb"))); }
-  if (srcs.length > 1) d.append(el("h3", {}, `${srcs.length - 1} more source${srcs.length > 2 ? "s" : ""}`), el("ul", {}, srcs.slice(1).map((s) => { const x = describeSource(s); return el("li", {}, `${x.label}. ${x.text}`); })));
+  if (srcs[0]) { const s = describeSource(srcs[0]); d.append(el("p", {}, `${s.label}. ${s.text} `, pinBtn(srcs[0]), " ", el("a", { class: "ext", href: `${WARCRAFTDB}${iid}`, target: "_blank", rel: "noopener", title: "Open this item on forever.warcraftdb.com" }, "warcraftdb"))); }
+  if (srcs.length > 1) d.append(el("h3", {}, `${srcs.length - 1} more source${srcs.length > 2 ? "s" : ""}`), el("ul", {}, srcs.slice(1).map((s) => { const x = describeSource(s); return el("li", {}, `${x.label}. ${x.text} `, pinBtn(s)); })));
   const checks = Object.values(info.checks || {});
   if (!info.uncertain?.length && checks.length && checks.every((c) => c === "single")) d.append(el("p", { class: "one-src" }, "1 source: only one database has this item, so it is not cross-checked."));
   if (r.worn.unknown) d.append(el("p", { class: "muted" }, "Random-stat items (e.g. “… of the Monkey”) and some special items have no fixed score. Compare the stats yourself."));
@@ -512,7 +531,7 @@ function renderTodo(rows) {
   for (const r of rows) {
     if (!r.pick || r.gain < UP || !r.srcs[0]) continue;
     const d = describeSource(r.srcs[0]);
-    const g = groups.get(d.key) || { label: d.label, items: [] };
+    const g = groups.get(d.key) || { label: d.label, src: r.srcs[0], items: [] };
     g.items.push({ r, d });
     groups.set(d.key, g);
   }
@@ -525,13 +544,13 @@ function renderTodo(rows) {
   for (const g of sorted) {
     const ul = el("ul", { class: "g-list" }, g.items.map(({ r, d }) => {
       const info = state.gear.items[r.pick[0]];
-      return el("li", { title: d.text },
+      return el("li", { title: `${d.text}${d.where ? ` ${d.where}.` : ""}` },
         el("span", { class: "slot" }, r.label),
         el("span", { class: "g-it" }, itemLink(r.pick[0], info), reasonsOf(info).length ? Object.assign(uncBadge(), { style: "margin-left:6px" }) : null),
         el("span", { class: "g-d" }, fmtGain(r.gain)),
         d.extra ? el("span", { class: "g-x muted" }, d.extra) : null);
     }));
-    box.append(el("div", { class: "group" }, el("div", { class: "g-head" }, el("strong", {}, g.label), el("span", { class: "g-gain", title: "Slots to upgrade here" }, `${g.items.length} upgrade${g.items.length > 1 ? "s" : ""}`)), ul));
+    box.append(el("div", { class: "group" }, el("div", { class: "g-head" }, el("strong", {}, g.label, " ", pinBtn(g.src)), el("span", { class: "g-gain", title: "Slots to upgrade here" }, `${g.items.length} upgrade${g.items.length > 1 ? "s" : ""}`)), ul));
   }
   if (!sorted.length) box.append(el("p", { class: "muted" }, state.mode === "manual" ? "Tick the items you have. Then this list shows where to go for the rest." : "Nothing to do at this level: your gear matches the list. Try the next levels on the slider."));
 }
@@ -818,7 +837,7 @@ function setupControls() {
   $("sort").addEventListener("change", (e) => { ui.sort = e.target.value; render(); });
 }
 
-const itemLookup = setupLookup({ state, $, el, itemLink, slotPoints, pointAt, SLOT_LABEL, describeSource, reasonsOf, uncBadge, extrasOf, wornScoreFor, tierShort, fmtGain, refreshTooltips });
+const itemLookup = setupLookup({ state, $, el, itemLink, slotPoints, pointAt, SLOT_LABEL, describeSource, pinBtn, reasonsOf, uncBadge, extrasOf, wornScoreFor, tierShort, fmtGain, refreshTooltips });
 
 // ---------------------------------------------------------------- init
 async function init() {
