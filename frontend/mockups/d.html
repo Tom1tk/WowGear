@@ -104,7 +104,7 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .sec-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
 .sec-head p { margin: 0; font-size: 13px; color: var(--muted); }
 .panel { background: color-mix(in srgb, var(--card) 88%, transparent); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
-.legend { margin: 0 0 6px; font-size: 12.5px; color: var(--muted); }
+.legend { margin: 0 0 6px; text-align: left; font-size: 12.5px; color: var(--muted); }
 
 /* gear table */
 .cols, .row-main { display: grid; grid-template-columns: 78px minmax(0, 1.5fr) 44px minmax(0, .8fr) minmax(0, 1.3fr) 20px; gap: 10px; align-items: center; }
@@ -151,13 +151,19 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .ext { font-size: 12px; color: var(--muted); }
 
 /* table toolbar: source chips + sort */
-.toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; margin: 0 0 6px; font-size: 12.5px; }
-.chips { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
-.chips button { height: 24px; padding: 0 9px; border-radius: 99px; border: 1px solid var(--line); background: var(--card-2); cursor: pointer; font-size: 12.5px; white-space: nowrap; }
-.chips button:hover { border-color: var(--gold); }
-.chips button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-2); font-weight: 600; background: color-mix(in oklab, var(--gold) 14%, var(--card-2)); }
-.chips .n { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: 4px; font-weight: 400; }
-.sort { display: flex; align-items: center; gap: 6px; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 4px 12px; margin: 0 0 6px; font-size: 12.5px; }
+.srcpick { position: relative; }
+.srcpick summary { list-style: none; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card-2); cursor: pointer; white-space: nowrap; }
+.srcpick summary::-webkit-details-marker { display: none; }
+.srcpick summary:hover, .srcpick[open] summary { border-color: var(--gold); }
+.srcpick summary b { color: var(--gold-2); font-weight: 600; }
+.srcpick[open] summary .ico { transform: rotate(180deg); }
+.srcmenu { position: absolute; z-index: 20; top: calc(100% + 4px); left: 0; min-width: 220px; padding: 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--card-2); box-shadow: 0 10px 30px rgba(0, 0, 0, .45); display: grid; }
+.srcmenu label { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px; cursor: pointer; }
+.srcmenu label:hover { background: color-mix(in oklab, var(--gold) 10%, transparent); }
+.srcmenu input { accent-color: var(--gold); margin: 0; }
+.srcmenu .n { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sort { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 .sort select { height: 26px; font-size: 12.5px; }
 .nopick { font-size: 13px; }
 /* Wowhead icon (iconizeLinks): keep it inside the one-line, ellipsised link */
@@ -281,18 +287,19 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 <main class="work" id="work" hidden>
   <section class="panel" aria-labelledby="gear-t">
     <div class="sec-head"><h2 id="gear-t">Best gear at level 29</h2><p>Feral (Cat) Druid · Horde. Click a row for where to get it and alternatives.</p></div>
-    <p class="legend"><span class="badge badge-unc"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Uncertain</span> our data sources disagree; open the row to see why. The gold bar is the score gained over what you wear.</p>
     <div class="toolbar">
-      <div class="chips" id="chips" role="group" aria-label="Where to get it">
-        <span class="muted">Get it from</span>
-        <button type="button" aria-pressed="true" data-c="all">All</button>
-        <button type="button" aria-pressed="false" data-c="vendor">Vendor / AH<span class="n"></span></button>
-        <button type="button" aria-pressed="false" data-c="ddrop">Dungeon drops<span class="n"></span></button>
-        <button type="button" aria-pressed="false" data-c="wdrop">World drops<span class="n"></span></button>
-        <button type="button" aria-pressed="false" data-c="craft">Crafted<span class="n"></span></button>
-        <button type="button" aria-pressed="false" data-c="wq">World quests<span class="n"></span></button>
-        <button type="button" aria-pressed="false" data-c="dq">Dungeon quests<span class="n"></span></button>
-      </div>
+      <details class="srcpick" id="srcpick">
+        <summary><span class="muted">Get it from</span> <b id="src-sum">All sources</b><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary>
+        <div class="srcmenu" role="group" aria-label="Where to get it">
+          <label><input type="checkbox" value="all" checked> All sources</label>
+          <label><input type="checkbox" value="vendor"> Vendor / AH<span class="n"></span></label>
+          <label><input type="checkbox" value="ddrop"> Dungeon drops<span class="n"></span></label>
+          <label><input type="checkbox" value="wdrop"> World drops<span class="n"></span></label>
+          <label><input type="checkbox" value="craft"> Crafted<span class="n"></span></label>
+          <label><input type="checkbox" value="wq"> World quests<span class="n"></span></label>
+          <label><input type="checkbox" value="dq"> Dungeon quests<span class="n"></span></label>
+        </div>
+      </details>
       <label class="sort"><span class="muted">Sort</span><select id="sort" title="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop." aria-description="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop.">
         <option value="slot">Slot order</option><option value="gain">Biggest upgrade</option><option value="easy">Easiest to get</option></select></label>
     </div>
@@ -310,7 +317,9 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
     </section>
   </aside>
 </main>
-<footer class="foot">Mock-up d: A's theme and table with B's sidebar. Sample character, real Forever data.</footer>
+<footer class="foot">
+<p class="legend"><span class="badge badge-unc"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Uncertain</span> our data sources disagree; open the row to see why. The gold bar is the score gained over what you wear.</p>
+Mock-up d: A's theme and table with B's sidebar. Sample character, real Forever data.</footer>
 </div></div>
 
 <script>
@@ -574,16 +583,20 @@ function setupControls(rows) {
     document.querySelectorAll(".filters button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     document.querySelectorAll("#rows .row").forEach((li) => { li.hidden = state.slot !== "all" && li.dataset.g !== state.slot; });
   }));
-  // source chips: how many slots could use each category
-  const chips = [...document.querySelectorAll("#chips button")];
-  for (const b of chips) if (b.dataset.c !== "all") b.querySelector(".n").textContent = rows.filter((r) => slotPool(r.slot).some(([id]) => (gear.items[id].sources || []).some((s) => catsOf(s).includes(b.dataset.c)))).length;
-  chips.forEach((b) => b.addEventListener("click", () => {
-    const c = b.dataset.c, next = new Set(state.src);
-    if (c === "all") next.clear(); else if (next.has(c)) next.delete(c); else next.add(c);
+  // source picker: how many slots could use each category
+  const boxes = [...document.querySelectorAll("#srcpick input")];
+  const NAMES = Object.fromEntries(boxes.map((b) => [b.value, b.parentElement.textContent.trim()]));
+  for (const b of boxes) if (b.value !== "all") b.nextElementSibling.textContent = rows.filter((r) => slotPool(r.slot).some(([id]) => (gear.items[id].sources || []).some((s) => catsOf(s).includes(b.value)))).length;
+  boxes.forEach((b) => b.addEventListener("change", () => {
+    const next = b.value === "all" ? new Set() : new Set(boxes.filter((x) => x.value !== "all" && x.checked).map((x) => x.value));
     state.src = next; // empty set = All
-    chips.forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.c === "all" ? !next.size : next.has(x.dataset.c))));
+    boxes.forEach((x) => { x.checked = x.value === "all" ? !next.size : next.has(x.value); });
+    $("src-sum").textContent = !next.size ? "All sources" : next.size <= 2 ? [...next].map((c) => NAMES[c].replace(/\d+$/, "")).join(", ") : `${next.size} sources`;
     render();
   }));
+  const pick = $("srcpick");
+  document.addEventListener("click", (e) => { if (pick.open && !pick.contains(e.target)) pick.open = false; });
+  pick.addEventListener("keydown", (e) => { if (e.key === "Escape") { pick.open = false; pick.querySelector("summary").focus(); } });
   $("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
 }
 
