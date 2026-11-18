@@ -357,7 +357,7 @@ function effort(srcs) {
 }
 
 const reasonsOf = (info) => [...(info.uncertain || []), ...(info.sources?.[0] ? sourceReasons(info.sources[0]) : [])];
-const uncBadge = () => Object.assign(el("span", { class: "badge badge-unc" }), { innerHTML: `${ICON_WARN}Uncertain` });
+const uncBadge = () => Object.assign(el("span", { class: "badge badge-unc", role: "img", "aria-label": "Uncertain" }), { innerHTML: ICON_WARN });
 
 // Every item that was best for this slot at some point up to the viewed level, best score first.
 function slotPool(slot) {
@@ -439,7 +439,6 @@ function render() {
   $("gear-title").textContent = lvl >= 60 && state.tier > 0 ? `Best gear: ${state.meta.tiers[state.tier]}` : `Best gear at level ${lvl}`;
   $("gear-sub").textContent = `${g.spec_name} ${g.class} · ${g.faction === "A" ? "Alliance" : "Horde"}`;
   const rows = buildRows();
-  renderWeaponNote();
   renderRows(rows);
   renderTodo(rows);
   renderUpcoming();
@@ -448,16 +447,6 @@ function render() {
   updateReportLink(rows);
   updateUrl();
   refreshTooltips();
-}
-
-function renderWeaponNote() {
-  const note = $("weapon-note"), plan = weaponPlan();
-  const altItems = plan.alt.map((s) => pointAt(s)?.items[0]).filter(Boolean);
-  note.hidden = !altItems.length;
-  if (!altItems.length) return;
-  note.replaceChildren(
-    plan.use[0] === "two_hand" ? "A two-handed weapon scores best here. Other option: " : "One-hand + off-hand scores best here. Other option: ",
-    ...altItems.flatMap(([id, s], i) => [i ? " + " : "", itemLink(id, state.gear.items[id]), ` (${s})`]));
 }
 
 function renderCounts(rows) {
@@ -489,7 +478,7 @@ function renderRows(rows) {
     main.append(
       el("span", { class: "item" }, itemLink(iid, info),
         info.binding === "ON_ACQUIRE" ? null : el("span", { class: "badge", title: "Binds when equipped: you can buy or trade it" }, "BoE"),
-        reasons.length ? Object.assign(uncBadge(), { title: reasons.join("\n") }) : null),
+        reasons.length ? Object.assign(uncBadge(), { title: `Uncertain: ${reasons.join("\n")}` }) : null),
       scoreCell(score, info));
     const d = r.srcs[0] ? describeSource(r.srcs[0]) : null;
     main.append(el("span", { class: "src", title: d ? `${d.label}. ${d.text}${d.where ? ` ${d.where}.` : ""}` : "" }, d ? d.label : "Source unknown"));
@@ -528,12 +517,13 @@ function extrasOf(info) {
 
 // "You wear" cell: item + score (or ticked item in manual mode), "I have this" box, gain bar.
 function wornCell(r, iid) {
-  const w = r.worn, cell = el("span", { class: "worn" });
+  const w = r.worn, cell = el("span", { class: "worn" }), name = el("span", { class: "worn-name" });
   if (state.mode === "manual") {
-    cell.append(el("input", { type: "checkbox", class: "own-box", checked: ownedSet().has(iid), title: "I have this", "aria-label": `I have ${state.gear.items[iid].name || iid}`, onchange: (e) => toggleOwned(iid, e.target.checked) }));
+    name.append(el("input", { type: "checkbox", class: "own-box", checked: ownedSet().has(iid), title: "I have this", "aria-label": `I have ${state.gear.items[iid].name || iid}`, onchange: (e) => toggleOwned(iid, e.target.checked) }));
   }
-  if (!w.id) cell.append(el("span", { class: "worn-name muted" }, state.mode === "manual" ? "" : "Empty slot"));
-  else cell.append(el("span", { class: "worn-name" }, itemLink(w.id, w)), ...(w.score != null ? [el("span", { class: "score" }, String(w.score))] : []));
+  if (!w.id) name.append(el("span", { class: "muted" }, state.mode === "manual" ? "" : "Empty slot"));
+  else name.append(itemLink(w.id, w));
+  cell.append(name, el("span", { class: "score" }, w.id && w.score != null ? String(w.score) : ""));
   cell.append(r.gain === Infinity ? el("span", { class: "delta", title: "Nothing useful worn here" }, el("span", { class: "gain" }, fmtGain(r.gain)))
     : r.gain >= UP ? el("span", { class: "delta", title: `Upgrade ${fmtGain(r.gain)} over what you wear` }, el("span", { class: "bar", style: `width:${Math.max(4, Math.round(Math.min(r.gain, BAR_CAP) / BAR_CAP * 34))}px` }), el("span", { class: "gain" }, fmtGain(r.gain)))
     : el("span", { class: "delta" }, el("span", { class: "none" }, w.tag || "none")));
@@ -573,14 +563,16 @@ function groupEl(g, key) {
     const info = state.gear.items[id];
     return el("li", { title: `${d.text}${d.where ? ` ${d.where}.` : ""}` },
       el("span", { class: "slot" }, label),
-      el("span", { class: "g-it" }, itemLink(id, info), reasonsOf(info).length ? Object.assign(uncBadge(), { style: "margin-left:6px" }) : null),
+      el("span", { class: "g-it" }, itemLink(id, info), reasonsOf(info).length ? Object.assign(uncBadge(), { title: `Uncertain: ${reasonsOf(info).join("\n")}` }) : null),
       el("span", { class: "g-d" }, fmtGain(gain)),
       d.extra ? el("span", { class: "g-x muted" }, d.extra) : null);
   }));
   const n = g.items.length;
   const box = el("details", { class: "group", open: !ui.shut.has(key) },
-    el("summary", { class: "g-head" }, el("strong", {}, Object.assign(el("span", { class: "g-kind" }), { innerHTML: ICON_CHEV + g.kind }), g.kind ? g.label.replace(/^(Run |Buy from |Craft with |Kill |Quest: )/, "") : g.label, " ", pinBtn(g.src)),
-      el("span", { class: "g-gain", title: "Slots to upgrade here" }, `${n} upgrade${n > 1 ? "s" : ""}`)), ul);
+    el("summary", { class: "g-head" }, el("span", { class: "g-kind" }, g.kind),
+      el("span", { class: "g-gain", title: "Slots to upgrade here" }, `${n} upgrade${n > 1 ? "s" : ""}`),
+      el("strong", { class: "g-title" }, g.label.replace(/^(Run |Buy from |Craft with |Kill |Quest: )/, "")), pinBtn(g.src)), ul);
+  box.querySelector(".g-gain").insertAdjacentHTML("beforeend", ICON_CHEV);
   box.addEventListener("toggle", () => {
     if (box.open) ui.shut.delete(key); else ui.shut.add(key);
     store("shut-groups", [...ui.shut]);
