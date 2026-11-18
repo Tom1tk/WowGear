@@ -52,7 +52,9 @@ def test_class_limited_effect_is_ignored_for_other_classes(monkeypatch):
     monkeypatch.setitem(scorer.effects, "900001", {"name": "Invented Charm", "stats": {"ap": 20}, "classes": [11]})
     charm = {"class": 4, "subclass": 0, "inventory_type": "TRINKET", "stats": {"ap": 20}, "quality": 3}
     assert scorer.score(charm, "900001", {"ap": 1}, {}, "trinket", None, ROGUE) == 20  # item stat only
-    assert scorer.score(charm, "900001", {"ap": 1}, {}, "trinket", None, DRUID) == 40  # stat + effect
+    assert scorer.score(charm, "900001", {"ap": 1}, {}, "trinket", None, DRUID) == 20  # raw mode: effects not counted
+    assert scorer.score(charm, "900001", {"ap": 1}, {}, "trinket", None, ROGUE, bonus=True) == 20
+    assert scorer.score(charm, "900001", {"ap": 1}, {}, "trinket", None, DRUID, bonus=True) == 40  # stat + effect
 
 
 def test_unified_hit_and_crit_rating_aliases():

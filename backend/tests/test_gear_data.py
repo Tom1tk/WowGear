@@ -30,7 +30,7 @@ def test_items_respect_level_and_class(path):
     cls_id = str(data["class_id"])
     for slot, points in data["slots"].items():
         for point in points:
-            for iid, _score in point["items"]:
+            for iid, *_score in point["items"]:
                 it = scorer.items[iid]
                 assert scorer.min_level(it) <= point["level"], (slot, it["name"], point["level"])
                 usable = scorer.usable_from(it, cls_id)
@@ -44,7 +44,7 @@ def test_pre_raid_lists_have_no_raid_sources():
         for point in points:
             if point["tier"]:
                 continue
-            for iid, _ in point["items"]:
+            for iid, *_ in point["items"]:
                 srcs = data["items"][iid]["sources"]
                 assert srcs and not all(s.get("instance") in raids for s in srcs), data["items"][iid]["name"]
 

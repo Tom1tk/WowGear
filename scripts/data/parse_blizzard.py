@@ -82,6 +82,44 @@ def parse_effect(text: str):
     return None
 
 
+SET_EXTRA = [
+    (rf"^\+{N} (Strength|Agility|Stamina|Intellect|Spirit)\.?$", None),
+    (rf"^\+{N} Armor\.?$", ("bonus_armor",)),
+    (rf"^Improves your chance to get a critical strike with melee attacks by {N}%\.?$", ("crit",)),
+    (rf"^Increases healing done by up to {N} and damage done by up to {N} for all magical spells and effects\.?$",
+     ("heal", "sp_damage")),
+]
+SET_EXTRA = [(re.compile(p, re.I), k) for p, k in SET_EXTRA]
+PRIMARY = {"strength": "str", "agility": "agi", "stamina": "sta", "intellect": "int", "spirit": "spi"}
+
+
+def parse_set_bonus(text: str) -> dict | None:
+    """'(2) Set: +10 Stamina.' body -> {stat: value}, or None when it is not a plain stat bonus."""
+    parsed = parse_effect("Equip: " + text.strip())
+    if parsed:
+        return dict(parsed)
+    for rx, keys in SET_EXTRA:
+        m = rx.match(text.strip())
+        if m:
+            if keys is None:
+                return {PRIMARY[m.group(2).lower()]: float(m.group(1))}
+            return {k: float(v) for k, v in zip(keys, m.groups())}
+    return None
+
+
+def parse_set(raw: dict | None) -> dict | None:
+    """Blizzard preview_item.set -> {id, name, pieces: [item ids], bonuses: [{count, text, stats|None}]}."""
+    if not raw:
+        return None
+    bonuses = []
+    for e in raw.get("effects") or []:
+        text = re.sub(r"^\(\d+\) Set:\s*", "", e.get("display_string", "")).strip()
+        bonuses.append({"count": e["required_count"], "text": text, "stats": parse_set_bonus(text)})
+    return {"id": raw["item_set"]["id"], "name": raw["item_set"]["name"],
+            "pieces": sorted(i["item"]["id"] for i in raw.get("items") or []),
+            "bonuses": sorted(bonuses, key=lambda b: b["count"])}
+
+
 def normalize(raw: dict) -> dict:
     p = raw["preview_item"]
     stats: dict[str, float] = {}
@@ -98,7 +136,7 @@ def normalize(raw: dict) -> dict:
             unknown_stats.append(f'{stype} {s["value"]}')
     effects, unparsed = [], []
     for sp in p.get("spells", []):
-        desc = sp.get("description", "")
+        desc = sp.get("description") or ""
         parsed = parse_effect(desc)
         if parsed:
             for k, v in parsed:
@@ -142,7 +180,7 @@ def normalize(raw: dict) -> dict:
         "reputation": {"faction": rep["faction"]["name"], "faction_id": rep["faction"]["id"],
                        "level": rep["min_reputation_level"]} if rep else None,
         "skill": {"name": skill["profession"].get("name"), "level": skill.get("level")} if skill else None,
-        "set": (p.get("set") or {}).get("item_set", {}).get("name"),
+        "set": parse_set(p.get("set")),
         "unique": bool(p.get("unique_equipped") or p.get("limit_category")),
         "temporary": bool(p.get("expiration_time_left")),
     }

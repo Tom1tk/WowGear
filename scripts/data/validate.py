@@ -28,7 +28,7 @@ def main() -> int:
         cls = str(data["class_id"])
         for slot, points in data["slots"].items():
             for pt in points:
-                for iid, _ in pt["items"]:
+                for iid, *_ in pt["items"]:
                     scored += 1
                     ids.add(iid)
                     it = scorer.items.get(iid)

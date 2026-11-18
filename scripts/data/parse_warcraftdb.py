@@ -90,10 +90,11 @@ EQUIP = [
     (rf"^Decreases the magical resistances of your spell targets by {N}\.?$", ("spell_pen",)),
 ]
 _SCHOOL_RE = re.compile(rf"^Increases damage done by (\w+) spells and effects by up to {N}\.?$")
+_SCHOOL_RE2 = re.compile(rf"^Increases (\w+) damage done by up to {N}\.?$", re.I)  # "Increases fire damage done by up to 6."
 _RATING_RE = re.compile(rf"^Increases your ([a-z ]+?) by {N}\.?$")
 _WSKILL_RE = re.compile(rf"^Increased (Daggers|Swords|Maces|Axes|Bows|Guns|Crossbows|Two-handed Swords|"
                         rf"Two-handed Maces|Two-handed Axes|Staves|Polearms|Fist Weapons|Unarmed) \+{N}\.?$", re.I)
-EQUIP_RX = [(re.compile(p), keys) for p, keys in EQUIP]
+EQUIP_RX = [(re.compile(p, re.I), keys) for p, keys in EQUIP]  # re.I: "Restores 3 Mana per 5 sec"
 EFFECT_PREFIX = re.compile(r"^(Equip|Use|Chance on hit|Chance on melee attack|Chance on ranged hit)\b", re.I)
 IGNORED = [re.compile(p) for p in (
     r"^Durability \d+ / \d+$", r"^Sell Price", r"^Max Stack:", r"^\(\d+(?:\.\d+)? damage per second\)$",
@@ -136,7 +137,7 @@ def parse_equip(body: str, stats: dict) -> bool:
             for key, val in zip(keys, m.groups()):
                 add(stats, key, num(val))
             return True
-    m = _SCHOOL_RE.match(body)
+    m = _SCHOOL_RE.match(body) or _SCHOOL_RE2.match(body)
     if m and m.group(1).title() in SCHOOLS:
         add(stats, f"sp_{m.group(1).lower()}", num(m.group(2)))
         return True
@@ -171,7 +172,7 @@ def parse_tooltip(markup: str) -> dict:
     out = {"name": title.get("name"), "stats": {}, "effects": [], "unparsed_effects": [],
            "unknown_lines": [], "inventory_type": None, "type_name": None, "binding": None,
            "unique": False, "weapon": None, "classes": None, "races": None, "reputation": None,
-           "skill": None, "set": None, "item_level": None, "required_level": None}
+           "skill": None, "set": None, "item_level": None, "required_level": None, "random_enchant": False}
     stats = out["stats"]
     for ltype, raw, right in lines:
         text = raw.strip()
@@ -205,7 +206,9 @@ def parse_tooltip(markup: str) -> dict:
         if text in SLOTS:  # single-span slot line (Shirt, Finger, Trinket, Held In Off-hand ...)
             out["inventory_type"] = SLOTS[text]
             continue
-        if (m := re.match(r"^Item Level (\d+)$", text)):
+        if text == "<Random additional stats>":
+            out["random_enchant"] = True  # "of the Bear" style item; no Forever source gives the suffix tables
+        elif (m := re.match(r"^Item Level (\d+)$", text)):
             out["item_level"] = int(m.group(1))
         elif (m := re.match(r"^Binds (?:when|to) ?(picked up|equipped|used|account)", text)):
             out["binding"] = BINDING.get(m.group(1), "BOA" if m.group(1) == "account" else None)
@@ -331,7 +334,7 @@ def normalize(node: dict, tooltip: dict, sources: list[dict]) -> dict:
         "subclass_name": d.get("item_subclass"), "type_name": ttype,
         "stats": tt["stats"], "weapon": tt["weapon"], "binding": tt["binding"], "unique": tt["unique"],
         "classes": tt["classes"] or None, "races": tt["races"] or None,
-        "reputation": tt["reputation"], "skill": tt["skill"], "set": tt["set"],
+        "reputation": tt["reputation"], "skill": tt["skill"], "set": tt["set"], "random_enchant": tt["random_enchant"],
         "effects": tt["effects"], "unparsed_effects": tt["unparsed_effects"],
         "unknown_lines": tt["unknown_lines"], "notes": notes, "sources": sources,
     }

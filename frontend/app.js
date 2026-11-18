@@ -464,10 +464,10 @@ function scoreCell(score, info) {
 // Extra facts from the data: unscored stats, random-enchant note, set bonuses.
 function extrasOf(info) {
   const out = [];
-  if (info.unscored?.length) out.push(el("p", { class: "muted" }, `* Not counted in the score: ${info.unscored.join("; ")}.`));
+  if (info.unscored?.length) out.push(el("p", { class: "muted" }, `* Not counted in the score: ${info.unscored.join("; ").replace(/\.$/, "")}.`));
   if (info.random_enchant?.note) out.push(el("p", { class: "muted" }, info.random_enchant.note));
   const set = info.set;
-  if (set) out.push(el("div", { class: "setinfo" }, el("p", {}, `Set: ${set.name}${set.pieces ? ` (${set.pieces} pieces)` : ""}`),
+  if (set) out.push(el("div", { class: "setinfo" }, el("p", {}, `Set: ${set.name}${set.pieces ? ` (${set.pieces.length ?? set.pieces} pieces)` : ""}`),
     set.bonuses?.length ? el("ul", {}, set.bonuses.map((b) => el("li", {}, `(${b.count}) ${b.text}${b.scored ? " — counted in the set score" : ""}`))) : null));
   return out;
 }

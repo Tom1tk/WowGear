@@ -15,7 +15,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from _common import RAW, STAGING, write_json  # noqa: E402
+from _common import RAW, STAGING, lua_value, write_json  # noqa: E402
 
 
 def parse_gear_sources(text: str) -> dict[int, dict]:
@@ -30,10 +30,18 @@ def parse_gear_sources(text: str) -> dict[int, dict]:
     return out
 
 
+def parse_gear_sets(text: str) -> dict[int, dict]:
+    """GearSets.lua -> {set id: {name, kind, level, pieces: [item ids]}} (ids equal Blizzard item_set ids)."""
+    table, _ = lua_value(text, text.index("ns.gearSets=") + len("ns.gearSets="))
+    return {s[0]: {"name": s[1], "kind": s[2], "level": s[5], "pieces": s[6][0::3]} for s in table["sets"]}
+
+
 def main() -> None:
     items = parse_gear_sources((RAW / "foreverdb" / "GearSources.lua").read_text(encoding="utf-8"))
     write_json(STAGING / "foreverdb.json", items, compact=True)
-    print(f"{len(items)} items, {sum(i['classic_labelled'] for i in items.values())} with Classic-labelled sources")
+    sets = parse_gear_sets((RAW / "foreverdb" / "GearSets.lua").read_text(encoding="utf-8"))
+    write_json(STAGING / "foreverdb_sets.json", sets, compact=True)
+    print(f"{len(sets)} sets, {len(items)} items, {sum(i['classic_labelled'] for i in items.values())} with Classic-labelled sources")
 
 
 if __name__ == "__main__":

@@ -15,10 +15,13 @@ from __future__ import annotations
 
 import os
 import sys
+import re
 from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "backend"))
 from _common import FOREVER, REPORTS, STAGING, read_json, write_json  # noqa: E402
+from app.scoring import RATING_PER_PCT, scorer  # noqa: E402
 from forever_loot import parse_loot  # noqa: E402
 
 EQUIP = {"HEAD", "NECK", "SHOULDER", "CLOAK", "CHEST", "ROBE", "WRIST", "HAND", "WAIST", "LEGS", "FEET",
@@ -37,8 +40,16 @@ BLIZZ_STAT = {"SPELL_POWER": "sp", "SPELL_HEALING_DONE": "heal", "SPELL_DAMAGE_D
               "BONUS_STAT_FIRE_DAMAGE_DONE": "sp_fire", "BONUS_STAT_FROST_DAMAGE_DONE": "sp_frost",
               "BONUS_STAT_SHADOW_DAMAGE_DONE": "sp_shadow", "BONUS_STAT_ARCANE_DAMAGE_DONE": "sp_arcane",
               "BONUS_STAT_NATURE_DAMAGE_DONE": "sp_nature", "BONUS_STAT_HOLY_DAMAGE_DONE": "sp_holy"}
+# Blizzard stat types folded into stats the scorer knows: bonus armor adds to the Armor warcraftdb shows,
+# defense rating is plain Defense skill points ("+4 Defense").
+BLIZZ_FOLD = {"EXTRA_ARMOR": "armor", "DEFENSE_SKILL_RATING": "def"}
+UNSCORED_NAME = {"res_fire": "Fire Resistance", "res_nature": "Nature Resistance", "res_frost": "Frost Resistance",
+                 "res_shadow": "Shadow Resistance", "res_arcane": "Arcane Resistance",
+                 "sp_holy": "Holy spell damage", "hp5": "health per 5 sec", "spell_pen": "spell penetration",
+                 "spell_haste": "spell haste", "resilience": "Resilience", "armor_pen": "armor penetration"}
+EFFECT_MAX = 220
 FOLD = {"hit_rating": "hit", "crit_rating": "crit", "dodge_rating": "dodge", "parry_rating": "parry",
-        "block_rating": "block"}
+        "block_rating": "block", "bonus_armor": "armor"}  # Blizzard folds EXTRA_ARMOR into armor
 PRIO = ("blizzard", "warcraftdb", "foreverdb")
 LABEL = {"blizzard": "Blizzard", "warcraftdb": "warcraftdb", "foreverdb": "ForeverDB"}
 FIELDS = ("name", "required_level", "item_level", "inventory_type", "type", "stats", "weapon", "binding", "classes")
@@ -54,8 +65,44 @@ def canon_stats(s: dict) -> dict:
     out: dict = {}
     for k, v in (s or {}).items():
         if v:
-            out[FOLD.get(k, k)] = round(out.get(FOLD.get(k, k), 0) + float(v), 1)
+            # ratings compare as percent: warcraftdb shows "+0.5% crit" where Blizzard has 7 crit rating
+            out[FOLD.get(k, k)] = round(out.get(FOLD.get(k, k), 0) + float(v) / RATING_PER_PCT.get(k, 1), 1)
     return out
+
+
+def human_stat(line: str) -> str | None:
+    """Blizzard unknown_stats line -> readable text. 'BONUS_STAT_ATTACK_POWER_VS_BEAST, 9' -> '+9 Attack Power vs Beast'."""
+    m = re.match(r"^([A-Z][A-Z_]+),?\s+(-?\d+(?:\.\d+)?)$", line.strip())
+    if not m:
+        return line.strip() or None  # already display text ("+13 to All Resistances")
+    name = m.group(1).replace("BONUS_STAT_", "").replace("_", " ").title().replace(" Vs ", " vs ")
+    return f"+{float(m.group(2)):g} {name}"
+
+
+def unscored_lines(stats: dict, unknown_stats: list, unparsed_effects: list, random: bool = False,
+                   is_scored=scorer.is_scored) -> list[str]:
+    """Human-readable things on an item that no spec's weights use: stats without a weight, Blizzard stat
+    types nothing maps, effect text no parser turned into stats (Use:, procs), random-enchant stats."""
+    out = []
+    for k, v in sorted(stats.items()):
+        if v and not is_scored(k):
+            out.append(f"+{v:g} {UNSCORED_NAME.get(k, k.upper())}")
+    for line in unknown_stats:
+        name = line.split()[0]
+        if name in BLIZZ_STAT or name in BLIZZ_FOLD:
+            continue
+        text = human_stat(line)
+        if text and not ("Resistances" in text and any(k.startswith("res_") for k in stats)):
+            out.append(text)
+    for text in unparsed_effects:
+        out.append(text if len(text) <= EFFECT_MAX else text[:EFFECT_MAX - 1] + "\u2026")
+    if random:
+        out.append("Random enchant: extra stats vary and are not scored")
+    return list(dict.fromkeys(out))
+
+
+def norm_bonus(text: str) -> str:
+    return re.sub(r"\s+", " ", text.lower()).strip(" .")
 
 
 class Merger:
@@ -72,6 +119,17 @@ class Merger:
             for n in [v["name"], (v.get("ids") or {}).get("warcraftdb_zone_name")]:
                 if n:
                     self.zone_inst[n.lower()] = k
+        q = STAGING / "questie.json"
+        qd = read_json(q) if q.exists() else {"quests": {}, "npcs": {}}
+        self.quests, self.npc_zone = qd["quests"], qd["npcs"]
+        fs = STAGING / "foreverdb_sets.json"
+        self.f_sets = read_json(fs) if fs.exists() else {}
+        self.zone_names = {}  # area id -> name, learned from warcraftdb quest / vendor rows
+        for rec in self.w.values():
+            for src in rec.get("sources", []):
+                if src.get("zone_id") and src.get("zone"):
+                    self.zone_names.setdefault(str(src["zone_id"]), src["zone"])
+        self.sets: dict = {}
         self.field_conf = Counter()
         self.pair_conf = Counter()
         self.src_conf = Counter()
@@ -86,7 +144,9 @@ class Merger:
             stats = dict(rec["stats"])
             for line in rec.get("unknown_stats") or []:
                 name, _, num = line.partition(" ")
-                if name in BLIZZ_STAT and num.lstrip("-").replace(".", "").isdigit():
+                if name in BLIZZ_FOLD and num.isdigit():
+                    stats[BLIZZ_FOLD[name]] = stats.get(BLIZZ_FOLD[name], 0) + float(num)
+                elif name in BLIZZ_STAT and num.lstrip("-").replace(".", "").isdigit():
                     stats[BLIZZ_STAT[name]] = stats.get(BLIZZ_STAT[name], 0) + float(num)
             rec["stats"] = stats
             out["blizzard"] = rec
@@ -187,8 +247,52 @@ class Merger:
         item["stats"] = stats
         if item["required_level"] is None:
             item["required_level"] = (wc or {}).get("required_level") or 0
+        bz, wcr = recs.get("blizzard") or {}, wc or {}
+        texts = list(base.get("unparsed_effects") or [])
+        if wcr and bz:  # a line warcraftdb's parser turned into stats is scored, not "unscored"
+            texts = [t for t in texts if not (t in wcr.get("effects", []) and t not in wcr.get("unparsed_effects", []))]
+        random = bool(wcr.get("random_enchant"))
+        item["unscored"] = unscored_lines(stats, bz.get("unknown_stats") or [], texts, random)
+        if random:  # no Forever source (Blizzard, warcraftdb, ForeverDB, QuestieDB) lists the suffix stat tables
+            item["random_enchant"] = {"note": "Random enchant: stats vary, not scored"}
+        sid = self.register_set(bz.get("set"), wcr.get("set"))
+        if sid:
+            item["set"] = sid
         item.update(uncertain=uncertain, checks=checks, found_in=sorted(recs), conflict_values=conflicts)
         return {k: v for k, v in item.items() if v not in (None, [], {}) or k in ("uncertain", "checks")}
+
+    def register_set(self, bz_set: dict | None, wc_set: dict | None) -> str | None:
+        """Add the Blizzard set (cross-checked with ForeverDB piece lists and warcraftdb bonus text) to sets.json."""
+        if not bz_set:
+            return None
+        sid = str(bz_set["id"])
+        entry = self.sets.get(sid)
+        if entry is None:
+            bonuses = [{"count": b["count"], "text": b["text"], "stats": b["stats"],
+                        "scored": bool(b["stats"]) and any(scorer.is_scored(k) for k in b["stats"])}
+                       for b in bz_set["bonuses"]]
+            entry = self.sets[sid] = {"name": bz_set["name"], "pieces": bz_set["pieces"], "bonuses": bonuses,
+                                      "uncertain": []}
+            fe = self.f_sets.get(sid)
+            if fe and set(fe["pieces"]) != set(bz_set["pieces"]):
+                a, b = sorted(set(bz_set["pieces"]) - set(fe["pieces"]))[:3], sorted(set(fe["pieces"]) - set(bz_set["pieces"]))[:3]
+                entry["uncertain"].append(f"Set pieces differ for {bz_set['name']}: Blizzard lists items {a or 'none extra'}, "
+                                          f"ForeverDB lists items {b or 'none extra'}.")
+        if wc_set and any(b["text"] for b in wc_set.get("bonuses") or []) and not entry.get("_wc"):  # blank text = tooltip not read
+            entry["_wc"] = True
+            ours = {(b["count"], norm_bonus(b["text"])) for b in entry["bonuses"]}
+            theirs = {(b["pieces"], norm_bonus(b["text"])) for b in wc_set["bonuses"]}
+            if ours != theirs:
+                entry["uncertain"].append(
+                    f"Set bonuses differ for {entry['name']}: Blizzard " + "; ".join(f"({c}) {t}" for c, t in sorted(ours))
+                    + " / warcraftdb " + "; ".join(f"({c}) {t}" for c, t in sorted(theirs)))
+        return sid
+
+    def item_name(self, iid) -> str:
+        for rec in (self.b.get(str(iid)), self.w.get(str(iid)), self.f.get(str(iid))):
+            if rec and rec.get("name"):
+                return rec["name"]
+        return f"Item {iid}"
 
     # ---------- sources ----------
     def inst_of_boss(self, npc, name: str) -> tuple[str | None, str | None]:
@@ -226,7 +330,8 @@ class Merger:
                 add("warcraftdb", "vendor", s["id"], id=s["id"], name=s["name"], zone=s.get("zone"),
                     faction=s.get("faction"))
             elif t == "craft":
-                add("warcraftdb", "craft", s["id"], id=s["id"], name=s["name"])
+                add("warcraftdb", "craft", s["id"], id=s["id"], spell=s["name"],  # name = recipe spell, not the profession
+                    reagents=[[self.item_name(r["id"]), r.get("quantity", 1), r["id"]] for r in s.get("reagents") or []])
         fe = self.f.get(iid)
         d_inst = None
         for p in (fe or {}).get("sources", []):
@@ -283,7 +388,22 @@ class Merger:
                 self.src_conf[r["type"]] += 1
             if r.get("instance") is None:
                 r.pop("instance", None)
+            self.enrich(r)
         return out
+
+    def enrich(self, r: dict) -> None:
+        """Quest chain position (QuestieDB Forever) and zone names for sources that lack one."""
+        if r["type"] == "quest" and r.get("id") is not None:
+            q = self.quests.get(str(r["id"]))
+            if q:
+                if q.get("chain"):
+                    r["chain"] = q["chain"]
+                if not r.get("zone") and q.get("zone") and str(q["zone"]) in self.zone_names:
+                    r["zone"] = self.zone_names[str(q["zone"])]
+        elif r["type"] in ("drop", "vendor") and r.get("id") and not r.get("zone") and not r.get("instance"):
+            area = self.npc_zone.get(str(r["id"]))
+            if area and str(area) in self.zone_names:
+                r["zone"] = self.zone_names[str(area)]
 
     def disjoint_conflicts(self, out: list[dict]) -> None:
         """Both sources list this kind of source for the item but not one in common."""
@@ -325,6 +445,8 @@ class Merger:
                 dropped["ForeverDB only (no stats from Blizzard/warcraftdb yet)"] += 1
         write_json(FOREVER / "items.json", items, compact=True)
         write_json(FOREVER / "sources.json", sources, compact=True)
+        write_json(FOREVER / "sets.json", {k: {kk: vv for kk, vv in v.items() if kk != "_wc"}
+                                           for k, v in self.sets.items()}, compact=True)
         self.report(items, sources, dropped)
 
     def report(self, items, sources, dropped):

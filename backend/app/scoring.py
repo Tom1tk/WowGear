@@ -73,6 +73,22 @@ class Scorer:
     def items(self) -> dict:
         return _load("items.json")
 
+    @cached_property
+    def sets(self) -> dict:
+        """Item sets (id -> {name, pieces, bonuses:[{count, text, stats, scored}]}); empty before merge.py has run."""
+        return _load("sets.json") if (DATA / "sets.json").exists() else {}
+
+    @cached_property
+    def scored_keys(self) -> set:
+        """Stat keys at least one spec's weights use."""
+        return {k for p in self.weights["profiles"].values() for m in ("leveling", "endgame") for k in p[m]}
+
+    def is_scored(self, key: str) -> bool:
+        """False for stats no spec weighs (resistances, Holy damage ...): shown as 'unscored' on the page."""
+        if key.startswith("wskill_"):
+            return "wskill" in self.scored_keys
+        return key in self.scored_keys or STAT_ALIAS.get(key) in self.scored_keys
+
     # ---------- lookups ----------
     def class_id(self, slug_or_name: str) -> str | None:
         key = (slug_or_name or "").strip().lower()
@@ -143,15 +159,8 @@ class Scorer:
             req = min(60, item["item_level"] - 5)
         return req
 
-    # ---------- scoring ----------
-    def score(self, item: dict, iid: str, weights: dict, weapon_w: dict, slot: str,
-              race: dict | None = None, cls_id: str | None = None) -> float:
-        """Equivalence points of an item for one weight set."""
-        stats = dict(item.get("stats") or {})
-        eff = self.effects.get(str(iid)) or {}
-        if not eff.get("classes") or (cls_id and int(cls_id) in eff["classes"]):
-            for k, v in eff.get("stats", {}).items():
-                stats[k] = stats.get(k, 0) + v
+    @staticmethod
+    def stat_value(stats: dict, weights: dict) -> float:
         total = 0.0
         for key, value in stats.items():
             if key.startswith("wskill_"):
@@ -159,6 +168,54 @@ class Scorer:
             else:
                 pct = value / RATING_PER_PCT.get(key, 1)
                 total += pct * weights.get(key, weights.get(STAT_ALIAS.get(key, ""), 0))
+        return total
+
+    def effect_entry(self, iid: str, cls_id: str | None, spec: str | None) -> dict | None:
+        """effects.json entry for this class/spec: {stats, source, uncertain, note} or None.
+        An entry is {name, stats, classes?, specs?: [..], source, uncertain?} or {name, specs: {"druid.feral_cat":
+        {stats, source, uncertain?}}} when the value differs per spec."""
+        eff = self.effects.get(str(iid))
+        if not eff:
+            return None
+        if isinstance(eff.get("specs"), dict):
+            hit = eff["specs"].get(spec or "")
+            return {**hit, "note": hit.get("note") or eff.get("note")} if hit else None
+        if eff.get("classes") and not (cls_id and int(cls_id) in eff["classes"]):
+            return None
+        if eff.get("specs") and spec not in eff["specs"]:
+            return None
+        return eff if eff.get("stats") else None
+
+    def set_bonuses_for(self, item: dict, cls_id: str) -> list[dict]:
+        """The item's set bonuses with `scored` = counted for this class: the bonus is a plain stat bonus and at
+        least `count` set pieces are in our data and equippable by the class."""
+        s = self.sets.get(str(item.get("set") or ""))
+        if not s:
+            return []
+        avail = sum(1 for p in s["pieces"] if str(p) in self.items and self.usable_from(self.items[str(p)], cls_id) is not None)
+        return [{"count": b["count"], "text": b["text"], "stats": b.get("stats"),
+                 "scored": bool(b.get("stats")) and b.get("scored", True) and b["count"] <= avail}
+                for b in s["bonuses"]]
+
+    def set_extra(self, item: dict, weights: dict, cls_id: str) -> float:
+        """Ideal-set share: each needed piece carries bonus value / required_count."""
+        return sum(self.stat_value(b["stats"], weights) / b["count"]
+                   for b in self.set_bonuses_for(item, cls_id) if b["scored"])
+
+    # ---------- scoring ----------
+    def score(self, item: dict, iid: str, weights: dict, weapon_w: dict, slot: str,
+              race: dict | None = None, cls_id: str | None = None, bonus: bool = False,
+              spec: str | None = None) -> float:
+        """Equivalence points of an item for one weight set. bonus=True adds use effects (effects.json, a
+        cited value per spec) and the item's share of its set bonuses; the default is raw stats only."""
+        stats = dict(item.get("stats") or {})
+        if bonus:
+            eff = self.effect_entry(iid, cls_id, spec)
+            for k, v in (eff or {}).get("stats", {}).items():
+                stats[k] = stats.get(k, 0) + v
+        total = self.stat_value(stats, weights)
+        if bonus and cls_id:
+            total += self.set_extra(item, weights, cls_id)
         wpn = item.get("weapon")
         if wpn and slot in WEAPON_SLOTS:
             per = weapon_w.get("offhand_dps", 0) if slot == "off_hand" else weapon_w.get("dps", 0)
@@ -166,9 +223,9 @@ class Scorer:
             if slot != "off_hand" and weapon_w.get("slow_bonus"):
                 total += max(0.0, min(wpn["speed"], 3.8) - 2.5) * weapon_w["slow_bonus"]
             skill = self.wskill_names.get(str(item["subclass"]))
-            bonus = (race or {}).get("weapon_skill", {}).get(skill)
-            if bonus and weapon_w.get("dps"):
-                total += bonus * weights.get("wskill", 0)
+            skill_bonus = (race or {}).get("weapon_skill", {}).get(skill)
+            if skill_bonus and weapon_w.get("dps"):
+                total += skill_bonus * weights.get("wskill", 0)
         if wpn and slot == "ranged":
             if weapon_w.get("ranged_dps"):
                 total += wpn["dps"] * weapon_w["ranged_dps"]

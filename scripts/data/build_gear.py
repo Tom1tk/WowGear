@@ -122,8 +122,8 @@ class Builder:
             return None
         return best[1], best[2], best[3]
 
-    def score(self, item, iid, weights, weapon_w, slot, race, cls_id=None) -> float:
-        return self.scorer.score(item, iid, weights, weapon_w, slot, race, cls_id)
+    def score(self, item, iid, weights, weapon_w, slot, race, cls_id=None, bonus=False, spec=None) -> float:
+        return self.scorer.score(item, iid, weights, weapon_w, slot, race, cls_id, bonus, spec)
 
     # ---------- build ----------
     def build(self, cls_id: str, spec: str, faction: str) -> dict:
@@ -134,7 +134,7 @@ class Builder:
         races = [r for r in self.races.values() if r["faction"] == faction and int(cls_id) in r["classes"]]
         race = races[0] if len(races) == 1 else None  # racial skill only if the combo is unique
 
-        cands = []  # (slot, iid, avail_level, tier, source, score_leveling, score_endgame)
+        cands = []  # (slot, iid, avail_level, tier, source, raw leveling, raw endgame, set-mode leveling, set-mode endgame)
         for iid, item in self.items.items():
             if item.get("races") and not any(int(cls_id) in r["classes"] and int(rid) in item["races"]
                                              for rid, r in self.races.items() if r["faction"] == faction):
@@ -161,20 +161,26 @@ class Builder:
                 lw["wand_dps"] = 2.0
             s_lvl = self.score(item, iid, prof["leveling"], lw, slot, race, cls_id)
             s_end = self.score(item, iid, prof["endgame"], weapon_w, slot, race, cls_id)
-            if s_lvl <= 0 and s_end <= 0:
+            x_lvl = self.score(item, iid, prof["leveling"], lw, slot, race, cls_id, True, key)
+            x_end = self.score(item, iid, prof["endgame"], weapon_w, slot, race, cls_id, True, key)
+            if max(s_lvl, s_end, x_lvl, x_end) <= 0:
                 continue
-            cands.append((slot, iid, level, tier, src, s_lvl, s_end))
+            cands.append((slot, iid, level, tier, src, s_lvl, s_end, x_lvl, x_end))
 
         by_slot: dict[str, list] = {}
         for c in cands:
             by_slot.setdefault(c[0], []).append(c)
 
-        def top(slot, level, tier):
-            idx = 5 if level < 60 else 6
+        def top(slot, level, tier, idx):
             pool = [c for c in by_slot.get(slot, []) if c[2] <= level and c[3] <= tier and c[idx] > 0]
             pool.sort(key=lambda c: (-c[idx] * (0.7 + 0.3 * realism(c[4])), c[2]))
             n = PAIRED.get(slot, 1) + TOP_N - 1
-            return [(c[1], c[idx]) for c in pool[:n]]
+            return pool[:n]
+
+        def entry(c, idx):
+            """[id, raw score] or [id, raw score, set-mode score] when the set-mode score differs."""
+            raw, extra = c[idx], c[idx + 2]
+            return [c[1], raw] if raw == extra else [c[1], raw, extra]
 
         steps = [(lvl, 0) for lvl in LEVELS] + [(60, t) for t in self.tiers]
         slots = {}
@@ -183,10 +189,12 @@ class Builder:
             points = []
             last = None
             for lvl, tier in steps:
-                picks = top(slot, lvl, tier)
-                sig = [p[0] for p in picks]
+                idx = 5 if lvl < 60 else 6
+                picks = top(slot, lvl, tier, idx)  # raw-stat ranking first, then what only the set-mode ranking adds
+                picks += [c for c in top(slot, lvl, tier, idx + 2) if c not in picks]
+                sig = [c[1] for c in picks]
                 if sig != last:
-                    points.append({"level": lvl, "tier": tier, "items": [[i, s] for i, s in picks]})
+                    points.append({"level": lvl, "tier": tier, "items": [entry(c, idx) for c in picks]})
                     used.update(sig)
                     last = sig
             if any(p["items"] for p in points):
@@ -213,6 +221,22 @@ class Builder:
             }
             usable = [s for s in srcs if self.source_level(s, item, faction, cls_id)]
             unc = list(item.get("uncertain", []))
+            eff = self.scorer.effect_entry(iid, cls_id, key)
+            unscored = list(item.get("unscored", []))
+            if eff:  # a cited use-effect value is scored in set mode: no longer "unscored"
+                unscored = [u for u in unscored if not u.startswith("Use:")]
+                if eff.get("uncertain"):
+                    unc.append(eff["uncertain"])
+            if item.get("set"):
+                sdef = self.scorer.sets[str(item["set"])]
+                item_info[iid]["set"] = {"name": sdef["name"], "pieces": sdef["pieces"],
+                                         "bonuses": [{k: b[k] for k in ("count", "text", "scored")}
+                                                     for b in self.scorer.set_bonuses_for(item, cls_id)]}
+                unc += sdef.get("uncertain", [])
+            if unscored:
+                item_info[iid]["unscored"] = unscored
+            if item.get("random_enchant"):
+                item_info[iid]["random_enchant"] = item["random_enchant"]
             if any(self.instances.get(s.get("instance") or "", {}).get("tier", 0) for s in usable):
                 unc.append(DATAMINED)
             if usable and all(s.get("uncertain") for s in usable):
