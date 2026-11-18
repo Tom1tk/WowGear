@@ -1,4 +1,5 @@
 import { describeSource as describeIn, catsOf, CATS, EFFORT } from "./sources.js";
+import { setupLookup } from "./lookup.js";
 
 const $ = (id) => document.getElementById(id);
 const DATA = "/static/data";
@@ -13,7 +14,11 @@ const SLOT_LABEL = {
 };
 const GROUP = { two_hand: "weapons", main_hand: "weapons", off_hand: "weapons", ranged: "weapons", relic: "weapons", neck: "jewellery", ring: "jewellery", trinket: "jewellery" }; // rest: armour
 const grpOf = (slot) => GROUP[slot] || "armour";
-const BAR_CAP = 30; // gain bars cap at +30 so one outlier does not flatten the rest
+const BAR_CAP = 50; // gain bars cap at +50% so one outlier does not flatten the rest
+const UP = 0.05;    // smaller gains (percent) round to 0.0% and count as no upgrade
+// Item subclass (item class 2 = weapon) -> name for the weapon-type select.
+const WEAPON_TYPES = { 0: "Axe (1H)", 1: "Axe (2H)", 2: "Bow", 3: "Gun", 4: "Mace (1H)", 5: "Mace (2H)", 6: "Polearm", 7: "Sword (1H)", 8: "Sword (2H)", 10: "Staff", 13: "Fist weapon", 15: "Dagger", 16: "Thrown", 18: "Crossbow", 19: "Wand" };
+const fmtGain = (g) => (g === Infinity ? "new" : g >= 10 ? `+${Math.round(g)}%` : `+${g.toFixed(1)}%`);
 const ARMOR_ORDER = ["head", "neck", "shoulders", "back", "chest", "wrist", "hands", "waist", "legs", "feet"];
 const WOWHEAD = "https://www.wowhead.com/forever/item=";
 const ICON_CHEV = '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -31,6 +36,8 @@ const state = {
   gear: null,
   gearKey: "",
   scores: {},            // equipped item id -> score (lookup mode)
+  wtype: "",             // weapon-type filter: item subclass as string, "" = best of any type
+  scoreSet: false,       // score with set bonuses and effects (score_set) instead of raw stats
 };
 const gearCache = new Map();
 
@@ -114,6 +121,10 @@ function initSettings() {
   theme.value = recall("theme", "dark");
   document.documentElement.dataset.theme = theme.value;
   theme.onchange = () => { store("theme", theme.value); document.documentElement.dataset.theme = theme.value; };
+  const sm = $("score-pick");
+  state.scoreSet = recall("scoremode", "raw") === "set";
+  sm.value = state.scoreSet ? "set" : "raw";
+  sm.onchange = () => { state.scoreSet = sm.value === "set"; store("scoremode", sm.value); render(); };
   refreshScene();
 }
 
@@ -191,8 +202,21 @@ async function loadGear() {
 
 const pointKey = (p) => (p.tier > 0 ? 60 + p.tier : p.level);
 
+// Breakpoints of a slot with the weapon-type filter and score mode applied (cached per gear/filter/mode).
+// Items are [id, score, score_set?]; the score here is the one in use. Limit: only items on the pipeline's top lists can appear.
+let pointsCache = { key: "", slots: {} };
+const wtypeOk = (id) => { const it = state.gear.items[id]; return !state.wtype || it.class !== 2 || String(it.subclass) === state.wtype; };
+function slotPoints(slot) {
+  const key = `${state.gearKey}|${state.wtype}|${state.scoreSet}`;
+  if (pointsCache.key !== key) pointsCache = { key, slots: {} };
+  return (pointsCache.slots[slot] ??= (state.gear.slots[slot] || []).map((p) => {
+    const items = p.items.filter(([id]) => wtypeOk(id)).map(([id, sc, set]) => [id, state.scoreSet ? set ?? sc : sc]);
+    return { ...p, items: state.scoreSet ? items.sort((a, b) => b[1] - a[1]) : items };
+  }).filter((p) => p.items.length));
+}
+
 function pointAt(slot, level = state.level, tier = state.tier) {
-  const points = state.gear.slots[slot] || [];
+  const points = slotPoints(slot);
   const target = level >= 60 && tier > 0 ? 60 + tier : Math.min(level, 60);
   let found = null;
   for (const p of points) if (pointKey(p) <= target) found = p;
@@ -200,7 +224,7 @@ function pointAt(slot, level = state.level, tier = state.tier) {
 }
 
 function firstSeen(slot, iid) {
-  for (const p of state.gear.slots[slot] || []) {
+  for (const p of slotPoints(slot)) {
     if (p.items.some(([id]) => id === iid)) return p;
   }
   return null;
@@ -256,6 +280,18 @@ function toggleOwned(iid, on) {
 
 const describeSource = (src) => describeIn(state.meta, src);
 
+// What you wear in a slot, for comparing a looked-up item: null = nothing there ("new"); rings/trinkets use the weaker one.
+function wornScoreFor(slot) {
+  if (state.mode === "manual") {
+    const owned = ownedSet(), hit = slotPool(slot).find(([id]) => owned.has(id));
+    return hit ? { id: hit[0], name: state.gear.items[hit[0]].name, score: hit[1] } : null;
+  }
+  if (!state.char) return null;
+  const eqs = (slot === "ring" || slot === "trinket" ? [0, 1] : [0]).map((index) => equippedFor({ slot, index }));
+  if (eqs.some((e) => !e)) return null;
+  return eqs.map((e) => ({ id: String(e.item_id), name: e.name, score: scoreOf(e) })).sort((a, b) => (a.score ?? -1) - (b.score ?? -1))[0];
+}
+
 // Table view state (not part of the URL): source filter, sort, slot group, opened rows.
 const ui = { sort: "slot", src: new Set(), slot: "all", open: new Set() };
 const srcOk = (s) => !ui.src.size || catsOf(s).some((c) => ui.src.has(c));
@@ -276,23 +312,24 @@ const uncBadge = () => Object.assign(el("span", { class: "badge badge-unc" }), {
 function slotPool(slot) {
   const target = state.level >= 60 && state.tier > 0 ? 60 + state.tier : Math.min(state.level, 60);
   const best = new Map();
-  for (const p of state.gear.slots[slot] || []) if (pointKey(p) <= target) for (const [id, sc] of p.items) best.set(id, sc);
+  for (const p of slotPoints(slot)) if (pointKey(p) <= target) for (const [id, sc] of p.items) best.set(id, sc);
   return [...best].sort((a, b) => b[1] - a[1]);
 }
 
 // What the player has for this row, and the gain from the best pick. Manual mode: ticked items.
 function wornFor(r, pick) {
   const [pid, best] = pick;
-  const gainOver = (score) => Math.max(0, Math.round((best - score) * 10) / 10);
+  // percent over the worn item; Infinity ("new") when its score is 0
+  const gainOver = (score) => { if (!(score > 0)) return Infinity; const g = (best - score) / score * 100; return g >= UP ? g : 0; };
   const named = (id) => ({ id, name: state.gear.items[id]?.name, quality: state.gear.items[id]?.quality });
   if (state.mode === "manual") {
     const owned = ownedSet();
     if (owned.has(pid)) return { ...named(pid), score: best, gain: 0, tag: "Have it" };
     const alt = r.cands.find(([id]) => owned.has(id));
-    return alt ? { ...named(alt[0]), score: alt[1], gain: gainOver(alt[1]) } : { gain: best };
+    return alt ? { ...named(alt[0]), score: alt[1], gain: gainOver(alt[1]) } : { gain: Infinity };
   }
   const eq = equippedFor(r);
-  if (!eq) return { gain: best };
+  if (!eq) return { gain: Infinity };
   const w = { id: String(eq.item_id), name: eq.name, quality: QUALITY_BY_TYPE[eq.quality], score: scoreOf(eq) };
   if (w.id === pid) return { ...w, gain: 0, tag: "Best" };
   if (r.cands.some(([id]) => id === w.id)) return { ...w, gain: 0, tag: "On list" };
@@ -322,7 +359,7 @@ function buildRows() {
     }
     return row;
   });
-  const gainRank = (r) => (!r.pick ? 3 : r.gain > 0 ? 0 : r.worn.unknown ? 1 : 2); // gains, can't score, no gain, no pick
+  const gainRank = (r) => (!r.pick ? 3 : r.gain >= UP ? 0 : r.worn.unknown ? 1 : 2); // gains, can't score, no gain, no pick
   const cmp = {
     slot: (a, b) => a.order - b.order,
     gain: (a, b) => gainRank(a) - gainRank(b) || b.gain - a.gain,
@@ -354,6 +391,7 @@ function render() {
   renderRows(rows);
   renderTodo(rows);
   renderUpcoming();
+  itemLookup.refresh();
   renderCounts(rows);
   updateReportLink(rows);
   updateUrl();
@@ -400,7 +438,7 @@ function renderRows(rows) {
         info.binding === "ON_ACQUIRE" ? el("span", { class: "badge badge-bop", title: "Binds when picked up" }, "BoP") : el("span", { class: "badge", title: "Binds when equipped" }, "BoE"),
         info.special ? el("span", { class: "badge badge-fx", title: info.special }, "special") : null,
         reasons.length ? Object.assign(uncBadge(), { title: reasons.join("\n") }) : null),
-      el("span", { class: "score", title: "Score for your spec (compare within a slot)" }, String(score)));
+      scoreCell(score, info));
     const d = r.srcs[0] ? describeSource(r.srcs[0]) : null;
     main.append(el("span", { class: "src", title: d ? `${d.label}. ${d.text}` : "" }, d ? d.label : "Source unknown"));
     main.append(wornCell(r, iid));
@@ -418,6 +456,22 @@ function renderRows(rows) {
   }
 }
 
+function scoreCell(score, info) {
+  const un = info.unscored?.length;
+  return el("span", { class: "score", title: un ? `Score for your spec. Not counted: ${info.unscored.join("; ")}` : "Score for your spec (compare within a slot)" }, String(score), un ? "*" : null);
+}
+
+// Extra facts from the data: unscored stats, random-enchant note, set bonuses.
+function extrasOf(info) {
+  const out = [];
+  if (info.unscored?.length) out.push(el("p", { class: "muted" }, `* Not counted in the score: ${info.unscored.join("; ")}.`));
+  if (info.random_enchant?.note) out.push(el("p", { class: "muted" }, info.random_enchant.note));
+  const set = info.set;
+  if (set) out.push(el("div", { class: "setinfo" }, el("p", {}, `Set: ${set.name}${set.pieces ? ` (${set.pieces} pieces)` : ""}`),
+    set.bonuses?.length ? el("ul", {}, set.bonuses.map((b) => el("li", {}, `(${b.count}) ${b.text}${b.scored ? " — counted in the set score" : ""}`))) : null));
+  return out;
+}
+
 // "You wear" cell: item + score (or ticked item in manual mode), "I have this" box, gain bar.
 function wornCell(r, iid) {
   const w = r.worn, cell = el("span", { class: "worn" });
@@ -426,8 +480,8 @@ function wornCell(r, iid) {
   }
   if (!w.id) cell.append(el("span", { class: "worn-name muted" }, state.mode === "manual" ? "Not ticked" : "Empty slot"));
   else cell.append(el("span", { class: "worn-name" }, itemLink(w.id, w)), w.score != null ? el("span", { class: "score" }, String(w.score)) : null);
-  cell.append(r.gain > 0
-    ? el("span", { class: "delta", title: `Upgrade +${r.gain}` }, el("span", { class: "bar", style: `width:${Math.max(4, Math.round(Math.min(r.gain, BAR_CAP) / BAR_CAP * 34))}px` }), el("span", { class: "gain" }, `+${r.gain}`))
+  cell.append(r.gain >= UP
+    ? el("span", { class: "delta", title: r.gain === Infinity ? "Nothing useful worn here" : `Upgrade ${fmtGain(r.gain)} over what you wear` }, el("span", { class: "bar", style: `width:${Math.max(4, Math.round(Math.min(r.gain, BAR_CAP) / BAR_CAP * 34))}px` }), el("span", { class: "gain" }, fmtGain(r.gain)))
     : el("span", { class: "delta" }, el("span", { class: "none" }, w.tag || "none")));
   return cell;
 }
@@ -435,6 +489,7 @@ function wornCell(r, iid) {
 function buildDetail(r, info, iid, reasons) {
   const srcs = r.srcs, d = el("div", { class: "detail" });
   if (reasons.length) d.append(el("ul", { class: "reasons" }, reasons.map((x) => el("li", {}, x))));
+  d.append(...extrasOf(info));
   if (srcs[0]) { const s = describeSource(srcs[0]); d.append(el("p", {}, `${s.label}. ${s.text} `, el("a", { class: "ext", href: `${WARCRAFTDB}${iid}`, target: "_blank", rel: "noopener", title: "Open this item on forever.warcraftdb.com" }, "warcraftdb"))); }
   if (srcs.length > 1) d.append(el("h3", {}, `${srcs.length - 1} more source${srcs.length > 2 ? "s" : ""}`), el("ul", {}, srcs.slice(1).map((s) => { const x = describeSource(s); return el("li", {}, `${x.label}. ${x.text}`); })));
   const checks = Object.values(info.checks || {});
@@ -442,7 +497,7 @@ function buildDetail(r, info, iid, reasons) {
   if (r.worn.unknown) d.append(el("p", { class: "muted" }, "Random-stat items (e.g. “… of the Monkey”) and some special items have no fixed score. Compare the stats yourself."));
   if (r.alts.length) d.append(el("h3", {}, `${r.alts.length} alternative${r.alts.length > 1 ? "s" : ""}`), el("ul", {}, r.alts.map(([aid, as]) => {
     const ai = state.gear.items[aid], s = ai.sources?.[0] ? describeSource(ai.sources[0]) : null;
-    return el("li", {}, itemLink(aid, ai), el("span", { class: "num muted" }, ` ${as}`), s ? el("span", { class: "muted" }, ` — ${s.label}`) : null,
+    return el("li", {}, itemLink(aid, ai), el("span", { class: "num muted" }, ` ${as}${ai.unscored?.length ? "*" : ""}`), s ? el("span", { class: "muted" }, ` — ${s.label}`) : null,
       reasonsOf(ai).length ? el("span", { class: "muted" }, " (Uncertain)") : null,
       state.mode === "manual" ? el("label", { class: "own own-small" }, el("input", { type: "checkbox", checked: ownedSet().has(aid), onchange: (e) => toggleOwned(aid, e.target.checked) }), " have") : null);
   })));
@@ -455,13 +510,16 @@ function renderTodo(rows) {
     : `For the gear at level ${viewing}${viewing > charLvl ? " (plan ahead)" : ""}.`;
   const groups = new Map();
   for (const r of rows) {
-    if (!r.pick || r.gain <= 0 || !r.srcs[0]) continue;
+    if (!r.pick || r.gain < UP || !r.srcs[0]) continue;
     const d = describeSource(r.srcs[0]);
-    const g = groups.get(d.key) || { label: d.label, gain: 0, items: [] };
-    g.gain += r.gain; g.items.push({ r, d });
+    const g = groups.get(d.key) || { label: d.label, items: [] };
+    g.items.push({ r, d });
     groups.set(d.key, g);
   }
-  const sorted = [...groups.values()].sort((a, b) => b.gain - a.gain).slice(0, 8);
+  // groups by their biggest gain (then most upgrades); items inside by gain. Header shows the upgrade count, not a sum of percents.
+  const top = (g) => g.items[0].r.gain;
+  for (const g of groups.values()) g.items.sort((a, b) => b.r.gain - a.r.gain);
+  const sorted = [...groups.values()].sort((a, b) => (top(a) === top(b) ? b.items.length - a.items.length : top(b) - top(a))).slice(0, 8);
   const box = $("todo-list");
   box.replaceChildren();
   for (const g of sorted) {
@@ -470,9 +528,10 @@ function renderTodo(rows) {
       return el("li", { title: d.text },
         el("span", { class: "slot" }, r.label),
         el("span", { class: "g-it" }, itemLink(r.pick[0], info), reasonsOf(info).length ? Object.assign(uncBadge(), { style: "margin-left:6px" }) : null),
-        el("span", { class: "g-d" }, `+${r.gain}`));
+        el("span", { class: "g-d" }, fmtGain(r.gain)),
+        d.extra ? el("span", { class: "g-x muted" }, d.extra) : null);
     }));
-    box.append(el("div", { class: "group" }, el("div", { class: "g-head" }, el("strong", {}, g.label), el("span", { class: "g-gain", title: "Total score gain" }, `+${Math.round(g.gain)}`)), ul));
+    box.append(el("div", { class: "group" }, el("div", { class: "g-head" }, el("strong", {}, g.label), el("span", { class: "g-gain", title: "Slots to upgrade here" }, `${g.items.length} upgrade${g.items.length > 1 ? "s" : ""}`)), ul));
   }
   if (!sorted.length) box.append(el("p", { class: "muted" }, state.mode === "manual" ? "Tick the items you have. Then this list shows where to go for the rest." : "Nothing to do at this level: your gear matches the list. Try the next levels on the slider."));
 }
@@ -482,7 +541,8 @@ function renderUpcoming() {
   list.replaceChildren();
   const events = [];
   const start = state.level;
-  for (const [slot, points] of Object.entries(state.gear.slots)) {
+  for (const slot of Object.keys(state.gear.slots)) {
+    const points = slotPoints(slot);
     let prev = pointAt(slot, start, start >= 60 ? state.tier : 0)?.items[0]?.[0];
     for (const p of points) {
       if (pointKey(p) <= (start >= 60 && state.tier ? 60 + state.tier : start)) continue;
@@ -506,6 +566,12 @@ function jumpTo(p) {
 }
 
 
+// Weapon types the class can use, from the weapons in the loaded gear JSON.
+function weaponTypes() {
+  const subs = new Set(Object.values(state.gear.items).filter((it) => it.class === 2).map((it) => String(it.subclass)));
+  return [...subs].map((k) => [k, WEAPON_TYPES[k] || `Weapon type ${k}`]).sort((a, b) => a[1].localeCompare(b[1]));
+}
+
 function renderCharBar() {
   const cls = currentClass();
   const specSel = el("select", { id: "spec-select", "aria-label": "Spec" });
@@ -516,6 +582,13 @@ function renderCharBar() {
     await refreshAll();
   });
   const kv = [el("dt", {}, "Spec"), el("dd", {}, specSel)];
+  const types = weaponTypes();
+  if (types.length > 1) {
+    const wSel = el("select", { id: "weapon-select", "aria-label": "Weapon type", title: "Only show this weapon type in weapon slots, What to do next, Coming up and Item lookup" },
+      el("option", { value: "" }, "Best (any)"), types.map(([k, name]) => el("option", { value: k, selected: k === state.wtype }, name)));
+    wSel.addEventListener("change", () => { state.wtype = wSel.value; store("weapon", state.wtype); render(); });
+    kv.push(el("dt", {}, "Weapon"), el("dd", {}, wSel));
+  }
   let name, sub, faction, note;
   if (state.mode === "lookup") {
     const c = state.char.character;
@@ -584,6 +657,7 @@ function updateUrl() {
     p.set("race", state.manual.raceId); p.set("class", state.manual.classId); p.set("lvl", state.manual.level);
   }
   p.set("spec", state.spec); p.set("level", state.level);
+  if (state.wtype) p.set("weapon", state.wtype);
   if (state.level >= 60 && state.tier) p.set("tier", state.tier);
   history.replaceState(null, "", `?${p}`);
 }
@@ -610,6 +684,7 @@ async function refreshAll() {
     return false;
   }
   if (state.mode === "lookup") await rescoreEquipped();
+  if (!weaponTypes().some(([k]) => k === state.wtype)) state.wtype = ""; // not usable by this class/spec
   renderCharBar();
   for (const id of ["char-bar", "hr-char", "lvl-disc", "slot-filters", "results"]) $(id).hidden = false;
   hideStatus();
@@ -743,6 +818,8 @@ function setupControls() {
   $("sort").addEventListener("change", (e) => { ui.sort = e.target.value; render(); });
 }
 
+const itemLookup = setupLookup({ state, $, el, itemLink, slotPoints, pointAt, SLOT_LABEL, describeSource, reasonsOf, uncBadge, extrasOf, wornScoreFor, tierShort, fmtGain, refreshTooltips });
+
 // ---------------------------------------------------------------- init
 async function init() {
   initSettings();
@@ -773,6 +850,7 @@ async function init() {
   });
 
   const params = new URLSearchParams(location.search);
+  state.wtype = params.get("weapon") ?? recall("weapon", "");
   const savedManual = recall("manual");
   fillManualForm(params.get("class") ? {
     raceId: Number(params.get("race")), classId: Number(params.get("class")),

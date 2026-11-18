@@ -7,7 +7,7 @@ export function formatMoney(copper) {
   const c = Number(copper), g = Math.floor(c / 10000), s = Math.floor(c / 100) % 100;
   return g ? `${g}g ${s}s` : `${s}s ${c % 100}c`;
 }
-export function describeSource(meta, src) {
+function describeBase(meta, src) {
   const instanceName = (key) => meta.instances[key]?.name ?? key;
   const instanceLevels = (key) => {
     const inst = meta.instances[key];
@@ -41,7 +41,7 @@ export function describeSource(meta, src) {
       const standing = STANDINGS[Number(src.reputation?.standing)];
       if (src.reputation) return { key: `rep:${src.name}`, label: `Buy from ${src.name} quartermaster`, text: `Needs ${standing || "some"} reputation with ${src.name}.` };
       const who = src.name || "a vendor";
-      const price = src.copper ? ` Costs about ${formatMoney(src.copper)}.` : "";
+      const price = Number(src.copper) > 0 ? ` Costs about ${formatMoney(src.copper)}.` : "";
       return { key: src.name ? `vendor:${src.id}` : "vendor", label: `Buy from ${who}${src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${who}${src.title ? ` <${src.title}>` : ""}.${price}` };
     }
     case "craft": {
@@ -59,6 +59,16 @@ export function describeSource(meta, src) {
   }
 }
 
+// describeBase plus the optional P9 fields: quest chain, crafting reagents, zone. `extra` is just those bits.
+export function describeSource(meta, src) {
+  const d = describeBase(meta, src), bits = [];
+  if (src.chain) bits.push(`Quest ${src.chain.pos} of ${src.chain.len} — starts with ${src.chain.first_name}${src.chain.first_level != null ? ` (level ${src.chain.first_level})` : ""}.`);
+  if (src.reagents?.length) bits.push(`Needs ${src.reagents.map(([n, c]) => `${c}× ${n}`).join(", ")}.`);
+  if (src.zone && !`${d.label} ${d.text}`.includes(src.zone)) bits.push(`Zone: ${src.zone}.`);
+  if (!bits.length) return d;
+  const extra = bits.join(" ");
+  return { ...d, text: `${d.text}${/[.!?]$/.test(d.text) ? "" : "."} ${extra}`, extra };
+}
 
 export const CATS = { vendor: "Vendor / AH", ddrop: "Dungeon drops", wdrop: "World drops", craft: "Crafted", wq: "World quests", dq: "Dungeon quests" };
 export const EFFORT = { vendor: 1, craft: 2, wq: 3, wdrop: 4, dq: 5, ddrop: 6 };

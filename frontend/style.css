@@ -313,3 +313,19 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .own-box { flex: none; accent-color: var(--gold); margin: 0; }
 .own-small { font-size: 12px; color: var(--muted); }
 .badge-fx { color: var(--accent); }
+
+/* percent gain extras, item lookup */
+.g-list .g-x { grid-column: 2 / -1; font-size: 12px; line-height: 1.35; white-space: normal; }
+.setinfo p { margin: 2px 0; font-weight: 600; }
+#lk-in { width: 100%; box-sizing: border-box; height: 32px; font-size: 14px; }
+#lk-list { list-style: none; margin: 4px 0 0; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--card-2); }
+#lk-list li { padding: 5px 8px; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; }
+#lk-list li:hover, #lk-list li[aria-selected="true"] { background: color-mix(in oklab, var(--gold) 14%, transparent); }
+#lk-list li.none { cursor: default; color: var(--muted); }
+#lk-out { font-size: 13px; }
+#lk-out:not(:empty) { margin-top: 8px; }
+#lk-out h3 { margin: 8px 0 2px; font: 600 12px "Outfit", sans-serif; color: var(--muted); }
+#lk-out p, #lk-out ul { margin: 2px 0; }
+#lk-out ul { padding-left: 18px; }
+.lk-name { font-size: 14px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+@media (max-width: 900px) { #lk-in { font-size: 16px; height: 38px; } }

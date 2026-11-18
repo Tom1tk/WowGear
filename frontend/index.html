@@ -74,6 +74,7 @@
     <button type="button" class="tbtn" id="set-btn" aria-expanded="false" aria-controls="set-drop"><span class="l"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.5v2m0 9v2M1.5 8h2m9 0h2M3.4 3.4l1.4 1.4m6.4 6.4 1.4 1.4M3.4 12.6l1.4-1.4m6.4-6.4 1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Settings</span><svg class="ico chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="drop form" id="set-drop" hidden>
       <div class="field"><label for="bg-pick">Background</label><select id="bg-pick"></select></div>
+      <div class="field"><label for="score-pick">Score with</label><select id="score-pick"><option value="raw">Raw stats</option><option value="set">Set bonuses and effects</option></select></div>
       <div class="field"><label for="theme-pick">Colours</label><select id="theme-pick"><option value="dark">Dark</option><option value="light">Light</option><option value="auto">Match my system</option></select></div>
     </div>
   </div>
@@ -108,6 +109,12 @@
       <div class="sec-head"><h2 id="todo-t">What to do next</h2><p id="todo-sub">Grouped by where to go, biggest gains first.</p></div>
       <div id="todo-list"></div>
     </section>
+    <section class="panel" id="lookup" aria-labelledby="lk-t">
+      <div class="sec-head"><h2 id="lk-t">Item lookup</h2><p>Where an item is best for this spec.</p></div>
+      <input id="lk-in" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lk-list" aria-label="Search for an item by name" placeholder="Search an item by name" autocomplete="off" spellcheck="false">
+      <ul id="lk-list" role="listbox" aria-label="Matching items" hidden></ul>
+      <div id="lk-out" aria-live="polite"></div>
+    </section>
     <section class="panel" aria-labelledby="up-t">
       <div class="sec-head"><h2 id="up-t">Coming up</h2><p>Levels where a better item appears.</p></div>
       <ol class="up-list" id="upcoming-list"></ol>
@@ -132,7 +139,7 @@
               <dt>Score</dt><dd>How good an item is for your spec, from stat weights. Higher is better. Compare only within one slot.</dd>
             </dl>
           </details>
-<p class="legend" id="legend"><span class="badge badge-unc"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Uncertain</span> our data sources disagree; open the row to see why. “1 source” (in an opened row) means only one database has the item. The gold bar is the score gained over what you wear.</p>
+<p class="legend" id="legend"><span class="badge badge-unc"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Uncertain</span> our data sources disagree; open the row to see why. “1 source” (in an opened row) means only one database has the item. The gold bar is the percent score gained over what you wear; “new” means nothing useful is worn there. A * after a score means some stats on the item are not counted.</p>
 <p class="credits">Data: Blizzard Game Data API (Forever), <a href="https://forever.warcraftdb.com/" target="_blank" rel="noopener">warcraftdb</a>.
   Data from <a href="https://foreverdb.net/" target="_blank" rel="noopener">ForeverDB.net</a>.
   Item tooltips by <a href="https://www.wowhead.com/forever" target="_blank" rel="noopener">Wowhead</a>.
