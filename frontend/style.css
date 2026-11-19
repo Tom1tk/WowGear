@@ -118,7 +118,7 @@
 }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
+html { scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
 body { margin: 0; font: 400 var(--fs-base)/1.4 "Outfit", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: var(--text); background: var(--bg); min-height: 100vh; }
 ::selection { background: color-mix(in oklab, var(--gold) 45%, #000); color: #fff; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -135,7 +135,7 @@ p, dd, li { text-wrap: pretty; }
 
 /* ---------- sidebar ---------- */
 .app { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
-.side { position: sticky; top: 0; height: 100vh; overflow: auto; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(8px); border-right: 1px solid var(--line); padding: var(--s-4) 14px; display: flex; flex-direction: column; gap: var(--s-2); scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.side { background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(8px); border-right: 1px solid var(--line); padding: var(--s-4) 14px; display: flex; flex-direction: column; gap: var(--s-2); }
 .logo { font: 800 19px "Cinzel", serif; color: var(--gold-2); margin: 0; display: flex; align-items: center; gap: .45em; white-space: nowrap; }
 .logo svg { flex: none; width: .9em; height: .9em; color: var(--gold); }
 .logo span { color: var(--accent); }
@@ -265,7 +265,7 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 .item-link.iconsmall, .iconsmall { line-height: 18px; }
 
 /* rail */
-.rail { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.rail { display: flex; flex-direction: column; gap: 12px; }
 .group { padding: 0; }
 .group + .group { margin-top: var(--s-4); }
 .g-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; cursor: pointer; list-style: none; }
@@ -308,7 +308,7 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
   .side.open { display: flex; }
   .work { grid-template-columns: minmax(0, 1fr); padding: 10px 12px; gap: 14px; }
   .foot { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 24px; } .glossary { order: 1; }
-  .rail { position: static; max-height: none; overflow: visible; order: -1; }
+  .rail { order: -1; }
   .cols { display: none; }
   .row-main { grid-template-columns: 70px minmax(0, 1fr) 40px 22px; grid-template-areas: "slot item score chev" ". src src ." ". worn worn ."; gap: 2px 8px; padding: 6px; }
   .row-main > .slot { grid-area: slot; } .row-main > .item { grid-area: item; } .row-main > .score { grid-area: score; }
