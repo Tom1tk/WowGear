@@ -394,12 +394,16 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 #results[data-state="intro"] #lk-in { opacity: .6; cursor: not-allowed; }
 #results[data-state="loading"] .toolbar { opacity: .45; pointer-events: none; }
 
-.sk { display: block; height: 10px; border-radius: 99px; background: color-mix(in oklab, var(--text) 9%, transparent); }
+.sk { display: block; height: 10px; border-radius: 99px;
+  background: linear-gradient(90deg, transparent 30%, color-mix(in oklab, var(--gold-2) 22%, transparent) 50%, transparent 70%) 0 0 / 300% 100% no-repeat,
+    color-mix(in oklab, var(--text) 10%, transparent);
+  animation: sk-shimmer 1.5s cubic-bezier(.45, 0, .55, 1) infinite; animation-delay: calc(var(--i, 0) * 70ms); }
+@keyframes sk-shimmer { from { background-position: 100% 0, 0 0; } to { background-position: 0 0, 0 0; } }
 .sk-row .row-main { cursor: default; }
 .sk-row:hover .row-main { background: none; }
 .sk-group { display: grid; gap: 9px; padding: 12px 0; border-bottom: 1px solid color-mix(in oklab, var(--line) 60%, transparent); }
 .sk-group .sk:nth-child(2) { height: 13px; }
 .up-list li .sk:first-child { flex: none; width: 52px !important; height: 18px; border-radius: var(--r-sm); }
-.sk-row, .sk-group, .up-list li:has(.sk) { animation: sk-pulse 1.6s cubic-bezier(.4, 0, .6, 1) infinite; animation-delay: calc(var(--i, 0) * 80ms); }
-@keyframes sk-pulse { 50% { opacity: .45; } }
-@media (prefers-reduced-motion: reduce) { .sk-row, .sk-group, .up-list li:has(.sk) { animation: none; } }
+@keyframes sk-pulse { 50% { opacity: .4; } }
+/* Reduced motion: no sweep, but a slow fade so loading still reads as loading. */
+@media (prefers-reduced-motion: reduce) { .sk { animation: sk-pulse 2.4s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 70ms); } }
