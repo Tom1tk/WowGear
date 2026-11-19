@@ -48,6 +48,8 @@ def realism(src: dict) -> float:
     chance = src.get("chance")
     if src["type"] == "drop" and chance is not None:
         base = 0.9 if chance >= 10 else 0.75 if chance >= 3 else 0.55
+    elif src["type"] == "drop" and not src.get("instance"):  # open-world drop, rate unknown: below a known rare rate
+        base = 0.5
     if src["type"] == "craft":  # the recipe is the hard part
         base = RECIPE_REALISM.get((src.get("recipe") or {}).get("kind"), base)
     return base
@@ -234,7 +236,7 @@ class Builder:
                            or ("; ".join(item["unparsed_effects"]) if item.get("unparsed_effects") else None),
                 "unique": item.get("unique", False),
                 "sources": sorted((s for s in srcs if self.source_level(s, item, faction, cls_id)),
-                                  key=lambda s: -realism(s))[:4],
+                                  key=lambda s: (-realism(s), not s.get("loc"), -(s.get("chance") or 0)))[:4],
                 "checks": item.get("checks", {}),
             }
             usable = [s for s in srcs if self.source_level(s, item, faction, cls_id)]

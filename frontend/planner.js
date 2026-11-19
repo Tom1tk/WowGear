@@ -154,19 +154,34 @@ export function setupPlanner(ctx) {
       const r = byLabel.get(label), info = state.gear.items[id], st = status(r, id);
       if (st.done) { done++; continue; }
       const srcs = info.sources || [];
-      const src = srcs.reduce((best, s) => ((keyCount.get(ctx.describeSource(s).key) || 0) > (keyCount.get(ctx.describeSource(best).key) || 0) ? s : best), srcs[0]);
-      const d = src ? ctx.describeSource(src) : { key: "unknown", label: "Source unknown", text: "" };
+      let src = srcs.reduce((best, s) => ((keyCount.get(ctx.describeSource(s).key) || 0) > (keyCount.get(ctx.describeSource(best).key) || 0) ? s : best), srcs[0]);
+      const farm = farmOf(srcs);
+      const d = farm?.d ?? (src ? ctx.describeSource(src) : { key: "unknown", label: "Source unknown", text: "" });
+      if (farm) src = farm.src;
       const inst = src?.instance && state.meta.instances[src.instance];
       const loc = src?.loc ?? inst?.entrance ?? null;
-      const stop = out.get(d.key) || { key: d.key, label: d.label, src, items: [], level: 0, value: 0,
+      const stop = out.get(d.key) || { key: d.key, label: d.label, src: farm?.src ?? src, note: farm?.note, items: [], level: 0, value: 0,
         zone: loc?.zone ?? inst?.zone ?? src?.zone ?? null, loc, anywhere: ANYWHERE.test(d.key) };
       const need = Math.max(info.required_level || 0, inst && !inst.type.startsWith("raid") ? inst.levels?.[0] || 0 : 0, src?.type === "quest" ? src.min_level || 0 : 0);
       stop.level = Math.max(stop.level, need);
-      stop.value += Math.max(0, Math.min(st.gain, 100)) + 1; // "new" counts as +100%
+      stop.value += (Math.max(0, Math.min(st.gain, 100)) + 1) * (farm ? 0.25 : 1); // "new" counts as +100%; rare farms count a quarter
       stop.items.push({ label, id, gain: st.gain, d });
       out.set(d.key, stop);
     }
     return { list: [...out.values()], done, total: wanted.length };
+  }
+
+  // Rare open-world drop from several monsters in one zone: one "farm" stop, pinned on the best-rate monster.
+  function farmOf(srcs) {
+    const drops = srcs.filter((s) => s.type === "drop" && !s.instance);
+    const zones = new Set(drops.map((s) => s.zone).filter(Boolean));
+    const rates = drops.map((s) => s.chance).filter((c) => c != null);
+    if (drops.length < 2 || drops.length !== srcs.length || zones.size !== 1 || !rates.length || Math.max(...rates) >= 1) return null;
+    const [zone] = zones, lo = Math.min(...rates), hi = Math.max(...rates);
+    const src = drops.filter((s) => s.loc).sort((a, b) => (b.chance ?? 0) - (a.chance ?? 0))[0];
+    const pct = (c) => `${c.toFixed(2)}%`;
+    return { src, d: { key: `farm:${zone}`, label: `Farm monsters in ${zone}`, text: `Rare drop from ${drops.map((s) => s.name).join(", ")}` },
+      note: `Rare drop: ${lo === hi ? pct(hi) : `${pct(lo)}–${pct(hi)}`} a kill, about 1 in ${Math.round(100 / hi)} at best. Best farmed alongside quests in ${zone}.` };
   }
 
   // Travel cost between two stops: 0 same spot .. 3 other continent.
@@ -187,7 +202,7 @@ export function setupPlanner(ctx) {
     while (ready.length) {
       const i = ready.reduce((bi, s, j) => (s.value / (1 + cost(here, s)) > ready[bi].value / (1 + cost(here, ready[bi])) ? j : bi), 0);
       const s = ready.splice(i, 1)[0];
-      s.why = !order.length ? (s.value === top ? "Biggest upgrade first: it makes the rest easier." : `Closest big upgrade${s.zone ? ` (${s.zone})` : ""}.`)
+      s.why = s.note ? "" : !order.length ? (s.value === top ? "Biggest upgrade first: it makes the rest easier." : `Closest big upgrade${s.zone ? ` (${s.zone})` : ""}.`)
         : s.anywhere ? "Can be done from anywhere." : here?.zone && here.zone === s.zone ? `Also in ${s.zone}.`
         : continent(here?.zone) && continent(here?.zone) === continent(s.zone) ? `Same continent, ${s.zone}.` : "Next biggest upgrade.";
       order.push(s);
@@ -202,7 +217,7 @@ export function setupPlanner(ctx) {
       el("span", { class: "slot" }, label), el("span", { class: "g-it" }, ctx.itemLink(id, state.gear.items[id])),
       gainSpan("g-d", gain))));
     return el("li", { class: "step" }, el("span", { class: "step-n", "aria-hidden": "true" }, String(n)),
-      el("div", { class: "step-body" }, el("strong", { class: "g-title" }, s.label), el("p", { class: "step-why muted" }, s.why), ctx.pinBtn(s.src), ul));
+      el("div", { class: "step-body" }, el("strong", { class: "g-title" }, s.label), el("p", { class: "step-why muted" }, s.note || s.why), ctx.pinBtn(s.src), ul));
   }
 
   function renderRoute() {
