@@ -1,7 +1,8 @@
 """Drop chances and vendor costs from the external collection (~/wowgear-external/wanted, or $WOWGEAR_EXTERNAL):
 drop_chances.json -> data/forever/staging/external_drops.json: {item id: {npc id: {source: chance %}}};
 vendor_requirements.json -> external_vendors.json: {item id: {vendor id: {"name", "found_in", "copper", "tokens"}}};
-pvp_rank_rewards.json -> external_pvp.json: {item id: price in copper}.
+pvp_rank_rewards.json -> external_pvp.json: {item id: price in copper};
+recipe_sources.json -> external_recipes.json: {crafted item id: how the recipe is learned (recipe_info)}.
 
 Kept: NPC drops with a chance above 0 from Forever sources. Dropped: rows labelled Classic or built from Classic
 emulator tables, sources we already read ourselves (warcraftdb, ForeverDB), and player samples under MIN_SAMPLE
@@ -13,6 +14,7 @@ kills. merge.py prefers published chances (PUBLISHED) and falls back to player s
 from __future__ import annotations
 
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -30,6 +32,23 @@ VENDOR_SOURCES = {"icyveins": "Icy Veins", "warcraftdb-forever": "warcraftdb", "
                   "stillsixty": "stillsixty",
                   "EG Link (Efficient Games, CC BY 4.0)": "EG Link"}
 VENDOR_ORDER = list(VENDOR_SOURCES)
+# Easiest first: when several recipes make the same item, the first kind here wins.
+RECIPE_KINDS = ["trainer", "automatic", "vendor", "favor", "drop", "unknown"]
+
+
+def recipe_info(r: dict) -> dict:
+    """{"kind", "name" (the recipe item), "vendors", "favor" (Merchant's Favor cost), "standing" (0-7), "drops"}."""
+    kind, vendors = r.get("learned_from_kind"), r.get("vendors") or []
+    if kind == "item":
+        kind = "favor" if r.get("favor") else "vendor" if vendors else "drop" if r.get("drop_sources") else "unknown"
+    elif kind not in ("trainer", "automatic"):
+        kind = "unknown"
+    names = [v["recipe_item"] for v in vendors if isinstance(v.get("recipe_item"), str)]
+    out = {"kind": kind, "name": next((n for n in names if not n.startswith("Recipe: ")), names[0] if names else None),
+           "vendors": list(dict.fromkeys(v["vendor"] for v in vendors if v.get("vendor"))),
+           "favor": r.get("favor"), "standing": max((v["favor_standing"] for v in vendors if v.get("favor_standing")), default=None),
+           "drops": re.sub(r"NPC \d+(, )?", "", r.get("drop_sources") or "").strip(", ") or None}  # unnamed NPC ids
+    return {k: v for k, v in out.items() if v}
 
 
 def keep(r: dict) -> str | None:
@@ -78,6 +97,13 @@ def main() -> None:
     pvp = {str(x["item_id"]): x["price"] for r in ranks.values() for x in r["items"] if x.get("price")}
     write_json(STAGING / "external_pvp.json", pvp, compact=True)
     print(f"{len(pvp)} PvP rank rewards with a price")
+    recipes: dict[str, dict] = {}
+    for r in read_json(EXTERNAL / "wanted" / "recipe_sources.json")["recipes"].values():
+        info, old = recipe_info(r), recipes.get(str(r.get("item")))
+        if r.get("item") and (not old or RECIPE_KINDS.index(info["kind"]) < RECIPE_KINDS.index(old["kind"])):
+            recipes[str(r["item"])] = info
+    write_json(STAGING / "external_recipes.json", recipes, compact=True)
+    print(f"{len(recipes)} crafted items with recipe info")
     out: dict[str, dict] = {}
     for iid, rows in read_json(EXTERNAL / "wanted" / "drop_chances.json")["items"].items():
         for r in rows:

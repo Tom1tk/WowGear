@@ -75,3 +75,17 @@ def test_fold_pvp_moves_quartermaster_rows_into_pvp_source():
     assert sources["1"] == [{"type": "pvp_rank", "rank": 10, "faction": "A", "id": 900010, "name": "Invented Quartermaster"}]
     assert [r["type"] for r in sources["2"]] == ["pvp_rank", "pvp_rank"]  # sells PvP gear next to a quartermaster
     assert sources["3"][0]["type"] == "vendor"
+
+
+def test_recipe_info_classifies_how_the_recipe_is_learned():
+    from parse_external import recipe_info
+    favor = {"learned_from_kind": "item", "favor": 30, "vendors": [
+        {"vendor": "Invented Trader", "recipe_item": "Recipe: Invented Boots", "favor_standing": 5},
+        {"vendor": "Invented Trader", "recipe_item": "Pattern: Invented Boots"}]}
+    assert recipe_info(favor) == {"kind": "favor", "name": "Pattern: Invented Boots", "vendors": ["Invented Trader"],
+                                  "favor": 30, "standing": 5}
+    assert recipe_info({"learned_from_kind": "item", "drop_sources": "NPC 900001, Invented Mob, world drop"}) == \
+        {"kind": "drop", "drops": "Invented Mob, world drop"}
+    assert recipe_info({"learned_from_kind": "item"})["kind"] == "unknown"
+    assert recipe_info({"learned_from_kind": "guide"})["kind"] == "unknown"
+    assert recipe_info({"learned_from_kind": "trainer"}) == {"kind": "trainer"}

@@ -80,10 +80,19 @@ function describeBase(meta, src) {
       return { key: src.name ? `vendor:${src.id}` : "vendor", label: `Buy from ${who}${src.reputation ? ` (${standing ? `${standing} with ` : ""}${src.rep_name || "faction"}${standing ? "" : " rep"})` : src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${who}${src.title ? ` <${src.title}>` : ""}.${price}${repNeed}` };
     }
     case "craft": {
-      const recipe = src.recipe ? ` Recipe: ${src.recipe.name}${src.recipe.from?.length ? ` (${src.recipe.from.join(" / ")})` : ""}.` : " Recipe from the profession trainer.";
       const raid = inst ? ` Needs materials from ${instanceName(inst)}.` : "";
       const prof = src.name || "a profession";
-      return { key: `craft:${prof}`, label: `Craft with ${prof}`, text: `Crafted with ${prof}${src.skill ? ` (skill ${src.skill})` : ""}.${recipe}${raid}` };
+      const r = src.recipe || {}, what = r.name || "the recipe", from = r.vendors?.join(" or ");
+      const recipe = {
+        trainer: " Recipe from the profession trainer.",
+        automatic: " Learned automatically with the profession.",
+        vendor: ` Needs ${what}, sold by ${from}.`,
+        favor: ` Needs ${what}, bought from ${from} for ${r.favor} Merchant's Favor${STANDINGS[r.standing] ? ` (needs ${STANDINGS[r.standing]})` : ""}. Can also turn up on the Auction House, usually expensive.`,
+        drop: ` Needs ${what}, a random drop${r.drops ? ` (${r.drops})` : ""}. Sometimes on the Auction House.`,
+        unknown: ` Needs ${what}; where to get it is not known yet.`,
+      }[r.kind] || "";
+      const tag = { favor: ` — pattern for ${r.favor} Merchant's Favor`, drop: " — pattern is a rare drop", unknown: " — pattern source unknown" }[r.kind] || "";
+      return { key: `craft:${prof}:${r.kind || ""}`, label: `Craft with ${prof}${tag}`, text: `Crafted with ${prof}${src.skill ? ` (skill ${src.skill})` : ""}.${recipe}${raid}` };
     }
     case "world_drop":
       return { key: "ah", label: "Auction House / world drops", text: "Random drop from many monsters. It is Bind on Equip, so you can often buy it on the Auction House." };
@@ -107,14 +116,14 @@ export function describeSource(meta, src) {
   return { ...d, text: `${d.text}${/[.!?]$/.test(d.text) ? "" : "."} ${extra}`, extra };
 }
 
-export const CATS = { vendor: "Vendor / AH", rep: "Reputation vendors", ddrop: "Dungeon drops", wdrop: "World drops", craft: "Crafted", wq: "World quests", dq: "Dungeon quests", pvp: "PvP rank rewards" };
+export const CATS = { vendor: "Vendor / AH", rep: "Reputation / Favor vendors", ddrop: "Dungeon drops", wdrop: "World drops", craft: "Crafted", wq: "World quests", dq: "Dungeon quests", pvp: "PvP rank rewards" };
 export const EFFORT = { vendor: 1, rep: 2, craft: 2, wq: 3, wdrop: 4, dq: 5, ddrop: 6, pvp: 7 };
 // Open-world drop under 1%: hidden unless "Rare drops" is ticked (same rule as build_gear.py source_level).
 export const isRare = (src) => src.type === "drop" && !src.instance && src.chance != null && src.chance < 1;
 export function catsOf(src) {
   switch (src.type) {
     case "vendor": return [src.reputation ? "rep" : "vendor"];
-    case "craft": return ["craft"];
+    case "craft": return src.recipe?.kind === "favor" ? ["rep"] : src.recipe?.kind === "drop" ? ["wdrop"] : ["craft"]; // the pattern decides
     case "pvp_rank": return ["pvp"];
     case "world_drop": return ["wdrop", "vendor"]; // BoE: also on the Auction House
     case "quest": return [src.instance ? "dq" : "wq"];

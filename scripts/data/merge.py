@@ -136,6 +136,8 @@ class Merger:
         self.ext_vendors = read_json(ev) if ev.exists() else {}
         ep = STAGING / "external_pvp.json"
         self.ext_pvp = read_json(ep) if ep.exists() else {}
+        er = STAGING / "external_recipes.json"
+        self.ext_recipes = read_json(er) if er.exists() else {}
         fs = STAGING / "foreverdb_sets.json"
         self.f_sets = read_json(fs) if fs.exists() else {}
         fv = STAGING / "foreverdb_vendors.json"
@@ -429,6 +431,8 @@ class Merger:
         rep = (r.get("reputation") or {}).get("faction_id")
         if rep and str(rep) in REP_SIDE and not r.get("faction"):
             r["faction"] = REP_SIDE[str(rep)]
+        if r["type"] == "craft" and iid in self.ext_recipes:
+            r["recipe"] = self.ext_recipes[iid]
         npc = None
         if r["type"] == "quest" and r.get("id") is not None:
             q = self.quests.get(str(r["id"]))

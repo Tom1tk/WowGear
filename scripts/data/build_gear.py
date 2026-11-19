@@ -39,6 +39,7 @@ PAIRED = {"ring": 2, "trinket": 2}
 REALISM = {"quest": 1.0, "vendor": 1.0, "drop": 0.9, "boss": 0.9, "object": 0.8,
            "container": 0.7, "craft": 0.75, "instance_trash": 0.5, "world_drop": 0.35,
            "pvp_rep": 0.3, "pvp_rank": 0.3}
+RECIPE_REALISM = {"trainer": 0.8, "automatic": 0.8, "vendor": 0.7, "favor": 0.5, "drop": 0.35, "unknown": 0.5}
 
 
 def realism(src: dict) -> float:
@@ -47,8 +48,8 @@ def realism(src: dict) -> float:
     chance = src.get("chance")
     if src["type"] == "drop" and chance is not None:
         base = 0.9 if chance >= 10 else 0.75 if chance >= 3 else 0.55
-    if src["type"] == "craft" and not src.get("recipe"):
-        base = 0.8  # trainer recipe
+    if src["type"] == "craft":  # the recipe is the hard part
+        base = RECIPE_REALISM.get((src.get("recipe") or {}).get("kind"), base)
     return base
 
 
