@@ -259,6 +259,22 @@ await page3.waitForSelector('#results[data-state="ready"] #rows > li', { timeout
 chk("fields: set mode persists", (await page3.inputValue("#score-pick")) === "set" || (await page3.locator("#score-pick").evaluate((e) => e.value)) === "set");
 await ctx3.close();
 
+// ---- gear planner: add from Best gear, pick by search, route lists the stops
+await page.goto(`${BASE}/?race=6&class=11&spec=feral_cat&lvl=30&level=30`);
+await page.waitForSelector('#results[data-state="ready"] #rows > li', { timeout: 15000 });
+await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("wowgear:plan:")).forEach((k) => localStorage.removeItem(k)));
+await page.click("#rows > li .row-main >> nth=0");
+await page.click("#rows > li.open .detail > .plan-add");
+await page.click("#v-plan");
+chk("planner: Best gear rows hidden", !(await page.isVisible("#rows")) && await page.isVisible("#plan-rows"));
+chk("planner: Add to plan fills the slot", (await page.locator(".plan-row .plan-want a").count()) === 1);
+await page.locator(".plan-in").nth(1).click();
+await page.keyboard.press("Enter");
+chk("planner: search picks an item", (await page.locator(".plan-row .plan-want a").count()) === 2);
+chk("planner: route has steps", (await page.locator("#itin .step").count()) >= 1 && !(await page.isVisible("#todo-panel")));
+await page.click("#v-best");
+chk("planner: back to Best gear", await page.isVisible("#rows") && !(await page.isVisible("#itin-panel")));
+
 // ---- screenshots and the fold rule
 const SHOTS_SIZES = [[1920, 1080], [1440, 900], [390, 844]];
 for (const [w, h] of SHOTS_SIZES) {

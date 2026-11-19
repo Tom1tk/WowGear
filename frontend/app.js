@@ -1,5 +1,6 @@
 import { describeSource as describeIn, catsOf, CATS, EFFORT, isRare, locText, pinCommand, mapImage } from "./sources.js";
 import { setupLookup } from "./lookup.js";
+import { setupPlanner } from "./planner.js";
 
 const $ = (id) => document.getElementById(id);
 const DATA = "/static/data";
@@ -367,7 +368,7 @@ function wornScoreFor(slot) {
 // Table view state (not part of the URL): source filter, sort, slot group, opened rows.
 // Filters, sort and open/closed sections are remembered in this browser.
 const ui = { sort: recall("sort", "slot"), src: new Set(recall("src", [])), slot: recall("slot", "all"), open: new Set(recall("open-rows", [])),
-  shut: new Set(recall("shut-groups", [])), boe: recall("boe", true), bop: recall("bop", true), epic: recall("epic", true), rare: recall("rare", false) };
+  shut: new Set(recall("shut-groups", [])), view: recall("view", "best"), boe: recall("boe", true), bop: recall("bop", true), epic: recall("epic", true), rare: recall("rare", false) };
 const srcOk = (s) => (ui.rare || !isRare(s)) && (!ui.src.size || catsOf(s).some((c) => ui.src.has(c)));
 const narrowed = () => ui.src.size > 0 || !ui.boe || !ui.bop || !ui.epic;
 // Source filter plus the BoE / BoP / epic / rare-drop toggles (quality 4 = epic, 5 = legendary).
@@ -463,12 +464,14 @@ function render() {
   $("level-note").textContent = lvl === charLvl ? "Your level" :
     lvl > charLvl ? `${lvl - charLvl} level${lvl - charLvl > 1 ? "s" : ""} ahead of you` : `${charLvl - lvl} below your level`;
   const g = state.gear;
-  $("gear-title").textContent = lvl >= 60 && state.tier > 0 ? `Best gear: ${state.meta.tiers[state.tier]}` : `Best gear at level ${lvl}`;
+  const at = lvl >= 60 && state.tier > 0 ? state.meta.tiers[state.tier] : `level ${lvl}`;
+  $("gear-title").textContent = ui.view === "plan" ? `Gear planner, ${at}` : lvl >= 60 && state.tier > 0 ? `Best gear: ${at}` : `Best gear at ${at}`;
   $("gear-sub").textContent = `${g.spec_name} ${g.class} · ${g.faction === "A" ? "Alliance" : "Horde"}`;
   const rows = buildRows();
   renderRows(rows);
   renderTodo(rows);
   renderUpcoming();
+  planner.render();
   itemLookup.refresh();
   renderCounts(rows);
   updateReportLink(rows);
@@ -561,6 +564,7 @@ function buildDetail(r, info, iid, reasons) {
   const srcs = r.srcs, d = el("div", { class: "detail" });
   if (reasons.length) d.append(el("ul", { class: "reasons" }, reasons.map((x) => el("li", {}, x))));
   d.append(...extrasOf(info));
+  d.append(planBtn(r.label, iid));
   if (srcs[0]) { const s = describeSource(srcs[0]); d.append(el("p", {}, `${s.label}. ${s.text} `, pinBtn(srcs[0]), " ", el("a", { class: "ext", href: `${WARCRAFTDB}${iid}`, target: "_blank", rel: "noopener", title: "Open this item on forever.warcraftdb.com" }, "warcraftdb"))); }
   if (srcs.length > 1) d.append(el("h3", {}, `${srcs.length - 1} more source${srcs.length > 2 ? "s" : ""}`), el("ul", {}, srcs.slice(1).map((s) => { const x = describeSource(s); return el("li", {}, `${x.label}. ${x.text} `, pinBtn(s)); })));
   const checks = Object.values(info.checks || {});
@@ -569,10 +573,17 @@ function buildDetail(r, info, iid, reasons) {
   if (r.alts.length) d.append(el("h3", {}, `${r.alts.length} alternative${r.alts.length > 1 ? "s" : ""}`), el("ul", {}, r.alts.map(([aid, as]) => {
     const ai = state.gear.items[aid], s = ai.sources?.[0] ? describeSource(ai.sources[0]) : null;
     return el("li", {}, itemLink(aid, ai), el("span", { class: "num muted" }, ` ${as}${ai.unscored?.length ? "*" : ""}`), s ? el("span", { class: "muted" }, ` — ${s.label}`) : null,
-      reasonsOf(ai).length ? el("span", { class: "muted" }, " (Uncertain)") : null,
+      reasonsOf(ai).length ? el("span", { class: "muted" }, " (Uncertain)") : null, " ", planBtn(r.label, aid, true),
       state.mode === "manual" ? el("label", { class: "own own-small" }, el("input", { type: "checkbox", checked: ownedSet().has(aid), onchange: (e) => toggleOwned(aid, e.target.checked) }), " have") : null);
   })));
   return d;
+}
+
+// "Add to plan" for an item in a Best gear row; planned under that row's slot label.
+function planBtn(label, id, small = false) {
+  const on = planner.plan()[label] === id;
+  return el("button", { type: "button", class: `plan-add${small ? " small" : ""}`, "aria-pressed": String(on), title: on ? "In your plan: click to remove it" : `Plan this for ${label}`,
+    onclick: (e) => { e.stopPropagation(); planner.setPlan(label, on ? null : id); } }, on ? "In your plan" : "Add to plan");
 }
 
 function renderTodo(rows) {
@@ -947,6 +958,12 @@ function setupControls() {
   showSrc();
   document.querySelectorAll("#slot-filters button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.f === ui.slot)));
   $("sort").value = ui.sort;
+  $("results").dataset.view = ui.view;
+  $("v-best").setAttribute("aria-selected", String(ui.view === "best"));
+  $("v-plan").setAttribute("aria-selected", String(ui.view === "plan"));
+  $("v-best").addEventListener("click", () => setView("best"));
+  $("v-plan").addEventListener("click", () => setView("plan"));
+  $("plan-clear").addEventListener("click", () => { if (confirm("Remove every item from your plan?")) planner.clear(); });
   const pick = $("srcpick");
   document.addEventListener("click", (e) => { if (pick.open && !pick.contains(e.target)) pick.open = false; });
   pick.addEventListener("keydown", (e) => { if (e.key === "Escape") { pick.open = false; pick.querySelector("summary").focus(); } });
@@ -956,6 +973,22 @@ function setupControls() {
     box.checked = ui[k];
     box.addEventListener("change", () => { ui[k] = box.checked; store(k, box.checked); render(); });
   }
+}
+
+// What is worn in one slot (2nd ring/trinket: index 1), for the planner: {id, score} or null.
+function wornAt(slot, index) {
+  if (state.mode === "manual") return wornScoreFor(slot);
+  const e = equippedFor({ slot, index });
+  return e ? { id: String(e.item_id), name: e.name, score: scoreOf(e) } : null;
+}
+const planner = setupPlanner({ state, $, el, recall, store, render, itemLink, slotPoints, pointAt, SLOT_LABEL, describeSource, pinBtn, fmtGain, wornAt, ownedSet, characterLevel });
+function setView(v) {
+  ui.view = v;
+  store("view", v);
+  $("results").dataset.view = v;
+  $("v-best").setAttribute("aria-selected", String(v === "best"));
+  $("v-plan").setAttribute("aria-selected", String(v === "plan"));
+  render();
 }
 
 const itemLookup = setupLookup({ state, $, el, itemLink, slotPoints, pointAt, SLOT_LABEL, describeSource, pinBtn, reasonsOf, uncBadge, extrasOf, wornScoreFor, tierShort, fmtGain, refreshTooltips });

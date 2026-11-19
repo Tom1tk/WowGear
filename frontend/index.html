@@ -80,7 +80,11 @@
 <div class="stage">
 <div id="status" class="status" role="status" hidden></div>
 <main class="work" id="results" data-state="intro">
-  <section class="panel" aria-labelledby="gear-t">
+  <section class="panel" id="gear-panel" aria-labelledby="gear-title">
+    <div class="tabs views" id="views" role="tablist" aria-label="View">
+      <button type="button" class="tab" role="tab" id="v-best" aria-selected="true" aria-controls="gear-panel">Best gear</button>
+      <button type="button" class="tab" role="tab" id="v-plan" aria-selected="false" aria-controls="gear-panel">Gear planner</button>
+    </div>
     <div class="sec-head"><h2 id="gear-title">Best gear</h2><p id="gear-sub">Every level from 10 to 60, for every class and spec</p></div>
     <div class="intro" id="intro">
       <p class="intro-lead">Pick a character first: look one up by name, or choose race, class, spec and level. This panel then lists the best item for each slot, how it scores for your spec, where to get it, and how much it beats what you wear.</p>
@@ -135,9 +139,19 @@
     </div>
     <div class="cols" aria-hidden="true"><span>Slot</span><span>Best item</span><span class="tip" data-tip="How good the item is for your spec: each stat times what it is worth to your spec, counted in attack power (spell power or healing for casters). Higher is better. Compare within one slot only.">Score</span><span>Where to get it</span><span>You wear</span><span class="tip" data-tip="The same score for the item you wear now, so the two numbers compare directly.">Score</span><span class="tip" data-tip="How much better the best item is than yours: (best − yours) ÷ yours. “new” means you wear nothing useful in that slot.">Gain</span><span></span></div>
     <ol class="rows" id="rows"></ol>
+    <div class="plan" id="plan">
+      <p class="plan-lead muted">Pick the item you want in each slot: click a box to see the best items at this level, or type a name. You can also use “Add to plan” on any item in Best gear. The route on the right lists where to go.</p>
+      <div class="cols plan-cols" aria-hidden="true"><span>Slot</span><span>Planned item</span><span>Score</span><span>Gain</span><span>Choose</span><span></span></div>
+      <ol class="plan-rows" id="plan-rows"></ol>
+      <button type="button" class="plan-x" id="plan-clear" hidden>Clear the whole plan</button>
+    </div>
   </section>
   <aside class="rail" aria-label="Next steps">
-    <section class="panel" aria-labelledby="todo-t">
+    <section class="panel" id="itin-panel" aria-labelledby="itin-t">
+      <div class="sec-head"><h2 id="itin-t">Your route</h2><p id="itin-sub"></p></div>
+      <div id="itin"></div>
+    </section>
+    <section class="panel" id="todo-panel" aria-labelledby="todo-t">
       <div class="sec-head"><h2 id="todo-t">Where to go next</h2><p id="todo-sub"></p></div>
       <p class="intro-copy">The best place of each kind to go next (dungeon, vendor, quest and more), picked for how many of your slots it upgrades.</p>
       <div id="todo-list"></div>
