@@ -50,3 +50,16 @@ def test_set_bonus_spreads_over_equippable_pieces(monkeypatch):
 def test_parse_set_bonus_stat_and_non_stat():
     assert pb.parse_set_bonus("+14 Attack Power.")
     assert pb.parse_set_bonus("Invented proc text that is not a stat.") is None
+
+
+def test_external_rows_filtered_and_vendor_costs():
+    import parse_external as pe
+    sample = {"source": "foreverdroprate", "npc_id": 900001, "chance_pct": 5.0, "sample": 50}
+    assert pe.keep(sample) == "foreverdroprate"
+    assert pe.keep({**sample, "sample": 3}) is None  # too few kills
+    assert pe.keep({**sample, "source": "icyveins", "chance_provenance": "classic estimate"}) is None
+    rows = [{"source": "warcraftdb-forever", "vendor_id": 900002, "price": 90},
+            {"source": "icyveins", "vendor_id": 900002, "price": 100},
+            {"source": "icyveins", "vendor_id": 900003, "price": 7,
+             "tokens": [{"name": "Invented Token", "quantity": 7}]}]
+    assert pe.vendor_costs(rows) == {"900002": {"copper": 100}, "900003": {"tokens": [["Invented Token", 7]]}}

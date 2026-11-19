@@ -59,7 +59,8 @@ function describeBase(meta, src) {
       const repNeed = src.reputation ? ` Needs ${standing || "some"} reputation with ${src.rep_name || "their faction"}.` : "";
       if (src.reputation && !src.id) return { key: `rep:${src.name}`, label: `Buy from ${src.name} quartermaster`, text: `Needs ${standing || "some"} reputation with ${src.name}.` };
       const who = src.name || "a vendor";
-      const price = Number(src.copper) > 0 ? ` Costs about ${formatMoney(src.copper)}.` : "";
+      const cost = [Number(src.copper) > 0 ? `about ${formatMoney(src.copper)}` : "", ...(src.tokens || []).map(([n, q]) => `${q} ${n}`)].filter(Boolean);
+      const price = cost.length ? ` Costs ${cost.join(" and ")}.` : "";
       return { key: src.name ? `vendor:${src.id}` : "vendor", label: `Buy from ${who}${src.reputation ? ` (${standing ? `${standing} with ` : ""}${src.rep_name || "faction"}${standing ? "" : " rep"})` : src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${who}${src.title ? ` <${src.title}>` : ""}.${price}${repNeed}` };
     }
     case "craft": {

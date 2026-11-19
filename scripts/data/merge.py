@@ -132,6 +132,8 @@ class Merger:
         self.traced_drops = qd.get("drops", {})
         ex = STAGING / "external_drops.json"
         self.ext_drops = read_json(ex) if ex.exists() else {}
+        ev = STAGING / "external_vendors.json"
+        self.ext_vendors = read_json(ev) if ev.exists() else {}
         fs = STAGING / "foreverdb_sets.json"
         self.f_sets = read_json(fs) if fs.exists() else {}
         fv = STAGING / "foreverdb_vendors.json"
@@ -411,10 +413,10 @@ class Merger:
                 self.src_conf[r["type"]] += 1
             if r.get("instance") is None:
                 r.pop("instance", None)
-            self.enrich(r)
+            self.enrich(r, iid)
         return out
 
-    def enrich(self, r: dict) -> None:
+    def enrich(self, r: dict, iid: str) -> None:
         """Quest chain position, NPC names / titles / zones / map spots (QuestieDB Forever) for sources that lack them."""
         rep = (r.get("reputation") or {}).get("faction_id")
         if rep and str(rep) in REP_SIDE and not r.get("faction"):
@@ -432,6 +434,13 @@ class Merger:
                     if npc:
                         r["giver"] = npc["name"]
         elif r["type"] in ("drop", "vendor") and r.get("id"):
+            if r["type"] == "vendor":  # price and token costs from other sites (parse_external.py)
+                cost = self.ext_vendors.get(iid, {}).get(str(r["id"]), {})
+                if not int(r.get("copper") or 0) and cost.get("copper"):
+                    r["copper"] = str(cost["copper"])
+                if cost.get("tokens"):
+                    r["tokens"] = cost["tokens"]
+                    r.pop("copper", None)  # ForeverDB puts the token count here
             npc = self.npcs.get(str(r["id"]))
             if npc:
                 r.setdefault("name", npc["name"])
