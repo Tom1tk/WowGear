@@ -234,9 +234,12 @@ class Scorer:
         return round(total, 1)
 
     def score_for(self, iid: str, cls_id: str, spec: str, level: int,
-                  race_id: str | None = None) -> float | None:
-        """Score of one item for a character (None if unknown or unusable)."""
+                  race_id: str | None = None, worn: dict | None = None) -> float | None:
+        """Score of one item for a character (None if unknown or unusable). worn: the stats Blizzard shows
+        for the character's own copy; used when we lack the item or it has a random suffix (name differs)."""
         item = self.items.get(str(iid))
+        if worn and (not item or item.get("name") != worn.get("name")):
+            item = worn
         if not item:
             return None
         slot = self.slot_of(item)

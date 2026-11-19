@@ -12,7 +12,7 @@ from urllib.parse import quote
 
 import httpx
 
-from .models import CharacterSummary, EquippedItem, TalentTree
+from .models import CharacterSummary, EquippedItem, TalentTree, WornItem, WornWeapon
 
 TOKEN_URL = "https://oauth.battle.net/token"
 
@@ -159,6 +159,39 @@ def parse_ruleset(value) -> str | None:
     return value if isinstance(value, str) and value else None
 
 
+# Blizzard stat types -> our stat keys (same as scripts/data/parse_blizzard.py); others are lowercased,
+# which matches the rating keys the scorer knows (e.g. CRIT_RATING -> crit_rating).
+STAT_KEYS = {
+    "STRENGTH": "str", "AGILITY": "agi", "STAMINA": "sta", "INTELLECT": "int", "SPIRIT": "spi",
+    "ATTACK_POWER": "ap", "SPELL_POWER": "sp", "EXTRA_ARMOR": "bonus_armor",
+    "FIRE_RESISTANCE": "res_fire", "NATURE_RESISTANCE": "res_nature", "FROST_RESISTANCE": "res_frost",
+    "SHADOW_RESISTANCE": "res_shadow", "ARCANE_RESISTANCE": "res_arcane",
+}
+
+
+def parse_worn(entry: dict) -> WornItem | None:
+    """Stats of one equipped item as the API shows them, or None when the entry has no item class."""
+    cls, sub = entry.get("item_class") or {}, entry.get("item_subclass") or {}
+    if "id" not in cls or "id" not in sub:
+        return None
+    stats: dict[str, float] = {}
+    for s in entry.get("stats") or []:
+        stype = (s.get("type") or {}).get("type")
+        if stype and not s.get("is_negated") and isinstance(s.get("value"), (int, float)):
+            key = STAT_KEYS.get(stype, stype.lower())
+            stats[key] = stats.get(key, 0) + s["value"]
+    if (entry.get("armor") or {}).get("value"):
+        stats["armor"] = entry["armor"]["value"]
+    if (entry.get("shield_block") or {}).get("value"):
+        stats["block_value"] = stats.get("block_value", 0) + entry["shield_block"]["value"]
+    w = entry.get("weapon") or {}
+    weapon = None
+    if (w.get("dps") or {}).get("value") and (w.get("attack_speed") or {}).get("value"):
+        weapon = WornWeapon(dps=round(w["dps"]["value"], 2), speed=round(w["attack_speed"]["value"] / 1000, 2))
+    return WornItem(name=entry.get("name") or "", item_class=cls["id"], subclass=sub["id"],
+                    inventory_type=(entry.get("inventory_type") or {}).get("type") or "", stats=stats, weapon=weapon)
+
+
 def parse_equipment(data: dict) -> dict[str, EquippedItem]:
     equipped: dict[str, EquippedItem] = {}
     for entry in data.get("equipped_items", []):
@@ -176,6 +209,7 @@ def parse_equipment(data: dict) -> dict[str, EquippedItem]:
             quality=(entry.get("quality") or {}).get("type"),
             inventory_type=inv,
             enchant=enchants[0].get("display_string") if enchants else None,
+            worn=parse_worn(entry),
         )
     return equipped
 

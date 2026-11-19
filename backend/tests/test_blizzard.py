@@ -128,3 +128,17 @@ def test_missing_key():
     client = BlizzardClient("", "")
     with pytest.raises(ApiKeyMissingError):
         asyncio.run(client.character("eu", "x", "y"))
+
+
+def test_parse_equipment_reads_worn_stats():
+    data = {"equipped_items": [{
+        "item": {"id": 990001}, "name": "Invented Boots of the Tiger", "slot": {"type": "FEET"},
+        "inventory_type": {"type": "FEET"}, "quality": {"type": "UNCOMMON"},
+        "item_class": {"id": 4}, "item_subclass": {"id": 2}, "armor": {"value": 59},
+        "stats": [{"type": {"type": "AGILITY"}, "value": 4}, {"type": {"type": "STRENGTH"}, "value": 4},
+                  {"type": {"type": "EXTRA_ARMOR"}, "value": 10, "is_equip_bonus": True},
+                  {"type": {"type": "STAMINA"}, "value": 2, "is_negated": True}],
+    }]}
+    worn = parse_equipment(data)["feet"].worn
+    assert worn.item_class == 4 and worn.weapon is None
+    assert worn.stats == {"agi": 4, "str": 4, "bonus_armor": 10, "armor": 59}

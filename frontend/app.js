@@ -565,7 +565,7 @@ function buildDetail(r, info, iid, reasons) {
   if (srcs.length > 1) d.append(el("h3", {}, `${srcs.length - 1} more source${srcs.length > 2 ? "s" : ""}`), el("ul", {}, srcs.slice(1).map((s) => { const x = describeSource(s); return el("li", {}, `${x.label}. ${x.text} `, pinBtn(s)); })));
   const checks = Object.values(info.checks || {});
   if (!info.uncertain?.length && checks.length && checks.every((c) => c === "single")) d.append(el("p", { class: "one-src" }, "1 source: only one database has this item, so it is not cross-checked."));
-  if (r.worn.unknown) d.append(el("p", { class: "muted" }, "Random-stat items (e.g. “… of the Monkey”) and some special items have no fixed score. Compare the stats yourself."));
+  if (r.worn.unknown) d.append(el("p", { class: "muted" }, "We have no stats for this item yet, so it can't be scored. Compare the stats yourself."));
   if (r.alts.length) d.append(el("h3", {}, `${r.alts.length} alternative${r.alts.length > 1 ? "s" : ""}`), el("ul", {}, r.alts.map(([aid, as]) => {
     const ai = state.gear.items[aid], s = ai.sources?.[0] ? describeSource(ai.sources[0]) : null;
     return el("li", {}, itemLink(aid, ai), el("span", { class: "num muted" }, ` ${as}${ai.unscored?.length ? "*" : ""}`), s ? el("span", { class: "muted" }, ` — ${s.label}`) : null,
@@ -808,11 +808,13 @@ async function refreshAll() {
 
 async function rescoreEquipped() {
   const c = state.char.character;
-  const ids = Object.values(state.char.equipped).map((e) => e.item_id);
+  const eqs = Object.values(state.char.equipped);
+  const ids = eqs.map((e) => e.item_id);
+  const worn = Object.fromEntries(eqs.filter((e) => e.worn).map((e) => [e.item_id, e.worn]));
   try {
     const resp = await fetch("/api/score", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ class_id: c.class_id, spec: state.spec, level: state.level, race_id: c.race_id, item_ids: ids }),
+      body: JSON.stringify({ class_id: c.class_id, spec: state.spec, level: state.level, race_id: c.race_id, item_ids: ids, worn }),
     });
     if (resp.ok) state.scores = (await resp.json()).scores;
   } catch { /* keep the scores from the lookup */ }

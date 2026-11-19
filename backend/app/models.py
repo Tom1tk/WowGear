@@ -1,6 +1,22 @@
 """Shared data models for WowGearBis (WoW Forever)."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class WornWeapon(BaseModel):
+    dps: float
+    speed: float
+
+
+class WornItem(BaseModel):
+    """A worn item's stats as Blizzard reports them (random-stat rolls included). Used only to score it."""
+    model_config = ConfigDict(populate_by_name=True)
+    name: str = Field(max_length=200)
+    item_class: int = Field(alias="class")
+    subclass: int
+    inventory_type: str = Field(max_length=40)
+    stats: dict[str, float] = Field(default_factory=dict)
+    weapon: WornWeapon | None = None
 
 
 class EquippedItem(BaseModel):
@@ -10,6 +26,7 @@ class EquippedItem(BaseModel):
     quality: str | None = None
     inventory_type: str | None = None
     enchant: str | None = None
+    worn: WornItem | None = None
     score: float | None = None  # filled in for the chosen spec
 
 
@@ -47,3 +64,4 @@ class ScoreRequest(BaseModel):
     level: int = 60
     race_id: int | None = None
     item_ids: list[int] = Field(default_factory=list)
+    worn: dict[str, WornItem] = Field(default_factory=dict)  # item id -> stats read from the character

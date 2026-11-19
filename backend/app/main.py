@@ -84,7 +84,8 @@ async def character(name: str, surname: str, region: str = "eu", spec: str | Non
     if chosen and cls_id and cls_id in scorer.classes and chosen in scorer.classes[cls_id]["specs"]:
         for item in equipped.values():
             item.score = scorer.score_for(str(item.item_id), cls_id, chosen, summary.level,
-                                          str(summary.race_id) if summary.race_id else None)
+                                          str(summary.race_id) if summary.race_id else None,
+                                          item.worn.model_dump(by_alias=True) if item.worn else None)
     return CharacterResult(character=summary, equipped=equipped, talents=talents,
                            spec=detected, spec_reason=reason)
 
@@ -96,5 +97,6 @@ async def score(request: ScoreRequest) -> dict:
     if cls_id not in scorer.classes or request.spec not in scorer.classes[cls_id]["specs"]:
         raise HTTPException(status_code=422, detail="Unknown class or spec.")
     race = str(request.race_id) if request.race_id else None
-    return {"scores": {str(i): scorer.score_for(str(i), cls_id, request.spec, request.level, race)
+    worn = {k: v.model_dump(by_alias=True) for k, v in request.worn.items()}
+    return {"scores": {str(i): scorer.score_for(str(i), cls_id, request.spec, request.level, race, worn.get(str(i)))
                        for i in request.item_ids[:40]}}

@@ -81,3 +81,11 @@ def test_unicode_letters_accepted(monkeypatch):
 
 def test_realms_endpoint_is_gone():
     assert client.get("/api/realms", params={"region": "eu"}).status_code != 200
+
+
+def test_score_endpoint_uses_worn_stats_for_unknown_items():
+    worn = {"999999": {"name": "Invented Boots of the Tiger", "class": 4, "subclass": 2,
+                       "inventory_type": "FEET", "stats": {"agi": 4, "str": 4, "armor": 59}}}
+    body = client.post("/api/score", json={"class_id": 1, "spec": "arms", "level": 30,
+                                           "item_ids": [999999], "worn": worn}).json()
+    assert body["scores"]["999999"] > 0
