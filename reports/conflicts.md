@@ -2,7 +2,7 @@
 
 Items kept: **5601**; with at least one conflict (Uncertain): **193**.
 Items known to both warcraftdb and Blizzard: 3042.
-Source entries: 9804; confirmed by 2 datasets: 2532; conflicts: 702.
+Source entries: 9804; confirmed by 2 datasets: 2532; conflicts: 1384.
 
 Missing in a source is not a conflict. ForeverDB sources labelled Classic (k) or clue (c) are ignored.
 Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
@@ -27,7 +27,7 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 
 ## Source conflicts by kind
 
-- drop: 702
+- drop: 1384
 
 ## Examples (first 50 item conflicts)
 
@@ -84,28 +84,28 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 
 ## Examples (source conflicts)
 
+- Notched Shortsword (727): Drop chance for Commander Haalien: warcraftdb 11.1111%, Icy Veins 0.23% (more than 2x apart).
+- Notched Shortsword (727): Drop chance for Befouled Webwood: warcraftdb 5%, Icy Veins 0.35% (more than 2x apart).
+- Notched Shortsword (727): Drop chance for Murloc Raider: warcraftdb 3.33333%, Icy Veins 0.05% (more than 2x apart).
+- Notched Shortsword (727): Drop chance for Prowler: warcraftdb 2.94118%, Icy Veins 0.21% (more than 2x apart).
+- Notched Shortsword (727): Drop chance for Razormane Thornweaver: warcraftdb 2.43902%, Icy Veins 0.17% (more than 2x apart).
+- Notched Shortsword (727): Drop chance for Murloc Lurker: warcraftdb 2.12766%, Icy Veins 0.21% (more than 2x apart).
+- Notched Shortsword (727): Drop chance for Al'Aketh Spiritcaller: warcraftdb 1.6129%, Icy Veins 0.36% (more than 2x apart).
+- Notched Shortsword (727): Drop chance for Al'Aketh Brawler: warcraftdb 0.847458%, Icy Veins 0.13% (more than 2x apart).
+- Notched Shortsword (727): Drop chance for Riverpaw Outrunner: warcraftdb 0.657895%, Icy Veins 0.21% (more than 2x apart).
+- Tunnel Pick (756): Drop chance for Dark Iron Tunneler: Icy Veins 4.02%, NorgannonDB 1.77%, stillsixty 2% (more than 2x apart).
+- Ice-covered Bracers (763): Drop chance for Hammerspine: Icy Veins 24.04%, NorgannonDB 80%, stillsixty 75% (more than 2x apart).
+- Flanged Mace (766): Drop chance for Highlands Bandit: warcraftdb 1.7094%, Icy Veins 0.21% (more than 2x apart).
+- Flanged Mace (766): Drop chance for Hungry Bandit: warcraftdb 1.53846%, Icy Veins 0.07% (more than 2x apart).
+- Long Bo Staff (767): Drop chance for Gnarlpine Avenger: warcraftdb 7.14286%, Icy Veins 0.08% (more than 2x apart).
+- Long Bo Staff (767): Drop chance for Cursed Darkhound: warcraftdb 3.84615%, Icy Veins 0.22% (more than 2x apart).
+- Long Bo Staff (767): Drop chance for Bandit Highwayman: warcraftdb 1.6%, Icy Veins 0.24% (more than 2x apart).
+- Long Bo Staff (767): Drop chance for Al'Aketh Stormcaller: warcraftdb 1.06383%, Icy Veins 0.15% (more than 2x apart).
+- Lumberjack Axe (768): Drop chance for Prairie Wolf Alpha: warcraftdb 6.25%, Icy Veins 0.18%, NorgannonDB 0.3% (more than 2x apart).
+- Lumberjack Axe (768): Drop chance for Thunder Lizard: warcraftdb 3.84615%, Icy Veins 0.22%, NorgannonDB 0.36% (more than 2x apart).
+- Lumberjack Axe (768): Drop chance for Riverpaw Runt: warcraftdb 3.22581%, Icy Veins 0.23%, NorgannonDB 0.28% (more than 2x apart).
+- Lumberjack Axe (768): Drop chance for Al'Aketh Stormcaller: warcraftdb 1.06383%, Icy Veins 0.08% (more than 2x apart).
+- Lumberjack Axe (768): Drop chance for Al'Aketh Brawler: warcraftdb 0.847458%, Icy Veins 0.15% (more than 2x apart).
+- Stone Gnoll Hammer (781): Drop chance for Riverpaw Runt: warcraftdb 9.67742%, Icy Veins 3.93%, NorgannonDB 7.8%, stillsixty 7.8% (more than 2x apart).
+- Stone Gnoll Hammer (781): Drop chance for Riverpaw Outrunner: warcraftdb 5.26316%, Icy Veins 3.89%, NorgannonDB 7.88%, stillsixty 7.88% (more than 2x apart).
 - Stout Battlehammer (789): warcraftdb lists drop source Blackfathom Sea Witch, Defias Squallshaper, Deviate Faerie Dragon; ForeverDB lists drop source Druid of the Fang, Gilnid; no overlap.
-- Defias Renegade Ring (1076): warcraftdb lists drop source Defias Captive, Defias Insurgent; ForeverDB lists drop source Dextren Ward, Targorr the Dread; no overlap.
-- Silk-threaded Trousers (1929): warcraftdb lists drop source Defias Evoker; ForeverDB lists drop source Defias Wizard; no overlap.
-- Assassin's Blade (1935): warcraftdb lists drop source Tormented Officer; ForeverDB lists drop source Wolf Master Nandos; no overlap.
-- Buzz Saw (1937): warcraftdb lists drop source Sneed's Shredder; ForeverDB lists drop source Sneed; no overlap.
-- Blackwater Cutlass (1951): warcraftdb lists drop source Defias Squallshaper; ForeverDB lists drop source Defias Pirate; no overlap.
-- Dwarven Magestaff (2072): warcraftdb lists drop source Caverndeep Burrower, Fen Creeper, Marsh Skulker; ForeverDB lists drop source Plague Spreader, Twilight Lord Kelris; no overlap.
-- Dwarven Hatchet (2073): warcraftdb lists drop source Deviate Slayer, Ghostly Citizen, Ragged Ghoul; ForeverDB lists drop source Harvest Watcher, Taragaman the Hungerer; no overlap.
-- Priest's Mace (2075): warcraftdb lists drop source Al'Aketh Assassin, Defias Trapper, Searing Blade Cultist; ForeverDB lists drop source Murloc Coastrunner; no overlap.
-- Northern Shortsword (2078): warcraftdb lists drop source Echeyakee, Elder Lake Skulker, Evolving Ectoplasm; ForeverDB lists drop source Gilnid, Skum; no overlap.
-- Sergeant's Warhammer (2079): warcraftdb lists drop source Shore Crawler; ForeverDB lists drop source Rhahk'Zor, Viktor the Vile; no overlap.
-- Buzzer Blade (2169): warcraftdb lists drop source Sneed's Shredder; ForeverDB lists drop source Sneed; no overlap.
-- Curved Dagger (2632): warcraftdb lists drop source Enraged Apparition, Fleshripper, Ghostly Citizen; ForeverDB lists drop source Faldrim Anvilmar, Plunder; no overlap.
-- Cross Dagger (2819): warcraftdb lists drop source Barbed Crustacean, Leprous Machinesmith, Mechanized Sentry; ForeverDB lists drop source Nightbane Vile Fang; no overlap.
-- Antipodean Rod (2879): warcraftdb lists drop source Bluegill Murloc; ForeverDB lists drop source Geilhast, Syndicate Watchman; no overlap.
-- Spellbinder Vest (2969): warcraftdb lists drop source Redridge Poacher, Skeletal Soldier; ForeverDB lists drop source Defias Highwayman; no overlap.
-- Spellbinder Pants (2970): warcraftdb lists drop source Deep Widow, Defias Miner, Goretusk; ForeverDB lists drop source Defias Pillager, Viktor the Vile; no overlap.
-- Spellbinder Gloves (2972): warcraftdb lists drop source Defias Pillager, Defias Smuggler, Harvest Watcher; ForeverDB lists drop source Dalaran Protector; no overlap.
-- Hunting Pants (2974): warcraftdb lists drop source Defias Pathstalker, Riverpaw Brute; ForeverDB lists drop source Witherfang; no overlap.
-- Veteran Armor (2977): warcraftdb lists drop source Ghoul, Spider; ForeverDB lists drop source Bjork, Viktor the Vile; no overlap.
-- Seer's Robe (2981): warcraftdb lists drop source Shadowfang Whitescalp; ForeverDB lists drop source Dire Condor; no overlap.
-- Seer's Pants (2982): warcraftdb lists drop source Defias Highwayman; ForeverDB lists drop source Rhahk'Zor, Sneed; no overlap.
-- Seer's Boots (2983): warcraftdb lists drop source Dark Iron Looter, Defias Miner, Goretusk; ForeverDB lists drop source Greater Fleshripper; no overlap.
-- Seer's Gloves (2984): warcraftdb lists drop source Black Dragon Whelp, Murloc Tidehunter, Slavering Worg; ForeverDB lists drop source Sneed; no overlap.
-- Inscribed Leather Boots (2987): warcraftdb lists drop source Pygmy Venom Web Spider; ForeverDB lists drop source Harvest Reaper; no overlap.

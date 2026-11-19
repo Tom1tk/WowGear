@@ -1,7 +1,7 @@
 """Cross-reference warcraftdb, Blizzard and ForeverDB into the data files the build reads.
 
 Inputs (data/forever/staging/, made by parse_warcraftdb.py, parse_blizzard.py, parse_foreverdb.py, parse_questie.py;
-QuestieTrace drops become a fourth drop source)
+QuestieTrace drops become a fourth drop source; parse_external.py adds drop chances from other sites)
 plus hand tables data/forever/instances.json, exclude.json, rep_vendors.json and the ForeverDB boss lists (Loot.lua).
 Outputs: data/forever/items.json, sources.json, reports/conflicts.md.
 
@@ -60,6 +60,8 @@ LABEL = {"blizzard": "Blizzard", "warcraftdb": "warcraftdb", "foreverdb": "Forev
 FIELDS = ("name", "required_level", "item_level", "inventory_type", "type", "stats", "weapon", "binding", "classes")
 EQUIP_ONLY = {"bonus_armor", "sp", "heal", "mp5", "ap", "rap"}
 CHANCE_RATIO = 2.0
+OBSERVED = ("Polestar Codex", "foreverdroprate", "EG Link", "Drop Tables")  # player samples: used only as a fallback
+CHANCE_ORDER = ("warcraftdb", "foreverdb", "Icy Veins", "stillsixty", "NorgannonDB", "wowforever.gg") + OBSERVED
 
 
 def stat_text(stats: dict, empty: str = "none") -> str:
@@ -128,6 +130,8 @@ class Merger:
         qd = read_json(q) if q.exists() else {"quests": {}, "npcs": {}, "zones": {}}
         self.quests, self.npcs, self.zones = qd["quests"], qd["npcs"], qd.get("zones", {})
         self.traced_drops = qd.get("drops", {})
+        ex = STAGING / "external_drops.json"
+        self.ext_drops = read_json(ex) if ex.exists() else {}
         fs = STAGING / "foreverdb_sets.json"
         self.f_sets = read_json(fs) if fs.exists() else {}
         fv = STAGING / "foreverdb_vendors.json"
@@ -382,12 +386,17 @@ class Merger:
             r["confirmed"] = len(r["found_in"]) >= 2
             r["conflict"] = False
             ch = r.pop("chance_by")
+            if kind == "drop" and r.get("id"):  # external sites (parse_external.py), keyed by NPC id
+                ch.update(self.ext_drops.get(iid, {}).get(str(r["id"]), {}))
+            ch = {s: v for s, v in ch.items() if v > 0}
             if ch:
-                r["chance"] = round(ch.get("warcraftdb", ch.get("foreverdb")), 2)
-                if len(ch) == 2 and min(ch.values()) > 0 and max(ch.values()) / min(ch.values()) > CHANCE_RATIO:
+                r["chance"] = round(ch[min(ch, key=CHANCE_ORDER.index)], 2)
+                pub = {s: v for s, v in ch.items() if s not in OBSERVED}  # player samples are too noisy to flag
+                if len(pub) >= 2 and max(pub.values()) / min(pub.values()) > CHANCE_RATIO:
                     r["conflict"] = True
-                    r["conflict_reason"] = (f"Drop chance for {r.get('name')}: warcraftdb {ch['warcraftdb']:g}%, "
-                                            f"ForeverDB {ch['foreverdb']:g}% (more than 2x apart).")
+                    r["conflict_reason"] = (f"Drop chance for {r.get('name')}: "
+                                            + ", ".join(f"{LABEL.get(s, s)} {v:g}%" for s, v in pub.items())
+                                            + " (more than 2x apart).")
             out.append(r)
         self.disjoint_conflicts(out)
         for r in out:
