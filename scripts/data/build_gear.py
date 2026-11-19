@@ -39,7 +39,7 @@ PAIRED = {"ring": 2, "trinket": 2}
 REALISM = {"quest": 1.0, "vendor": 1.0, "drop": 0.9, "boss": 0.9, "object": 0.8,
            "container": 0.7, "craft": 0.75, "instance_trash": 0.5, "world_drop": 0.35,
            "pvp_rep": 0.3, "pvp_rank": 0.3}
-RECIPE_REALISM = {"trainer": 0.8, "automatic": 0.8, "vendor": 0.7, "favor": 0.5, "drop": 0.35, "unknown": 0.5}
+RECIPE_REALISM = {"trainer": 0.8, "automatic": 0.8, "vendor": 0.7, "quest": 0.6, "rep": 0.5, "favor": 0.5, "drop": 0.35, "unknown": 0.5}
 
 
 def realism(src: dict) -> float:

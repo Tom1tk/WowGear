@@ -87,11 +87,13 @@ function describeBase(meta, src) {
         trainer: " Recipe from the profession trainer.",
         automatic: " Learned automatically with the profession.",
         vendor: ` Needs ${what}, sold by ${from}.`,
-        favor: ` Needs ${what}, bought from ${from} for ${r.favor} Merchant's Favor${STANDINGS[r.standing] ? ` (needs ${STANDINGS[r.standing]})` : ""}. Can also turn up on the Auction House, usually expensive.`,
+        quest: ` Needs ${what}, a reward from the quest ${r.quests?.join(" or ")}.`,
+        rep: ` Needs ${what}: ${r.rep}.`,
+        favor: ` Needs ${what}, bought from ${from} for ${r.favor} Merchant's Favor${r.standing ? ` (needs ${r.standing} standing)` : ""}. Can also turn up on the Auction House, usually expensive.`,
         drop: ` Needs ${what}, a random drop${r.drops ? ` (${r.drops})` : ""}. Sometimes on the Auction House.`,
         unknown: ` Needs ${what}; where to get it is not known yet.`,
       }[r.kind] || "";
-      const tag = { favor: ` — pattern for ${r.favor} Merchant's Favor`, drop: " — pattern is a rare drop", unknown: " — pattern source unknown" }[r.kind] || "";
+      const tag = { rep: " — pattern needs reputation", quest: " — pattern from a quest", favor: ` — pattern for ${r.favor} Merchant's Favor`, drop: " — pattern is a rare drop", unknown: " — pattern source unknown" }[r.kind] || "";
       return { key: `craft:${prof}:${r.kind || ""}`, label: `Craft with ${prof}${tag}`, text: `Crafted with ${prof}${src.skill ? ` (skill ${src.skill})` : ""}.${recipe}${raid}` };
     }
     case "world_drop":
@@ -123,7 +125,7 @@ export const isRare = (src) => src.type === "drop" && !src.instance && src.chanc
 export function catsOf(src) {
   switch (src.type) {
     case "vendor": return [src.reputation ? "rep" : "vendor"];
-    case "craft": return src.recipe?.kind === "favor" ? ["rep"] : src.recipe?.kind === "drop" ? ["wdrop"] : ["craft"]; // the pattern decides
+    case "craft": return { favor: ["rep"], rep: ["rep"], quest: ["wq"], drop: ["wdrop"] }[src.recipe?.kind] || ["craft"]; // the pattern decides
     case "pvp_rank": return ["pvp"];
     case "world_drop": return ["wdrop", "vendor"]; // BoE: also on the Auction House
     case "quest": return [src.instance ? "dq" : "wq"];

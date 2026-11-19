@@ -18,6 +18,8 @@ import re
 import sys
 from pathlib import Path
 
+import ijson
+
 sys.path.insert(0, os.path.dirname(__file__))
 from _common import STAGING, read_json, write_json  # noqa: E402
 
@@ -33,22 +35,39 @@ VENDOR_SOURCES = {"icyveins": "Icy Veins", "warcraftdb-forever": "warcraftdb", "
                   "EG Link (Efficient Games, CC BY 4.0)": "EG Link"}
 VENDOR_ORDER = list(VENDOR_SOURCES)
 # Easiest first: when several recipes make the same item, the first kind here wins.
-RECIPE_KINDS = ["trainer", "automatic", "vendor", "favor", "drop", "unknown"]
+RECIPE_KINDS = ["trainer", "automatic", "vendor", "quest", "rep", "favor", "drop", "unknown"]
 
 
 def recipe_info(r: dict) -> dict:
-    """{"kind", "name" (the recipe item), "vendors", "favor" (Merchant's Favor cost), "standing" (0-7), "drops"}."""
+    """{"kind", "name" (the recipe item), "vendors", "favor" (Merchant's Favor cost), "standing", "rep", "quests",
+    "drops"}: how the recipe for a crafted item is learned."""
     kind, vendors = r.get("learned_from_kind"), r.get("vendors") or []
+    psrc = [x for x in r.get("pattern_sources") or [] if isinstance(x, dict) and x.get("n")]
+    quests = list(dict.fromkeys(f'{q["quest"]} (level {q["level"]})' if q.get("level") else q["quest"]
+                                for q in r.get("eternadex_quests") or [] if q.get("quest_id")))
+    rep = (r.get("reputation_source") or [None])[0] or next(
+        (x["faction_standing"] for x in r.get("eternadex_reputation") or [] if x.get("faction_standing")), None)
+    drops = re.sub(r"NPC \d+(, )?", "", r.get("drop_sources") or "").strip(", ") or ", ".join(  # unnamed NPC ids
+        f'{x["n"]}{f" ({x['z']})" if x.get("z") else ""}' for x in psrc if x.get("t") in ("drop", "object"))[:200]
+    if not vendors:
+        vendors = [{"vendor": x["n"]} for x in psrc if x.get("t") == "vendor"]
     if kind == "item":
-        kind = "favor" if r.get("favor") else "vendor" if vendors else "drop" if r.get("drop_sources") else "unknown"
+        kind = ("favor" if r.get("favor") else "rep" if rep else "vendor" if vendors else "quest" if quests
+                else "drop" if drops else "unknown")
     elif kind not in ("trainer", "automatic"):
         kind = "unknown"
     names = [v["recipe_item"] for v in vendors if isinstance(v.get("recipe_item"), str)]
-    out = {"kind": kind, "name": next((n for n in names if not n.startswith("Recipe: ")), names[0] if names else None),
+    out = {"kind": kind, "name": r.get("pattern_item_name") or next((n for n in names if not n.startswith("Recipe: ")),
+                                                                    names[0] if names else None),
            "vendors": list(dict.fromkeys(v["vendor"] for v in vendors if v.get("vendor"))),
-           "favor": r.get("favor"), "standing": max((v["favor_standing"] for v in vendors if v.get("favor_standing")), default=None),
-           "drops": re.sub(r"NPC \d+(, )?", "", r.get("drop_sources") or "").strip(", ") or None}  # unnamed NPC ids
-    return {k: v for k, v in out.items() if v}
+           "favor": r.get("favor"), "standing": r.get("favor_standing") if r.get("favor_standing") != "-" else None,
+           "rep": rep, "quests": quests, "drops": drops or None}
+    return {k: v for k, v in out.items() if v and (k in ("kind", "name") or k in KIND_FIELDS[kind])}
+
+
+# Detail kept per kind, so the text shows how the chosen way works.
+KIND_FIELDS = {"trainer": (), "automatic": (), "vendor": ("vendors",), "quest": ("quests",), "rep": ("rep", "vendors"),
+               "favor": ("vendors", "favor", "standing"), "drop": ("drops",), "unknown": ()}
 
 
 def keep(r: dict) -> str | None:
@@ -84,9 +103,15 @@ def vendor_costs(rows: list[dict]) -> dict[str, dict]:
     return out
 
 
+def stream(name: str, key: str):
+    """(id, value) pairs under top-level `key` of a wanted/ file, one at a time: the files are up to 1.3 GB and
+    json.load of them needs several times that in RAM."""
+    with open(EXTERNAL / "wanted" / name, "rb") as f:
+        yield from ijson.kvitems(f, key, use_float=True)
+
+
 def main() -> None:
-    vendors = read_json(EXTERNAL / "wanted" / "vendor_requirements.json")["item_vendors"]
-    vout = {iid: c for iid, rows in vendors.items() if (c := vendor_costs(rows))}
+    vout = {iid: c for iid, rows in stream("vendor_requirements.json", "item_vendors") if (c := vendor_costs(rows))}
     token_vendors = {vid for c in vout.values() for vid, v in c.items() if "tokens" in v}
     for c in vout.values():  # their other "prices" are usually a token count with the token missing
         for vid in token_vendors & c.keys():
@@ -98,14 +123,14 @@ def main() -> None:
     write_json(STAGING / "external_pvp.json", pvp, compact=True)
     print(f"{len(pvp)} PvP rank rewards with a price")
     recipes: dict[str, dict] = {}
-    for r in read_json(EXTERNAL / "wanted" / "recipe_sources.json")["recipes"].values():
+    for _, r in stream("recipe_sources.json", "recipes"):
         info, old = recipe_info(r), recipes.get(str(r.get("item")))
         if r.get("item") and (not old or RECIPE_KINDS.index(info["kind"]) < RECIPE_KINDS.index(old["kind"])):
             recipes[str(r["item"])] = info
     write_json(STAGING / "external_recipes.json", recipes, compact=True)
     print(f"{len(recipes)} crafted items with recipe info")
     out: dict[str, dict] = {}
-    for iid, rows in read_json(EXTERNAL / "wanted" / "drop_chances.json")["items"].items():
+    for iid, rows in stream("drop_chances.json", "items"):
         for r in rows:
             label = keep(r)
             if label:

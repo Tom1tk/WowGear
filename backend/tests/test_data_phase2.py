@@ -79,13 +79,20 @@ def test_fold_pvp_moves_quartermaster_rows_into_pvp_source():
 
 def test_recipe_info_classifies_how_the_recipe_is_learned():
     from parse_external import recipe_info
-    favor = {"learned_from_kind": "item", "favor": 30, "vendors": [
-        {"vendor": "Invented Trader", "recipe_item": "Recipe: Invented Boots", "favor_standing": 5},
+    favor = {"learned_from_kind": "item", "favor": 30, "favor_standing": "Honored", "vendors": [
+        {"vendor": "Invented Trader", "recipe_item": "Recipe: Invented Boots"},
         {"vendor": "Invented Trader", "recipe_item": "Pattern: Invented Boots"}]}
     assert recipe_info(favor) == {"kind": "favor", "name": "Pattern: Invented Boots", "vendors": ["Invented Trader"],
-                                  "favor": 30, "standing": 5}
+                                  "favor": 30, "standing": "Honored"}
     assert recipe_info({"learned_from_kind": "item", "drop_sources": "NPC 900001, Invented Mob, world drop"}) == \
         {"kind": "drop", "drops": "Invented Mob, world drop"}
+    assert recipe_info({"learned_from_kind": "item", "pattern_sources": [{"t": "object", "n": "Invented Chest", "z": "Nowhere"}]}) == \
+        {"kind": "drop", "drops": "Invented Chest (Nowhere)"}
+    assert recipe_info({"learned_from_kind": "item", "reputation_source": ["Invented Circle, Friendly"],
+                        "vendors": [{"vendor": "Invented Trader"}]}) == \
+        {"kind": "rep", "rep": "Invented Circle, Friendly", "vendors": ["Invented Trader"]}
+    assert recipe_info({"learned_from_kind": "item", "eternadex_quests": [{"quest": "Invented Quest", "quest_id": 900002, "level": 45}]}) == \
+        {"kind": "quest", "quests": ["Invented Quest (level 45)"]}
     assert recipe_info({"learned_from_kind": "item"})["kind"] == "unknown"
     assert recipe_info({"learned_from_kind": "guide"})["kind"] == "unknown"
     assert recipe_info({"learned_from_kind": "trainer"}) == {"kind": "trainer"}
