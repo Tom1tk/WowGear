@@ -71,7 +71,7 @@
     <button type="button" class="tbtn" id="set-btn" aria-expanded="false" aria-controls="set-drop"><span class="l"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.5v2m0 9v2M1.5 8h2m9 0h2M3.4 3.4l1.4 1.4m6.4 6.4 1.4 1.4M3.4 12.6l1.4-1.4m6.4-6.4 1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Settings</span><svg class="ico chev" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="drop form" id="set-drop" hidden>
       <div class="field"><label for="bg-pick">Background</label><select id="bg-pick"></select></div>
-      <div class="field"><label for="pin-pick">Map pins</label><select id="pin-pick"><option value="tomtom">TomTom addon (/way)</option><option value="builtin">Game map (built-in)</option></select></div>
+      <div class="field"><label for="pin-pick">Map pins</label><select id="pin-pick"><option value="builtin">Game map (built-in)</option><option value="tomtom">TomTom addon (/way)</option></select></div>
       <div class="field"><label for="score-pick">Score with</label><select id="score-pick"><option value="raw">Raw stats</option><option value="set">Set bonuses and effects</option></select></div>
       <div class="field"><label for="theme-pick">Colours</label><select id="theme-pick"><option value="dark">Dark</option><option value="light">Light</option><option value="auto">Match my system</option></select></div>
     </div>
@@ -84,6 +84,14 @@
     <div class="sec-head"><h2 id="gear-title">Best gear</h2><p id="gear-sub">Every level from 10 to 60, for every class and spec</p></div>
     <div class="intro" id="intro">
       <p class="intro-lead">Pick a character first: look one up by name, or choose race, class, spec and level. This panel then lists the best item for each slot, how it scores for your spec, where to get it, and how much it beats what you wear.</p>
+<section class="howto" aria-labelledby="howto-t">
+        <h3 id="howto-t">How the numbers work</h3>
+        <dl>
+          <dt>Score</dt><dd>Every stat on an item is multiplied by what it is worth to your spec and added up, counted in attack power (spell power or healing for casters). For an Arms Warrior 1 Strength is worth about 2.2 attack power, so +10 Strength adds 22. Weapons also count their damage per second. Levels 10–59 use levelling weights, level 60 uses endgame weights. Scores only compare within one slot: a ring scores lower than a chest piece because it has fewer stats.</dd>
+          <dt>You wear</dt><dd>The same score for the item you have on now, so the two numbers line up.</dd>
+          <dt>Gain</dt><dd>How much better the best item is than yours: (best − yours) ÷ yours. A best item of 30 against your 20 is +50%. “new” means you wear nothing useful there. A * after a score means some of the item's stats are not counted.</dd>
+        </dl>
+      </section>
 <details class="glossary" id="glossary" open>
             <summary><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Glossary of terms on this page</summary>
             <dl>
@@ -99,6 +107,7 @@
               <dt>Raid tier</dt><dd>A set of raids that open together. The first Forever raids open on 9 December 2026.</dd>
               <dt>Uncertain / 1 source</dt><dd>We compare several item databases. "Uncertain" means they disagree (or the loot is datamined and may change). "1 source" means only one had the item.</dd>
               <dt>Score</dt><dd>How good an item is for your spec, from stat weights. Higher is better. Compare only within one slot.</dd>
+              <dt>Gain</dt><dd>How much better the best item is than what you wear, in percent.</dd>
             </dl>
           </details>
     </div>
@@ -124,7 +133,7 @@
       <label class="sort"><span class="muted">Sort</span><select id="sort" title="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop, PvP rank." aria-description="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop, PvP rank.">
         <option value="slot">Slot order</option><option value="gain">Biggest upgrade</option><option value="easy">Easiest to get</option></select></label>
     </div>
-    <div class="cols" aria-hidden="true"><span>Slot</span><span>Best item</span><span style="text-align:right">Score</span><span>Where to get it</span><span>You wear</span><span style="text-align:right">Score</span><span style="text-align:right">Gain</span><span></span></div>
+    <div class="cols" aria-hidden="true"><span>Slot</span><span>Best item</span><span class="tip" data-tip="How good the item is for your spec: each stat times what it is worth to your spec, counted in attack power (spell power or healing for casters). Higher is better. Compare within one slot only.">Score</span><span>Where to get it</span><span>You wear</span><span class="tip" data-tip="The same score for the item you wear now, so the two numbers compare directly.">Score</span><span class="tip" data-tip="How much better the best item is than yours: (best − yours) ÷ yours. “new” means you wear nothing useful in that slot.">Gain</span><span></span></div>
     <ol class="rows" id="rows"></ol>
   </section>
   <aside class="rail" aria-label="Next steps">

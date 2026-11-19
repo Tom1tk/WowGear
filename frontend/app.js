@@ -127,7 +127,7 @@ function initSettings() {
   sm.value = state.scoreSet ? "set" : "raw";
   sm.onchange = () => { state.scoreSet = sm.value === "set"; store("scoremode", sm.value); render(); };
   const pin = $("pin-pick");
-  pin.value = recall("pin", "tomtom");
+  pin.value = recall("pin", "builtin");
   pin.onchange = () => store("pin", pin.value);
   refreshScene();
 }
@@ -141,7 +141,7 @@ function pinBtn(src) {
   b.insertAdjacentHTML("afterbegin", ICON_PIN);
   b.addEventListener("click", async (e) => {
     e.stopPropagation();
-    const cmd = pinCommand(l, recall("pin", "tomtom"));
+    const cmd = pinCommand(l, recall("pin", "builtin"));
     try { await navigator.clipboard.writeText(cmd); b.dataset.done = "Copied: paste in game chat"; }
     catch { window.prompt("Copy this, then paste it into game chat:", cmd); }
     setTimeout(() => delete b.dataset.done, 2500);

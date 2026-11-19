@@ -407,3 +407,14 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
 @keyframes sk-pulse { 50% { opacity: .4; } }
 /* Reduced motion: no sweep, but a slow fade so loading still reads as loading. */
 @media (prefers-reduced-motion: reduce) { .sk { animation: sk-pulse 2.4s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 70ms); } }
+
+.howto { margin: 0 0 16px; max-width: 96ch; }
+.howto h3 { margin: 0 0 8px; font: 600 var(--fs-base) "Cinzel", serif; color: var(--gold-2); }
+.howto dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; font-size: var(--fs-md); line-height: 1.5; }
+.howto dt { font-weight: 600; } .howto dd { margin: 0; color: var(--muted); }
+
+/* Column-title tooltips (the header row is decorative for screen readers; the intro explains the same). */
+.cols .tip { position: relative; text-align: right; cursor: help; text-decoration: underline dotted color-mix(in oklab, var(--muted) 60%, transparent); text-underline-offset: 3px; }
+.cols .tip::after { content: attr(data-tip); position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; width: max-content; max-width: 280px; padding: 7px 10px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--card-2); color: var(--text); font-size: var(--fs-sm); line-height: 1.45; text-align: left; white-space: normal; box-shadow: 0 6px 18px rgb(0 0 0 / .35); opacity: 0; translate: 0 -3px; pointer-events: none; transition: opacity .12s ease-out, translate .12s ease-out; }
+.cols .tip:hover::after { opacity: 1; translate: 0 0; }
+@media (prefers-reduced-motion: reduce) { .cols .tip::after { transition: none; } }
