@@ -34,6 +34,7 @@ export function setupPlanner(ctx) {
   function slotItems(slot) {
     const out = new Map();
     for (const p of ctx.slotPoints(slot)) for (const [id, sc] of p.items) out.set(id, sc);
+    for (const [id, sc] of state.gear.extra?.[slot] || []) out.set(id, sc); // set pieces off the top lists
     for (const [id, sc] of ctx.pointAt(slot)?.items || []) out.set(id, sc);
     return out;
   }
@@ -79,11 +80,13 @@ export function setupPlanner(ctx) {
     const planned = new Set(Object.values(p));
     const pieces = info.set.pieces.map(String).filter((pid) => pid in state.gear.items);
     const missing = info.set.pieces.length - pieces.length;
-    const btns = pieces.filter((pid) => !planned.has(pid)).map((pid) => el("button", { type: "button", class: "plan-add", onclick: () => planPiece(pid) },
+    const rest = pieces.filter((pid) => !planned.has(pid));
+    const btns = rest.map((pid) => el("button", { type: "button", class: "plan-add", onclick: () => planPiece(pid) },
       `Add ${state.gear.items[pid].name}`));
+    if (rest.length > 1) btns.unshift(el("button", { type: "button", class: "plan-add", onclick: () => rest.forEach(planPiece) }, "Add the rest of the set"));
     if (!btns.length && !missing) return el("p", { class: "plan-set muted" }, `${info.set.name}: every piece is planned.`);
     return el("p", { class: "plan-set muted" }, `${info.set.name}: `, ...btns,
-      missing ? ` ${missing} piece${missing > 1 ? "s are" : " is"} not on our lists for this spec.` : "");
+      missing ? ` ${missing} piece${missing > 1 ? "s are" : " is"} not wearable by this spec or has no known source.` : "");
   }
   function planPiece(pid) {
     const slot = slotOf(pid), p = plan();

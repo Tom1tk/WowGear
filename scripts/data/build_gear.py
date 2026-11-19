@@ -210,6 +210,14 @@ class Builder:
             if any(p["items"] for p in points):
                 slots[slot] = points
 
+        # set pieces that never make a top list, so the planner can still plan the whole set (leveling scores)
+        listed, extra = set(used), {}
+        for c in cands:
+            sid = self.items[c[1]].get("set")
+            if c[1] not in listed and sid and any(p in listed for p in map(str, self.scorer.sets[str(sid)]["pieces"])):
+                extra.setdefault(c[0], []).append(entry(c, 5))
+                used.add(c[1])
+
         item_info = {}
         for iid in used:
             item = self.items[iid]
@@ -258,7 +266,7 @@ class Builder:
             "faction": faction, "profile": self.aliases.get(key, key),
             "weights": {"leveling": prof["leveling"], "endgame": prof["endgame"], "weapon": weapon_w,
                         "sources": prof.get("sources", [])},
-            "slots": slots, "items": item_info,
+            "slots": slots, "extra": extra, "items": item_info,
         }
 
     def run(self, only: str | None = None):

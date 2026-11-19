@@ -24,6 +24,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "backend"
 from _common import FOREVER, REPORTS, STAGING, read_json, write_json  # noqa: E402
 from app.scoring import RATING_PER_PCT, scorer  # noqa: E402
 from forever_loot import parse_loot  # noqa: E402
+from parse_blizzard import parse_set_bonus  # noqa: E402
 
 EQUIP = {"HEAD", "NECK", "SHOULDER", "CLOAK", "CHEST", "ROBE", "WRIST", "HAND", "WAIST", "LEGS", "FEET",
          "FINGER", "TRINKET", "WEAPON", "TWOHWEAPON", "WEAPONMAINHAND", "WEAPONOFFHAND", "SHIELD",
@@ -275,11 +276,21 @@ class Merger:
         item["unscored"] = unscored_lines(stats, bz.get("unknown_stats") or [], texts, random)
         if random:  # no Forever source (Blizzard, warcraftdb, ForeverDB, QuestieDB) lists the suffix stat tables
             item["random_enchant"] = {"note": "Random enchant: stats vary, not scored"}
-        sid = self.register_set(bz.get("set"), wcr.get("set"))
+        sid = self.register_set(bz.get("set") or self.fallback_set(iid, wcr.get("set")), wcr.get("set"))
         if sid:
             item["set"] = sid
         item.update(uncertain=uncertain, checks=checks, found_in=sorted(recs), conflict_values=conflicts)
         return {k: v for k, v in item.items() if v not in (None, [], {}) or k in ("uncertain", "checks")}
+
+    def fallback_set(self, iid, wc_set: dict | None) -> dict | None:
+        """Blizzard's Forever API has no set for some old sets (e.g. Embrace of the Viper): use ForeverDB's piece list
+        (same set ids) and warcraftdb's bonus text when both have the item."""
+        fid = next((k for k, v in self.f_sets.items() if int(iid) in v["pieces"]), None)
+        if not fid or not wc_set:
+            return None
+        return {"id": int(fid), "name": self.f_sets[fid]["name"], "pieces": sorted(self.f_sets[fid]["pieces"]),
+                "bonuses": [{"count": b["pieces"], "text": b["text"], "stats": parse_set_bonus(b["text"])}
+                            for b in wc_set.get("bonuses") or [] if b["text"]], "fallback": True}
 
     def register_set(self, bz_set: dict | None, wc_set: dict | None) -> str | None:
         """Add the Blizzard set (cross-checked with ForeverDB piece lists and warcraftdb bonus text) to sets.json."""
@@ -292,7 +303,8 @@ class Merger:
                         "scored": bool(b["stats"]) and any(scorer.is_scored(k) for k in b["stats"])}
                        for b in bz_set["bonuses"]]
             entry = self.sets[sid] = {"name": bz_set["name"], "pieces": bz_set["pieces"], "bonuses": bonuses,
-                                      "uncertain": []}
+                                      "uncertain": ["Set pieces and bonuses from ForeverDB and warcraftdb only: "
+                                                    "Blizzard's data has no set for these items."] if bz_set.get("fallback") else []}
             fe = self.f_sets.get(sid)
             if fe and set(fe["pieces"]) != set(bz_set["pieces"]):
                 a, b = sorted(set(bz_set["pieces"]) - set(fe["pieces"]))[:3], sorted(set(fe["pieces"]) - set(bz_set["pieces"]))[:3]
