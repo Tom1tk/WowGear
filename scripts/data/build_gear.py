@@ -236,7 +236,7 @@ class Builder:
                            or ("; ".join(item["unparsed_effects"]) if item.get("unparsed_effects") else None),
                 "unique": item.get("unique", False),
                 "sources": sorted((s for s in srcs if self.source_level(s, item, faction, cls_id)),
-                                  key=lambda s: (-realism(s), not s.get("loc"), -(s.get("chance") or 0)))[:4],
+                                  key=lambda s: (-realism(s), -(s.get("chance") or 0), not s.get("loc")))[:4],
                 "checks": item.get("checks", {}),
             }
             usable = [s for s in srcs if self.source_level(s, item, faction, cls_id)]
