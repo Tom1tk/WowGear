@@ -38,7 +38,7 @@ SLOT_ORDER = ["head", "neck", "shoulders", "back", "chest", "wrist", "hands", "w
 PAIRED = {"ring": 2, "trinket": 2}
 REALISM = {"quest": 1.0, "vendor": 1.0, "drop": 0.9, "boss": 0.9, "object": 0.8,
            "container": 0.7, "craft": 0.75, "instance_trash": 0.5, "world_drop": 0.35,
-           "pvp_rep": 0.3}
+           "pvp_rep": 0.3, "pvp_rank": 0.3}
 
 
 def realism(src: dict) -> float:
@@ -80,12 +80,15 @@ class Builder:
     def min_level(self, item) -> int:
         return self.scorer.min_level(item)
 
-    def source_level(self, src, item, faction: str, cls_id: str) -> tuple[int, int] | None:
-        """(level the item can be had from this source, raid tier) or None."""
+    def source_level(self, src, item, faction: str, cls_id: str, extra: bool = True) -> tuple[int, int] | None:
+        """(level the item can be had from this source, raid tier) or None. extra=False leaves out PvP rank rewards
+        and rare open-world drops, which the page shows only when their filter / tickbox allows."""
         req = self.min_level(item)
         kind = src["type"]
-        if kind in ("pvp_rank", "pvp_rep"):
-            return None  # PvP rewards are left out of the PvE lists
+        if kind == "pvp_rep":
+            return None
+        if kind == "pvp_rank" and not extra:
+            return None
         if src.get("faction") and src["faction"] != faction:
             return None
         if kind == "quest":
@@ -101,18 +104,18 @@ class Builder:
                 return None
             return max(req, inst["levels"][0]), inst.get("tier", 0)
         if kind == "drop":
-            if src.get("chance") is not None and src["chance"] < 1:
+            if src.get("chance") is not None and src["chance"] < 1 and not extra:
                 return None  # rare open-world drop: not worth farming
             return req, 0
-        if kind in ("world_drop", "vendor", "craft", "object", "container", "pvp_rep"):
+        if kind in ("world_drop", "vendor", "craft", "object", "container", "pvp_rank"):
             return req, 0
         return None
 
-    def availability(self, iid, item, faction, cls_id):
+    def availability(self, iid, item, faction, cls_id, extra=False):
         """Best (lowest level, lowest tier) way to get the item + that source."""
         best = None
         for src in self.sources.get(iid, []):
-            res = self.source_level(src, item, faction, cls_id)
+            res = self.source_level(src, item, faction, cls_id, extra)
             if res is None:
                 continue
             level, tier = res
@@ -135,7 +138,7 @@ class Builder:
         races = [r for r in self.races.values() if r["faction"] == faction and int(cls_id) in r["classes"]]
         race = races[0] if len(races) == 1 else None  # racial skill only if the combo is unique
 
-        cands = []  # (slot, iid, avail_level, tier, source, raw leveling, raw endgame, set-mode leveling, set-mode endgame)
+        cands = []  # (slot, iid, avail_level, tier, source, raw leveling, raw endgame, set-mode leveling, set-mode endgame, normal)
         for iid, item in self.items.items():
             if item.get("races") and not any(int(cls_id) in r["classes"] and int(rid) in item["races"]
                                              for rid, r in self.races.items() if r["faction"] == faction):
@@ -151,6 +154,8 @@ class Builder:
             if equip is None:
                 continue
             avail = self.availability(iid, item, faction, cls_id)
+            normal = avail is not None  # False: only from PvP rank or a rare drop
+            avail = avail or self.availability(iid, item, faction, cls_id, extra=True)
             if not avail:
                 continue
             level, tier, src = avail
@@ -166,14 +171,14 @@ class Builder:
             x_end = self.score(item, iid, prof["endgame"], weapon_w, slot, race, cls_id, True, key)
             if max(s_lvl, s_end, x_lvl, x_end) <= 0:
                 continue
-            cands.append((slot, iid, level, tier, src, s_lvl, s_end, x_lvl, x_end))
+            cands.append((slot, iid, level, tier, src, s_lvl, s_end, x_lvl, x_end, normal))
 
         by_slot: dict[str, list] = {}
         for c in cands:
             by_slot.setdefault(c[0], []).append(c)
 
-        def top(slot, level, tier, idx):
-            pool = [c for c in by_slot.get(slot, []) if c[2] <= level and c[3] <= tier and c[idx] > 0]
+        def top(slot, level, tier, idx, normal=False):
+            pool = [c for c in by_slot.get(slot, []) if c[2] <= level and c[3] <= tier and c[idx] > 0 and (c[9] or not normal)]
             pool.sort(key=lambda c: (-c[idx] * (0.7 + 0.3 * realism(c[4])), c[2]))
             n = PAIRED.get(slot, 1) + TOP_N - 1
             return pool[:n]
@@ -191,8 +196,11 @@ class Builder:
             last = None
             for lvl, tier in steps:
                 idx = 5 if lvl < 60 else 6
-                picks = top(slot, lvl, tier, idx)  # raw-stat ranking first, then what only the set-mode ranking adds
-                picks += [c for c in top(slot, lvl, tier, idx + 2) if c not in picks]
+                # raw-stat ranking first, then what only the set-mode ranking adds; each also without PvP / rare drops,
+                # so the page still has TOP_N picks when those are filtered out
+                picks = []
+                for i, normal in ((idx, False), (idx, True), (idx + 2, False), (idx + 2, True)):
+                    picks += [c for c in top(slot, lvl, tier, i, normal) if c not in picks]
                 sig = [c[1] for c in picks]
                 if sig != last:
                     points.append({"level": lvl, "tier": tier, "items": [entry(c, idx) for c in picks]})

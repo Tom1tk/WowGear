@@ -1,8 +1,8 @@
 # Cross-reference report (warcraftdb / Blizzard / ForeverDB)
 
-Items kept: **5601**; with at least one conflict (Uncertain): **193**.
-Items known to both warcraftdb and Blizzard: 3042.
-Source entries: 9804; confirmed by 2 datasets: 2532; conflicts: 1384.
+Items kept: **6278**; with at least one conflict (Uncertain): **193**.
+Items known to both warcraftdb and Blizzard: 3259.
+Source entries: 12768; confirmed by 2 datasets: 7054; conflicts: 1384.
 
 Missing in a source is not a conflict. ForeverDB sources labelled Classic (k) or clue (c) are ignored.
 Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
@@ -10,7 +10,7 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 ## Items not kept
 
 - not equippable gear: 10566
-- no known source: 4196
+- no known source: 3519
 - ForeverDB only (no stats from Blizzard/warcraftdb yet): 1170
 - poor quality: 993
 - required level above 60: 65

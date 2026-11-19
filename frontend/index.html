@@ -94,12 +94,14 @@
           <label><input type="checkbox" value="craft"> Crafted<span class="n"></span></label>
           <label><input type="checkbox" value="wq"> World quests<span class="n"></span></label>
           <label><input type="checkbox" value="dq"> Dungeon quests<span class="n"></span></label>
+          <label><input type="checkbox" value="pvp"> PvP rank rewards<span class="n"></span></label>
         </div>
       </details>
       <label class="tog" title="Bind on Equip items: can be bought on the Auction House or traded."><input type="checkbox" id="boe-ok" checked> BoE</label>
       <label class="tog" title="Bind on Pickup items: you have to get them yourself (quests, drops, vendors, crafting)."><input type="checkbox" id="bop-ok" checked> BoP</label>
       <label class="tog" title="Epic and legendary items."><input type="checkbox" id="epic-ok" checked> Epics</label>
-      <label class="sort"><span class="muted">Sort</span><select id="sort" title="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop." aria-description="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop.">
+      <label class="tog" title="Open-world drops with under 1% drop chance: usually not worth farming."><input type="checkbox" id="rare-ok"> Rare drops</label>
+      <label class="sort"><span class="muted">Sort</span><select id="sort" title="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop, PvP rank." aria-description="Easiest: vendor, then crafted, world quest, world drop, dungeon quest, dungeon drop, PvP rank.">
         <option value="slot">Slot order</option><option value="gain">Biggest upgrade</option><option value="easy">Easiest to get</option></select></label>
     </div>
     <div class="cols" aria-hidden="true"><span>Slot</span><span>Best item</span><span style="text-align:right">Score</span><span>Where to get it</span><span>You wear</span><span style="text-align:right">Score</span><span style="text-align:right">Gain</span><span></span></div>
@@ -142,7 +144,7 @@
           </details>
 <p class="legend" id="legend"><span class="badge badge-unc" title="Uncertain: our data sources disagree"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span> Uncertain: our data sources disagree; hover it or open the row to see why. “1 source” (in an opened row) means only one database has the item. The gold bar is the percent score gained over what you wear; “new” means nothing useful is worn there. A * after a score means some stats on the item are not counted.</p>
 <p class="credits">Data: Blizzard Game Data API (Forever), <a href="https://forever.warcraftdb.com/" target="_blank" rel="noopener">warcraftdb</a>.
-  Data from <a href="https://foreverdb.net/" target="_blank" rel="noopener">ForeverDB.net</a>. Drop data from <a href="https://github.com/Questie/Questie" target="_blank" rel="noopener">Questie</a> player traces. Drop chances also from <a href="https://www.icy-veins.com/" target="_blank" rel="noopener">Icy Veins</a>, <a href="https://www.stillsixty.com/" target="_blank" rel="noopener">stillsixty</a>, <a href="https://github.com/zmarotrix/NorgannonDB" target="_blank" rel="noopener">NorgannonDB</a>, wowforever.gg, foreverdroprate, Polestar Codex, EG Link (CC BY 4.0) and Drop Tables (CC BY-SA 4.0).
+  Data from <a href="https://foreverdb.net/" target="_blank" rel="noopener">ForeverDB.net</a>. Drop data from <a href="https://github.com/Questie/Questie" target="_blank" rel="noopener">Questie</a> player traces. Drop chances, vendors and PvP prices also from <a href="https://www.icy-veins.com/" target="_blank" rel="noopener">Icy Veins</a>, <a href="https://www.stillsixty.com/" target="_blank" rel="noopener">stillsixty</a>, <a href="https://github.com/zmarotrix/NorgannonDB" target="_blank" rel="noopener">NorgannonDB</a>, wowforever.gg, foreverdroprate, Polestar Codex, EG Link (CC BY 4.0) and Drop Tables (CC BY-SA 4.0).
   Item tooltips by <a href="https://www.wowhead.com/forever" target="_blank" rel="noopener">Wowhead</a>.
   Background art © Blizzard Entertainment. Not affiliated with Blizzard Entertainment.</p>
 <p class="credits"><a id="report-link" href="https://github.com/Tom1tk/WowGear/issues/new" target="_blank" rel="noopener">Report a wrong item</a> · <span id="data-date"></span></p>

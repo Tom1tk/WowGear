@@ -1,4 +1,4 @@
-import { describeSource as describeIn, catsOf, CATS, EFFORT, locText, pinCommand, mapImage } from "./sources.js";
+import { describeSource as describeIn, catsOf, CATS, EFFORT, isRare, locText, pinCommand, mapImage } from "./sources.js";
 import { setupLookup } from "./lookup.js";
 
 const $ = (id) => document.getElementById(id);
@@ -340,10 +340,10 @@ function wornScoreFor(slot) {
 // Table view state (not part of the URL): source filter, sort, slot group, opened rows.
 // Filters, sort and open/closed sections are remembered in this browser.
 const ui = { sort: recall("sort", "slot"), src: new Set(recall("src", [])), slot: recall("slot", "all"), open: new Set(recall("open-rows", [])),
-  shut: new Set(recall("shut-groups", [])), boe: recall("boe", true), bop: recall("bop", true), epic: recall("epic", true) };
-const srcOk = (s) => !ui.src.size || catsOf(s).some((c) => ui.src.has(c));
+  shut: new Set(recall("shut-groups", [])), boe: recall("boe", true), bop: recall("bop", true), epic: recall("epic", true), rare: recall("rare", false) };
+const srcOk = (s) => (ui.rare || !isRare(s)) && (!ui.src.size || catsOf(s).some((c) => ui.src.has(c)));
 const narrowed = () => ui.src.size > 0 || !ui.boe || !ui.bop || !ui.epic;
-// Source filter plus the BoE / BoP / epic toggles (quality 4 = epic, 5 = legendary).
+// Source filter plus the BoE / BoP / epic / rare-drop toggles (quality 4 = epic, 5 = legendary).
 const itemOk = (id) => { const it = state.gear.items[id];
   return (ui.boe || it.binding !== "ON_EQUIP") && (ui.bop || it.binding !== "ON_ACQUIRE") && (ui.epic || it.quality < 4) && (it.sources || []).some(srcOk); };
 // sources with the allowed ones first, so the shown source is one the filter lets through
@@ -401,7 +401,7 @@ function buildRows() {
     // With a filter on, look beyond the top picks: the whole slotPool.
     const ok = (narrowed() ? slotPool(slot) : cands).filter(([id]) => itemOk(id));
     const top = ok.slice(0, pair ? 2 : 1), pick = ok[pair ? index : 0] || null;
-    const row = { slot, order, index, pair, cands, pick, next: pick ? null : nextFill(slot, index), alts: cands.filter((c) => !top.includes(c)), gain: 0, filtered: !pick && narrowed() && cands.length > 0,
+    const row = { slot, order, index, pair, cands, pick, next: pick ? null : nextFill(slot, index), alts: cands.filter((c) => !top.includes(c) && (ui.rare || state.gear.items[c[0]].sources?.some((x) => !isRare(x)))), gain: 0, filtered: !pick && narrowed() && cands.length > 0,
       label: pair ? `${SLOT_LABEL[slot]} ${index + 1}` : SLOT_LABEL[slot] };
     if (pick) {
       row.srcs = orderedSrcs(state.gear.items[pick[0]]);
@@ -915,7 +915,7 @@ function setupControls() {
   document.addEventListener("click", (e) => { if (pick.open && !pick.contains(e.target)) pick.open = false; });
   pick.addEventListener("keydown", (e) => { if (e.key === "Escape") { pick.open = false; pick.querySelector("summary").focus(); } });
   $("sort").addEventListener("change", (e) => { ui.sort = e.target.value; store("sort", ui.sort); render(); });
-  for (const k of ["boe", "bop", "epic"]) {
+  for (const k of ["boe", "bop", "epic", "rare"]) {
     const box = $(`${k}-ok`);
     box.checked = ui[k];
     box.addEventListener("change", () => { ui[k] = box.checked; store(k, box.checked); render(); });

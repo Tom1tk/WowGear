@@ -3,6 +3,16 @@
 
 // ---------------------------------------------------------------- sources
 const STANDINGS = ["Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"];
+// " Costs about 1g and 15 Warsong Gulch Mark of Honor." for a vendor-like source, or "".
+function costText(src) {
+  const cost = [Number(src.copper) > 0 ? `about ${formatMoney(src.copper)}` : "", ...(src.tokens || []).map(([n, q]) => `${q} ${n}`)].filter(Boolean);
+  return cost.length ? ` Costs ${cost.join(" and ")}.` : "";
+}
+// PvP ranks 1-14: [Alliance, Horde] title.
+const PVP_RANKS = [["Private", "Scout"], ["Corporal", "Grunt"], ["Sergeant", "Sergeant"], ["Master Sergeant", "Senior Sergeant"],
+  ["Sergeant Major", "First Sergeant"], ["Knight", "Stone Guard"], ["Knight-Lieutenant", "Blood Guard"], ["Knight-Captain", "Legionnaire"],
+  ["Knight-Champion", "Centurion"], ["Lieutenant Commander", "Champion"], ["Commander", "Lieutenant General"], ["Marshal", "General"],
+  ["Field Marshal", "Warlord"], ["Grand Marshal", "High Warlord"]];
 // Map spot of a source (QuestieDB Forever): {zone, x, y (percent of the zone map), map (uiMapId)}.
 export const locText = (l) => `${l.zone} ${l.x.toFixed(1)}, ${l.y.toFixed(1)}`;
 // Chat command that drops a map pin: TomTom's /way, or the built-in user waypoint (needs checking in the Forever client).
@@ -53,14 +63,20 @@ function describeBase(meta, src) {
       const label = inst && meta.instances[inst]?.tier ? `Quest: ${src.name} — needs ${instanceName(inst)}` : `Quest: ${src.name}${lvl}`;
       return { key: `quest:${src.id}`, label, text: `Quest reward${where}${from}. Can be picked up at level ${src.min_level || 1}.` };
     }
+    case "pvp_rank": {
+      const name = PVP_RANKS[src.rank - 1]?.[src.faction === "H" ? 1 : 0] || "";
+      const price = costText(src);
+      const who = src.name ? `${src.name}${src.title ? ` <${src.title}>` : ""}` : "your faction's PvP quartermaster";
+      if (!src.rank) return { key: `pvp:${src.id}`, label: `PvP reward from ${src.name}`, text: `PvP reward sold by ${who}; the rank needed is not known.${price}` };
+      return { key: `pvp:${src.rank}`, label: `PvP rank ${src.rank}${name ? ` (${name})` : ""}`, text: `Reward for reaching PvP rank ${src.rank}${name ? `, ${name}` : ""}. Sold by ${who}.${price}` };
+    }
     case "vendor": {
       // Forever data: rep vendors are named by faction with {standing: 0-7}; plain vendors may have no name.
       const standing = STANDINGS[Number(src.reputation?.standing)];
       const repNeed = src.reputation ? ` Needs ${standing || "some"} reputation with ${src.rep_name || "their faction"}.` : "";
       if (src.reputation && !src.id) return { key: `rep:${src.name}`, label: `Buy from ${src.name} quartermaster`, text: `Needs ${standing || "some"} reputation with ${src.name}.` };
       const who = src.name || "a vendor";
-      const cost = [Number(src.copper) > 0 ? `about ${formatMoney(src.copper)}` : "", ...(src.tokens || []).map(([n, q]) => `${q} ${n}`)].filter(Boolean);
-      const price = cost.length ? ` Costs ${cost.join(" and ")}.` : "";
+      const price = costText(src);
       return { key: src.name ? `vendor:${src.id}` : "vendor", label: `Buy from ${who}${src.reputation ? ` (${standing ? `${standing} with ` : ""}${src.rep_name || "faction"}${standing ? "" : " rep"})` : src.zone ? ` (${src.zone})` : ""}`, text: `Sold by ${who}${src.title ? ` <${src.title}>` : ""}.${price}${repNeed}` };
     }
     case "craft": {
@@ -91,12 +107,15 @@ export function describeSource(meta, src) {
   return { ...d, text: `${d.text}${/[.!?]$/.test(d.text) ? "" : "."} ${extra}`, extra };
 }
 
-export const CATS = { vendor: "Vendor / AH", rep: "Reputation vendors", ddrop: "Dungeon drops", wdrop: "World drops", craft: "Crafted", wq: "World quests", dq: "Dungeon quests" };
-export const EFFORT = { vendor: 1, rep: 2, craft: 2, wq: 3, wdrop: 4, dq: 5, ddrop: 6 };
+export const CATS = { vendor: "Vendor / AH", rep: "Reputation vendors", ddrop: "Dungeon drops", wdrop: "World drops", craft: "Crafted", wq: "World quests", dq: "Dungeon quests", pvp: "PvP rank rewards" };
+export const EFFORT = { vendor: 1, rep: 2, craft: 2, wq: 3, wdrop: 4, dq: 5, ddrop: 6, pvp: 7 };
+// Open-world drop under 1%: hidden unless "Rare drops" is ticked (same rule as build_gear.py source_level).
+export const isRare = (src) => src.type === "drop" && !src.instance && src.chance != null && src.chance < 1;
 export function catsOf(src) {
   switch (src.type) {
     case "vendor": return [src.reputation ? "rep" : "vendor"];
     case "craft": return ["craft"];
+    case "pvp_rank": return ["pvp"];
     case "world_drop": return ["wdrop", "vendor"]; // BoE: also on the Auction House
     case "quest": return [src.instance ? "dq" : "wq"];
     default: return [src.instance ? "ddrop" : "wdrop"]; // drop, boss, instance_trash, object, container

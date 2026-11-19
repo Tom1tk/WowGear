@@ -134,6 +134,8 @@ class Merger:
         self.ext_drops = read_json(ex) if ex.exists() else {}
         ev = STAGING / "external_vendors.json"
         self.ext_vendors = read_json(ev) if ev.exists() else {}
+        ep = STAGING / "external_pvp.json"
+        self.ext_pvp = read_json(ep) if ep.exists() else {}
         fs = STAGING / "foreverdb_sets.json"
         self.f_sets = read_json(fs) if fs.exists() else {}
         fv = STAGING / "foreverdb_vendors.json"
@@ -376,12 +378,18 @@ class Merger:
                 add("foreverdb", "vendor", f"rep:{p[1]}", name=p[3], reputation={"faction_id": p[1], "standing": p[2]})
             elif g == "o":
                 add("foreverdb", "object", p[1].lower(), name=p[1], chance=p[2])
+            elif g == "p" and p[1].isdigit():  # PvP rank reward: rank 1-14, side
+                add("foreverdb", "pvp_rank", int(p[1]), rank=int(p[1]), faction={"a": "A", "h": "H"}.get(p[2]),
+                    copper=self.ext_pvp.get(iid))
             elif g == "x":
                 add("foreverdb", "container", p[2].lower(), id=int(p[1]), name=p[2])
         for nid in self.traced_drops.get(iid, []):  # QuestieTrace: NPCs players were seen looting the item from
             npc = self.npcs.get(str(nid)) or {}
             name = npc.get("name") or f"NPC {nid}"
             add("questietrace", "drop", name.lower(), id=nid, name=name, instance=self.loot["npc"].get(nid))
+        for vid, v in self.ext_vendors.get(iid, {}).items():  # every vendor other sites list (ForeverDB has only the first)
+            for src in v["found_in"]:
+                add(src, "vendor", int(vid), id=int(vid), name=v.get("name"))
         out = []
         for (kind, _key), r in found.items():
             r["found_in"] = sorted(r["found_in"])
@@ -521,6 +529,31 @@ class Merger:
                         r["rep_name"] = r["name"]
                         r.update({k: t[k] for k in ("id", "name", "title", "faction", "zone", "loc") if k in t})
 
+    @staticmethod
+    def fold_pvp(sources: dict) -> None:
+        """Vendors that sell any PvP rank reward are PvP quartermasters: their rows on any item become PvP rows (or
+        name the vendor on the item's PvP row), so the PvP filter covers them."""
+        qm: set = set()
+        while True:  # a vendor selling an item next to a quartermaster is one too
+            more = {r["id"] for rows in sources.values() if any(r["type"] == "pvp_rank" or r.get("id") in qm for r in rows)
+                    for r in rows if r["type"] == "vendor" and r.get("id")}
+            if more <= qm:
+                break
+            qm |= more
+        for iid, rows in sources.items():
+            sold = [r for r in rows if r["type"] == "vendor" and r.get("id") in qm]
+            if not sold:
+                continue
+            ranks = [r for r in rows if r["type"] == "pvp_rank"]
+            for p in ranks:
+                v = next((v for v in sold if v.get("faction") in (None, p.get("faction"))), None)
+                if v:
+                    p.update({k: v[k] for k in ("id", "name", "title", "zone", "loc") if k in v and k not in p})
+            if not ranks:
+                for v in sold:
+                    v["type"] = "pvp_rank"
+            sources[iid] = [r for r in rows if r not in sold or not ranks]
+
     def run(self):
         items, sources, dropped = {}, {}, Counter()
         for iid in sorted(set(self.w) | set(self.b), key=int):
@@ -543,6 +576,7 @@ class Merger:
                 sources[iid] = srcs
         self.hand_rep(sources)
         self.fold_rep(items, sources)
+        self.fold_pvp(sources)
         for iid in self.f:
             if iid not in self.w and iid not in self.b:
                 dropped["ForeverDB only (no stats from Blizzard/warcraftdb yet)"] += 1

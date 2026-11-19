@@ -62,4 +62,16 @@ def test_external_rows_filtered_and_vendor_costs():
             {"source": "icyveins", "vendor_id": 900002, "price": 100},
             {"source": "icyveins", "vendor_id": 900003, "price": 7,
              "tokens": [{"name": "Invented Token", "quantity": 7}]}]
-    assert pe.vendor_costs(rows) == {"900002": {"copper": 100}, "900003": {"tokens": [["Invented Token", 7]]}}
+    assert pe.vendor_costs(rows) == {"900002": {"found_in": ["Icy Veins", "warcraftdb"], "copper": 100},
+                                     "900003": {"found_in": ["Icy Veins"], "tokens": [["Invented Token", 7]]}}
+
+
+def test_fold_pvp_moves_quartermaster_rows_into_pvp_source():
+    qm = {"type": "vendor", "id": 900010, "name": "Invented Quartermaster", "faction": "A"}
+    sources = {"1": [{"type": "pvp_rank", "rank": 10, "faction": "A"}, dict(qm)],
+               "2": [dict(qm), {"type": "vendor", "id": 900011, "name": "Invented Second Quartermaster"}],
+               "3": [{"type": "vendor", "id": 900012, "name": "Invented Vendor"}]}
+    merge.Merger.fold_pvp(sources)
+    assert sources["1"] == [{"type": "pvp_rank", "rank": 10, "faction": "A", "id": 900010, "name": "Invented Quartermaster"}]
+    assert [r["type"] for r in sources["2"]] == ["pvp_rank", "pvp_rank"]  # sells PvP gear next to a quartermaster
+    assert sources["3"][0]["type"] == "vendor"
