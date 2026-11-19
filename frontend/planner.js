@@ -44,9 +44,12 @@ export function setupPlanner(ctx) {
   function status(r, id) {
     const score = slotItems(r.slot).get(id) ?? 0, w = ctx.wornAt(r.slot, r.index);
     const done = state.mode === "manual" ? ctx.ownedSet().has(id) : w?.id === id;
-    const gain = !w || !(w.score > 0) || w.score < score * 0.1 ? Infinity : Math.max(0, (score - w.score) / w.score * 100);
+    const gain = !w || !(w.score > 0) || w.score < score * 0.1 ? Infinity : (score - w.score) / w.score * 100; // negative = worse than worn
     return { score, worn: w, done, gain };
   }
+  // "+12%" / "−8%" (a loss against what is worn) / "same"
+  const fmt = (g) => (g >= 0.05 ? ctx.fmtGain(g) : g <= -0.05 ? `\u2212${Math.abs(g) >= 10 ? Math.round(-g) : (-g).toFixed(1)}%` : "same");
+  const gainSpan = (cls, g) => el("span", { class: g <= -0.05 ? `${cls} loss` : cls }, fmt(g));
 
   // ------------------------------------------------------------ planner table
   function renderTable() {
@@ -64,7 +67,7 @@ export function setupPlanner(ctx) {
         info.required_level > lvl ? el("span", { class: "badge", title: "You can't wear it yet" }, `Lv ${info.required_level}`) : null)
         : el("span", { class: "muted" }, "Nothing planned");
       const gainEl = !info ? el("span") : st.done ? el("span", { class: "plan-done" }, state.mode === "manual" ? "Have it" : "Wearing")
-        : el("span", { class: "gain" }, st.gain >= 0.05 ? ctx.fmtGain(st.gain) : "no gain");
+        : gainSpan("gain", st.gain);
       const li = el("li", { class: `plan-row${st?.done ? " done" : ""}` }, el("span", { class: "slot" }, r.label), want,
         el("span", { class: "score" }, info ? String(st.score) : ""), gainEl, el("span", { class: "plan-pick" }, input),
         info ? el("button", { type: "button", class: "plan-x", title: `Remove ${info.name} from the plan`, "aria-label": `Remove ${r.label} from the plan`, onclick: () => setPlan(r.label, null) }, "Remove") : el("span"));
@@ -113,7 +116,7 @@ export function setupPlanner(ctx) {
       const info = state.gear.items[id], st = status(r, id);
       return el("li", { role: "option", id: `plan-o-${i}`, "aria-selected": String(i === active), onmousedown: (e) => { e.preventDefault(); choose(id); } },
         el("span", { class: `q-${["", "common", "uncommon", "rare", "epic", "legendary"][info.quality] || "common"}` }, info.name),
-        el("span", { class: "muted" }, `${st.score}${info.required_level > lvl ? ` · Lv ${info.required_level}` : ""}${st.done ? " · worn" : st.gain >= 0.05 ? ` · ${ctx.fmtGain(st.gain)}` : ""}`));
+        el("span", { class: "muted" }, `${st.score}${info.required_level > lvl ? ` · Lv ${info.required_level}` : ""}${st.done ? " · worn" : ` · ${fmt(st.gain)}`}`));
     }) : [el("li", { class: "none", role: "option", "aria-disabled": "true" }, `No ${r.label.toLowerCase()} item by that name on this spec's lists`)]));
     list.hidden = false;
     input.setAttribute("aria-expanded", "true");
@@ -159,7 +162,7 @@ export function setupPlanner(ctx) {
         zone: loc?.zone ?? inst?.zone ?? src?.zone ?? null, loc, anywhere: ANYWHERE.test(d.key) };
       const need = Math.max(info.required_level || 0, inst && !inst.type.startsWith("raid") ? inst.levels?.[0] || 0 : 0, src?.type === "quest" ? src.min_level || 0 : 0);
       stop.level = Math.max(stop.level, need);
-      stop.value += Math.min(st.gain, 100) + 1; // "new" counts as +100%
+      stop.value += Math.max(0, Math.min(st.gain, 100)) + 1; // "new" counts as +100%
       stop.items.push({ label, id, gain: st.gain, d });
       out.set(d.key, stop);
     }
@@ -197,7 +200,7 @@ export function setupPlanner(ctx) {
   function stepEl(s, n) {
     const ul = el("ul", { class: "g-list" }, s.items.sort((a, b) => b.gain - a.gain).map(({ label, id, gain, d }) => el("li", { title: d.text },
       el("span", { class: "slot" }, label), el("span", { class: "g-it" }, ctx.itemLink(id, state.gear.items[id])),
-      el("span", { class: "g-d" }, gain >= 0.05 ? ctx.fmtGain(gain) : "no gain"))));
+      gainSpan("g-d", gain))));
     return el("li", { class: "step" }, el("span", { class: "step-n", "aria-hidden": "true" }, String(n)),
       el("div", { class: "step-body" }, el("strong", { class: "g-title" }, s.label), el("p", { class: "step-why muted" }, s.why), ctx.pinBtn(s.src), ul));
   }

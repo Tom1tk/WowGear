@@ -473,3 +473,4 @@ h2 { font: 700 17px "Cinzel", serif; color: var(--gold-2); margin: 0; }
   .plan-set { grid-column: 1 / -1; }
 }
 @media (prefers-reduced-motion: reduce) { .plan-list { animation: none; } }
+.plan-row > .gain.loss, .g-list .g-d.loss { color: var(--bad); }
