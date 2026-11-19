@@ -61,8 +61,8 @@ LABEL = {"blizzard": "Blizzard", "warcraftdb": "warcraftdb", "foreverdb": "Forev
 FIELDS = ("name", "required_level", "item_level", "inventory_type", "type", "stats", "weapon", "binding", "classes")
 EQUIP_ONLY = {"bonus_armor", "sp", "heal", "mp5", "ap", "rap"}
 CHANCE_RATIO = 2.0
-OBSERVED = ("Polestar Codex", "foreverdroprate", "EG Link", "Drop Tables")  # player samples: used only as a fallback
-CHANCE_ORDER = ("warcraftdb", "foreverdb", "Icy Veins", "stillsixty", "NorgannonDB", "wowforever.gg") + OBSERVED
+OBSERVED = ("Polestar Codex", "foreverdroprate", "EG Link", "Drop Tables", "foreverdb.app", "TheWoWDB", "Zephras")  # player samples: used only as a fallback
+CHANCE_ORDER = ("warcraftdb", "foreverdb", "Icy Veins", "stillsixty", "NorgannonDB", "wowforever.gg", "ForeverQuestLog", "forever-xp") + OBSERVED
 
 
 def stat_text(stats: dict, empty: str = "none") -> str:
@@ -139,6 +139,9 @@ class Merger:
         self.ext_pvp = read_json(ep) if ep.exists() else {}
         er = STAGING / "external_recipes.json"
         self.ext_recipes = read_json(er) if er.exists() else {}
+        cs = STAGING / "external_sets.json"
+        self.c_sets = read_json(cs) if cs.exists() else {}
+        self.set_of_piece = {p: sid for sid, c in self.c_sets.items() for p in c["pieces"]}
         fs = STAGING / "foreverdb_sets.json"
         self.f_sets = read_json(fs) if fs.exists() else {}
         fv = STAGING / "foreverdb_vendors.json"
@@ -283,8 +286,13 @@ class Merger:
         return {k: v for k, v in item.items() if v not in (None, [], {}) or k in ("uncertain", "checks")}
 
     def fallback_set(self, iid, wc_set: dict | None) -> dict | None:
-        """Blizzard's Forever API has no set for some old sets (e.g. Embrace of the Viper): use ForeverDB's piece list
-        (same set ids) and warcraftdb's bonus text when both have the item."""
+        """Blizzard's Forever API has no set for some old sets (e.g. Embrace of the Viper): use the game client's set
+        table, else ForeverDB's piece list (same set ids) with warcraftdb's bonus text."""
+        cid = self.set_of_piece.get(int(iid))
+        if cid:  # game client set table: pieces and bonus text, no ForeverDB/warcraftdb cross-check needed
+            c = self.c_sets[cid]
+            return {"id": int(cid), "name": c["name"], "pieces": c["pieces"], "fallback": "client",
+                    "bonuses": [{**b, "stats": parse_set_bonus(b["text"])} for b in c["bonuses"]]}
         fid = next((k for k, v in self.f_sets.items() if int(iid) in v["pieces"]), None)
         if not fid or not wc_set:
             return None
@@ -304,7 +312,7 @@ class Merger:
                        for b in bz_set["bonuses"]]
             entry = self.sets[sid] = {"name": bz_set["name"], "pieces": bz_set["pieces"], "bonuses": bonuses,
                                       "uncertain": ["Set pieces and bonuses from ForeverDB and warcraftdb only: "
-                                                    "Blizzard's data has no set for these items."] if bz_set.get("fallback") else []}
+                                                    "Blizzard's data has no set for these items."] if bz_set.get("fallback") is True else []}
             fe = self.f_sets.get(sid)
             if fe and set(fe["pieces"]) != set(bz_set["pieces"]):
                 a, b = sorted(set(bz_set["pieces"]) - set(fe["pieces"]))[:3], sorted(set(fe["pieces"]) - set(bz_set["pieces"]))[:3]

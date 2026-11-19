@@ -2,7 +2,7 @@
 
 Items kept: **6278**; with at least one conflict (Uncertain): **193**.
 Items known to both warcraftdb and Blizzard: 3259.
-Source entries: 12768; confirmed by 2 datasets: 7054; conflicts: 1384.
+Source entries: 12768; confirmed by 2 datasets: 7054; conflicts: 1385.
 
 Missing in a source is not a conflict. ForeverDB sources labelled Classic (k) or clue (c) are ignored.
 Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
@@ -27,7 +27,7 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 
 ## Source conflicts by kind
 
-- drop: 1384
+- drop: 1385
 
 ## Examples (first 50 item conflicts)
 
@@ -93,8 +93,8 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 - Notched Shortsword (727): Drop chance for Al'Aketh Spiritcaller: warcraftdb 1.6129%, Icy Veins 0.36% (more than 2x apart).
 - Notched Shortsword (727): Drop chance for Al'Aketh Brawler: warcraftdb 0.847458%, Icy Veins 0.13% (more than 2x apart).
 - Notched Shortsword (727): Drop chance for Riverpaw Outrunner: warcraftdb 0.657895%, Icy Veins 0.21% (more than 2x apart).
-- Tunnel Pick (756): Drop chance for Dark Iron Tunneler: Icy Veins 4.02%, NorgannonDB 1.77%, stillsixty 2% (more than 2x apart).
-- Ice-covered Bracers (763): Drop chance for Hammerspine: Icy Veins 24.04%, NorgannonDB 80%, stillsixty 75% (more than 2x apart).
+- Tunnel Pick (756): Drop chance for Dark Iron Tunneler: ForeverQuestLog 1.8%, Icy Veins 4.02%, NorgannonDB 1.77%, stillsixty 2% (more than 2x apart).
+- Ice-covered Bracers (763): Drop chance for Hammerspine: ForeverQuestLog 80%, Icy Veins 24.04%, NorgannonDB 80%, stillsixty 75% (more than 2x apart).
 - Flanged Mace (766): Drop chance for Highlands Bandit: warcraftdb 1.7094%, Icy Veins 0.21% (more than 2x apart).
 - Flanged Mace (766): Drop chance for Hungry Bandit: warcraftdb 1.53846%, Icy Veins 0.07% (more than 2x apart).
 - Long Bo Staff (767): Drop chance for Gnarlpine Avenger: warcraftdb 7.14286%, Icy Veins 0.08% (more than 2x apart).

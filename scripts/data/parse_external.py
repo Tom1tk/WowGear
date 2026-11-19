@@ -2,7 +2,8 @@
 drop_chances.json -> data/forever/staging/external_drops.json: {item id: {npc id: {source: chance %}}};
 vendor_requirements.json -> external_vendors.json: {item id: {vendor id: {"name", "found_in", "copper", "tokens"}}};
 pvp_rank_rewards.json -> external_pvp.json: {item id: price in copper};
-recipe_sources.json -> external_recipes.json: {crafted item id: how the recipe is learned (recipe_info)}.
+recipe_sources.json -> external_recipes.json: {crafted item id: how the recipe is learned (recipe_info)};
+item_sets.json -> external_sets.json: game-client item sets (client_sets).
 
 Kept: NPC drops with a chance above 0 from Forever sources. Dropped: rows labelled Classic or built from Classic
 emulator tables, sources we already read ourselves (warcraftdb, ForeverDB), and player samples under MIN_SAMPLE
@@ -25,9 +26,13 @@ from _common import STAGING, read_json, write_json  # noqa: E402
 
 EXTERNAL = Path(os.environ.get("WOWGEAR_EXTERNAL", Path.home() / "wowgear-external"))
 PUBLISHED = {"icyveins": "Icy Veins", "stillsixty": "stillsixty", "NorgannonDB (GPL-3.0)": "NorgannonDB",
-             "wowforever.gg item source": "wowforever.gg"}
+             "wowforever.gg item source": "wowforever.gg", "ForeverQuestLog": "ForeverQuestLog",
+             "forever-xp.com dungeon and raid loot": "forever-xp"}
 OBSERVED = {"Polestar Codex (player-recorded loot windows)": "Polestar Codex", "foreverdroprate": "foreverdroprate",
-            "EG Link (Efficient Games, CC BY 4.0)": "EG Link", "Drop Tables (CC BY-SA 4.0)": "Drop Tables"}
+            "EG Link (Efficient Games, CC BY 4.0)": "EG Link", "Drop Tables (CC BY-SA 4.0)": "Drop Tables",
+            "foreverdb.app NPC drop table": "foreverdb.app", "foreverdb.app item drop table": "foreverdb.app",
+            "thewowdb player-recorded drop table": "TheWoWDB", "Zephras item Dropped by table": "Zephras",
+            "Zephras NPC Drops table": "Zephras"}
 MIN_SAMPLE = 20  # kills; fewer is noise
 # Vendor rows (not NorgannonDB: it lists guards and quest NPCs as vendors): Icy Veins lists the base price, warcraftdb-forever sometimes the reputation-discounted one.
 VENDOR_SOURCES = {"icyveins": "Icy Veins", "warcraftdb-forever": "warcraftdb", "warcraftdb-forever (item sold-by)": "warcraftdb",
@@ -70,12 +75,18 @@ KIND_FIELDS = {"trainer": (), "automatic": (), "vendor": ("vendors",), "quest": 
                "favor": ("vendors", "favor", "standing"), "drop": ("drops",), "unknown": ()}
 
 
+def sample(r: dict) -> int:
+    """Kills behind an observed chance: sample/kills may be 15, "15", "6 / 30" or "1 of 1" (the larger number is the kills)."""
+    nums = [int(n) for n in re.findall(r"\d+", f'{r.get("sample") or ""} {r.get("kills") or ""}')]
+    return max(nums, default=0)
+
+
 def keep(r: dict) -> str | None:
     """Our label for a usable row, else None."""
     label = PUBLISHED.get(r.get("source")) or OBSERVED.get(r.get("source"))
     if not label or not r.get("npc_id") or not r.get("chance_pct") or "classic" in str(r.get("chance_provenance")).lower():
         return None
-    if r["source"] in OBSERVED and ((r.get("sample") or r.get("kills") or 0) < MIN_SAMPLE or r.get("trusted") is False):
+    if r["source"] in OBSERVED and (sample(r) < MIN_SAMPLE or r.get("trusted") is False):
         return None
     return label
 
@@ -110,7 +121,28 @@ def stream(name: str, key: str):
         yield from ijson.kvitems(f, key, use_float=True)
 
 
+def client_sets() -> dict[str, dict]:
+    """item_sets.json (game client ItemSet, via wago.tools) -> {set id: {name, pieces, bonuses: [{count, text}]}}.
+    The client's own bonus text has $-placeholders for durations and procs; a site's rendered line for the same
+    count replaces it when there is one."""
+    out = {}
+    for sid, s in read_json(EXTERNAL / "wanted" / "item_sets.json")["sets"].items():
+        if s.get("source") != "wago.tools wowf DB2" or not s.get("pieces"):
+            continue
+        by_count: dict[int, str] = {}
+        for b in s.get("bonuses") or []:
+            text = re.sub(r"\$\{(\d+(?:\.\d+)?)\}\.\d", r"\1", (b.get("text") or "").strip())  # "${2}.1%": 2 shown with one decimal
+            if text and b.get("count") and (b["count"] not in by_count or ("$" in by_count[b["count"]] and "$" not in text)):
+                by_count[b["count"]] = text
+        out[sid] = {"name": s["name"], "pieces": sorted(int(p["id"]) for p in s["pieces"]),
+                    "bonuses": [{"count": c, "text": t} for c, t in sorted(by_count.items())]}
+    return out
+
+
 def main() -> None:
+    sets = client_sets()
+    write_json(STAGING / "external_sets.json", sets, compact=True)
+    print(f"{len(sets)} item sets from the game client")
     vout = {iid: c for iid, rows in stream("vendor_requirements.json", "item_vendors") if (c := vendor_costs(rows))}
     token_vendors = {vid for c in vout.values() for vid, v in c.items() if "tokens" in v}
     for c in vout.values():  # their other "prices" are usually a token count with the token missing
@@ -140,5 +172,8 @@ def main() -> None:
     print(f"{len(out)} items, {sum(len(v) for v in out.values())} item/NPC pairs with a chance")
 
 
+assert sample({"sample": "6 / 30"}) == 30 and sample({"sample": 15}) == 15 and sample({"kills": 25}) == 25 and sample({}) == 0
+
 if __name__ == "__main__":
     main()
+
