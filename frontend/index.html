@@ -78,10 +78,30 @@
   </div>
 </aside>
 <div class="stage">
-<div id="status" class="status busy" role="status">Loading gear data…</div>
-<main class="work" id="results" hidden>
+<div id="status" class="status" role="status" hidden></div>
+<main class="work" id="results" data-state="intro">
   <section class="panel" aria-labelledby="gear-t">
-    <div class="sec-head"><h2 id="gear-title">Best gear</h2><p id="gear-sub"></p></div>
+    <div class="sec-head"><h2 id="gear-title">Best gear</h2><p id="gear-sub">Every level from 10 to 60, for every class and spec</p></div>
+    <div class="intro" id="intro">
+      <p class="intro-lead">Pick a character first: look one up by name, or choose race, class, spec and level. This panel then lists the best item for each slot, how it scores for your spec, where to get it, and how much it beats what you wear.</p>
+<details class="glossary" id="glossary" open>
+            <summary><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Glossary of terms on this page</summary>
+            <dl>
+              <dt>BiS</dt><dd>"Best in slot": the best item for that equipment slot.</dd>
+              <dt>BoP / BoE</dt><dd>Binds when picked up (only you can use it) / binds when equipped (you can buy or sell it on the Auction House).</dd>
+              <dt>Elite</dt><dd>A strong monster (gold dragon on its portrait). Usually needs a group.</dd>
+              <dt>Instance / dungeon</dt><dd>A private area for your group of 5 (raids: 10, 20 or 40 players).</dd>
+              <dt>Trash</dt><dd>The normal monsters in a dungeon, not the bosses.</dd>
+              <dt>Forever</dt><dd>WoW Forever: the Classic-based game where level 60 is the permanent cap and new content (dungeons, zones, the Skyborne race) is added over time.</dd>
+              <dt>Skyborne</dt><dd>The new playable race in Forever. It starts on Zephras Isle.</dd>
+              <dt>Reputation</dt><dd>Your standing with a faction. Higher standing opens more rewards.</dd>
+              <dt>Pre-raid</dt><dd>Gear from dungeons, quests, crafting and reputation — before raiding.</dd>
+              <dt>Raid tier</dt><dd>A set of raids that open together. The first Forever raids open on 9 December 2026.</dd>
+              <dt>Uncertain / 1 source</dt><dd>We compare several item databases. "Uncertain" means they disagree (or the loot is datamined and may change). "1 source" means only one had the item.</dd>
+              <dt>Score</dt><dd>How good an item is for your spec, from stat weights. Higher is better. Compare only within one slot.</dd>
+            </dl>
+          </details>
+    </div>
     <div class="toolbar">
       <details class="srcpick" id="srcpick">
         <summary><span class="muted">Get it from</span> <b id="src-sum">All sources</b><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary>
@@ -110,38 +130,24 @@
   <aside class="rail" aria-label="Next steps">
     <section class="panel" aria-labelledby="todo-t">
       <div class="sec-head"><h2 id="todo-t">Where to go next</h2><p id="todo-sub"></p></div>
+      <p class="intro-copy">The best place of each kind to go next (dungeon, vendor, quest and more), picked for how many of your slots it upgrades.</p>
       <div id="todo-list"></div>
     </section>
     <section class="panel" id="lookup" aria-labelledby="lk-t">
       <div class="sec-head"><h2 id="lk-t">Find an item</h2></div>
-      <input id="lk-in" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lk-list" aria-label="Search for an item by name" placeholder="Search an item by name" autocomplete="off" spellcheck="false">
+      <p class="intro-copy">Search any item to see how it scores for your spec and where it comes from.</p>
+      <input id="lk-in" disabled type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lk-list" aria-label="Search for an item by name" placeholder="Search an item by name" autocomplete="off" spellcheck="false">
       <ul id="lk-list" role="listbox" aria-label="Matching items" hidden></ul>
       <div id="lk-out" aria-live="polite"></div>
     </section>
     <section class="panel" aria-labelledby="up-t">
       <div class="sec-head"><h2 id="up-t">Upgrades at your next levels</h2></div>
+      <p class="intro-copy">The items that become your best pick over the next few levels, so you can plan ahead.</p>
       <ol class="up-list" id="upcoming-list"></ol>
     </section>
   </aside>
 </main>
-<footer class="foot">
-<details class="glossary">
-            <summary><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 6 4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Glossary of terms on this page</summary>
-            <dl>
-              <dt>BiS</dt><dd>"Best in slot": the best item for that equipment slot.</dd>
-              <dt>BoP / BoE</dt><dd>Binds when picked up (only you can use it) / binds when equipped (you can buy or sell it on the Auction House).</dd>
-              <dt>Elite</dt><dd>A strong monster (gold dragon on its portrait). Usually needs a group.</dd>
-              <dt>Instance / dungeon</dt><dd>A private area for your group of 5 (raids: 10, 20 or 40 players).</dd>
-              <dt>Trash</dt><dd>The normal monsters in a dungeon, not the bosses.</dd>
-              <dt>Forever</dt><dd>WoW Forever: the Classic-based game where level 60 is the permanent cap and new content (dungeons, zones, the Skyborne race) is added over time.</dd>
-              <dt>Skyborne</dt><dd>The new playable race in Forever. It starts on Zephras Isle.</dd>
-              <dt>Reputation</dt><dd>Your standing with a faction. Higher standing opens more rewards.</dd>
-              <dt>Pre-raid</dt><dd>Gear from dungeons, quests, crafting and reputation — before raiding.</dd>
-              <dt>Raid tier</dt><dd>A set of raids that open together. The first Forever raids open on 9 December 2026.</dd>
-              <dt>Uncertain / 1 source</dt><dd>We compare several item databases. "Uncertain" means they disagree (or the loot is datamined and may change). "1 source" means only one had the item.</dd>
-              <dt>Score</dt><dd>How good an item is for your spec, from stat weights. Higher is better. Compare only within one slot.</dd>
-            </dl>
-          </details>
+<footer class="foot" id="foot">
 <p class="legend" id="legend"><span class="badge badge-unc" title="Uncertain: our data sources disagree"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1L8 1.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6v3.5M8 11.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span> Uncertain: our data sources disagree; hover it or open the row to see why. “1 source” (in an opened row) means only one database has the item. The gold bar is the percent score gained over what you wear; “new” means nothing useful is worn there. A * after a score means some stats on the item are not counted.</p>
 <p class="credits">Data: Blizzard Game Data API (Forever), <a href="https://forever.warcraftdb.com/" target="_blank" rel="noopener">warcraftdb</a>.
   Data from <a href="https://foreverdb.net/" target="_blank" rel="noopener">ForeverDB.net</a>. Drop data from <a href="https://github.com/Questie/Questie" target="_blank" rel="noopener">Questie</a> player traces. Drop chances, vendors and PvP prices also from <a href="https://www.icy-veins.com/" target="_blank" rel="noopener">Icy Veins</a>, <a href="https://www.stillsixty.com/" target="_blank" rel="noopener">stillsixty</a>, <a href="https://github.com/zmarotrix/NorgannonDB" target="_blank" rel="noopener">NorgannonDB</a>, wowforever.gg, foreverdroprate, Polestar Codex, EG Link (CC BY 4.0) and Drop Tables (CC BY-SA 4.0).

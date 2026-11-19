@@ -186,14 +186,41 @@ function el(tag, attrs = {}, ...children) {
   return node;
 }
 
-function showStatus(message, isError = false, busy = false) {
+function showStatus(message, isError = false) {
   const s = $("status");
   s.textContent = message;
   s.classList.toggle("error", isError);
-  s.classList.toggle("busy", busy);
   s.hidden = false;
 }
 function hideStatus() { $("status").hidden = true; }
+// A failed load goes back to what was shown before: the last character's gear, or the intro.
+function failLoading() {
+  if (!state.gear) { setPhase("intro"); return; }
+  setPhase("ready");
+  render();
+}
+
+// Page phases: "intro" (no character yet: site info, glossary in the centre), "loading" (skeletons) and "ready".
+const INTRO_SUB = "Every level from 10 to 60, for every class and spec";
+function setPhase(phase, message = "") {
+  const r = $("results"), gloss = $("glossary");
+  r.dataset.state = phase;
+  r.setAttribute("aria-busy", String(phase === "loading"));
+  $("lk-in").disabled = phase !== "ready";
+  if (phase === "intro") { $("gear-title").textContent = "Best gear"; $("gear-sub").textContent = INTRO_SUB; }
+  if (phase === "loading") { $("gear-title").textContent = "Best gear"; $("gear-sub").textContent = message; fillSkeletons(); }
+  const home = phase === "intro" ? $("intro") : $("foot");
+  if (gloss.parentElement !== home) { gloss.open = phase === "intro"; phase === "intro" ? home.append(gloss) : home.prepend(gloss); }
+}
+const bar = (w) => el("span", { class: "sk", style: `width:${w}%` });
+function fillSkeletons() {
+  const widths = [72, 58, 84, 64, 76, 52, 80, 68, 60, 74, 56, 70];
+  $("rows").replaceChildren(...widths.map((w, i) => el("li", { class: "row sk-row", style: `--i:${i}` },
+    el("div", { class: "row-main" }, bar(80), bar(w), bar(90), bar(w - 10), bar(w + 8), bar(90), bar(70), el("span")))));
+  $("todo-list").replaceChildren(...[0, 1, 2].map((i) => el("div", { class: "sk-group", style: `--i:${i}` }, bar(34), bar(62), bar(88), bar(76))));
+  $("upcoming-list").replaceChildren(...[66, 80, 58, 72].map((w, i) => el("li", { style: `--i:${i}` }, bar(18), bar(w))));
+  $("lk-out").replaceChildren();
+}
 
 function itemLink(id, info) {
   const q = QUALITY[info?.quality] || "common";
@@ -758,19 +785,22 @@ function showCharacter() {
 }
 
 async function refreshAll() {
-  $("results").setAttribute("aria-busy", "true"); // dims the old list while the new one loads
+  const r = $("results");
+  if (r.dataset.state === "ready") r.setAttribute("aria-busy", "true"); // dims the old list while the new one loads
   try {
     await loadGear();
     if (state.mode === "lookup") await rescoreEquipped();
   } catch (e) {
     showStatus(e.message, true);
+    if (r.dataset.state === "loading") failLoading();
     return false;
   } finally {
-    $("results").removeAttribute("aria-busy");
+    r.removeAttribute("aria-busy");
   }
   if (!weaponTypes().some(([k]) => k === state.wtype)) state.wtype = ""; // not usable by this class/spec
   renderCharBar();
-  for (const id of ["char-bar", "lvl-disc", "slot-filters", "results"]) $(id).hidden = false;
+  for (const id of ["char-bar", "lvl-disc", "slot-filters"]) $(id).hidden = false;
+  setPhase("ready");
   hideStatus();
   render();
   return true;
@@ -797,7 +827,8 @@ async function lookup(event) {
   const btn = $("lookup-btn");
   btn.disabled = true;
   btn.setAttribute("aria-busy", "true");
-  showStatus(`Looking up ${name} ${surname}…`, false, true);
+  hideStatus();
+  setPhase("loading", `Looking up ${name} ${surname}…`);
   try {
     const resp = await fetch(`/api/character?${new URLSearchParams({ region, name, surname })}`);
     const body = await resp.json().catch(() => ({}));
@@ -815,6 +846,7 @@ async function lookup(event) {
     if (await refreshAll()) showCharacter();
   } catch (e) {
     showStatus(e.message, true);
+    failLoading();
   } finally {
     btn.disabled = false;
     btn.removeAttribute("aria-busy");
@@ -831,6 +863,8 @@ async function manualSubmit(event) {
   state.level = Math.max(10, level);
   state.tier = 0;
   store("manual", state.manual);
+  hideStatus();
+  setPhase("loading", "Loading gear…");
   if (await refreshAll()) showCharacter();
 }
 
@@ -927,6 +961,7 @@ const itemLookup = setupLookup({ state, $, el, itemLink, slotPoints, pointAt, SL
 // ---------------------------------------------------------------- init
 async function init() {
   initSettings();
+  if (/[?&](class|name)=/.test(location.search)) setPhase("loading", "Loading gear…");
   try {
     const resp = await fetch(`${DATA}/meta.json`);
     state.meta = await resp.json();

@@ -36,7 +36,7 @@ await page.selectOption("#m-class", "11");
 await page.selectOption("#m-spec", "feral_cat");
 await page.fill("#m-level", "24");
 await page.click("#panel-manual button[type=submit]");
-await page.waitForSelector("#rows > li", { timeout: 15000 });
+await page.waitForSelector('#results[data-state="ready"] #rows > li', { timeout: 15000 });
 chk("manual: gear list shows slots", (await page.locator("#rows > li").count()) >= 14);
 chk("manual: level output = 24", (await page.textContent("#level-out")) === "24");
 chk("manual: todo list filled", (await page.locator("#todo-list .group").count()) >= 1);
@@ -70,12 +70,12 @@ await page.screenshot({ path: `${OUT}/manual-druid-60-tier1.png`, fullPage: true
 
 // reload restores from URL
 await page.reload();
-await page.waitForSelector("#rows > li", { timeout: 15000 });
+await page.waitForSelector('#results[data-state="ready"] #rows > li', { timeout: 15000 });
 chk("reload restores level 60", (await page.textContent("#level-out")) === "60");
 
 // Tauren shaman enhancement at 30 (Horde-only class)
 await page.goto(`${BASE}/?race=6&class=7&spec=enhancement&lvl=30&level=30`);
-await page.waitForSelector("#rows > li", { timeout: 15000 });
+await page.waitForSelector('#results[data-state="ready"] #rows > li', { timeout: 15000 });
 chk("shaman 30 loads from URL", (await page.textContent("#gear-sub")).includes("Enhancement Shaman"));
 
 // ---- lookup mode, stubbed API (invented character)
@@ -147,7 +147,7 @@ await page2.route("**/data/gear/*.json", async (route) => {
   await route.fulfill({ response: resp, json: g });
 });
 await page2.goto(`${BASE}/?race=4&class=11&spec=feral_cat&lvl=24&level=24`);
-await page2.waitForSelector("#rows > li", { timeout: 15000 });
+await page2.waitForSelector('#results[data-state="ready"] #rows > li', { timeout: 15000 });
 await page2.waitForLoadState("load"); // styles (and the fonts request) must be in before visibility checks
 const nUnc = await page2.locator("#rows .row-main .badge-unc").count();
 chk("uncertain: badges shown", nUnc >= 3, `${nUnc}`);
@@ -191,7 +191,7 @@ await page.unroute("**/api/character*");
 await page.unroute("**/api/score");
 
 await page.goto(`${BASE}/?race=4&class=11&spec=feral_cat&lvl=29&level=29`);
-await page.waitForSelector("#rows > li", { timeout: 15000 });
+await page.waitForSelector('#results[data-state="ready"] #rows > li', { timeout: 15000 });
 // P8
 const wopts = await page.locator("#weapon-select option").allTextContents();
 chk("P8: weapon select lists types", wopts[0] === "Best (any)" && wopts.length >= 3, wopts.join(", "));
@@ -204,7 +204,7 @@ const wsubs = await page.evaluate(async ([url, wval]) => {
 chk("P8: weapon rows only show that type", wsubs.length >= 1 && wsubs.every(Boolean), `${wsubs.length} weapon rows`);
 chk("P8: URL keeps weapon", page.url().includes(`weapon=${wval}`));
 await page.goto(`${BASE}/?race=4&class=11&spec=feral_cat&lvl=29&level=29`);
-await page.waitForSelector("#rows > li", { timeout: 15000 });
+await page.waitForSelector('#results[data-state="ready"] #rows > li', { timeout: 15000 });
 chk("P8: localStorage restores weapon", (await page.inputValue("#weapon-select")) === wval);
 await page.selectOption("#weapon-select", "");
 chk("P8: Best (any) clears the URL param", !page.url().includes("weapon="));
@@ -241,7 +241,7 @@ await page3.route("**/data/gear/*.json", async (route) => {
   await route.fulfill({ response: resp, json: g });
 });
 await page3.goto(`${BASE}/?race=4&class=11&spec=feral_cat&lvl=24&level=24`);
-await page3.waitForSelector("#rows > li", { timeout: 15000 });
+await page3.waitForSelector('#results[data-state="ready"] #rows > li', { timeout: 15000 });
 const row3 = page3.locator("#rows > li").first();
 chk("fields: * after score with title", (await row3.locator(".score").first().textContent()).endsWith("*") && (await row3.locator(".score").first().getAttribute("title")).includes("Fiery Strike"));
 await row3.locator(".chev-btn").click();
@@ -255,7 +255,7 @@ const row3b = page3.locator("#rows > li").first();
 chk("fields: set toggle re-ranks (other head item wins)", (await row3b.locator(".item-link").first().getAttribute("href")) !== rawName);
 chk("fields: set toggle shows score_set", /^\d{3}/.test(await row3b.locator(".score").first().textContent()));
 await page3.reload();
-await page3.waitForSelector("#rows > li", { timeout: 15000 });
+await page3.waitForSelector('#results[data-state="ready"] #rows > li', { timeout: 15000 });
 chk("fields: set mode persists", (await page3.inputValue("#score-pick")) === "set" || (await page3.locator("#score-pick").evaluate((e) => e.value)) === "set");
 await ctx3.close();
 
@@ -264,7 +264,7 @@ const SHOTS_SIZES = [[1920, 1080], [1440, 900], [390, 844]];
 for (const [w, h] of SHOTS_SIZES) {
   await page.setViewportSize({ width: w, height: h });
   await page.goto(`${BASE}/?race=6&class=11&spec=feral_cat&lvl=29&level=29`);
-  await page.waitForSelector("#rows > li", { timeout: 15000 });
+  await page.waitForSelector('#results[data-state="ready"] #rows > li', { timeout: 15000 });
   await page.fill("#lk-in", "a");
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Enter");
@@ -280,7 +280,7 @@ for (const [w, h] of SHOTS_SIZES) {
 // ---- mobile layout: no horizontal scroll
 await page.setViewportSize({ width: 375, height: 860 });
 await page.goto(`${BASE}/?race=4&class=11&spec=feral_cat&lvl=24&level=24`);
-await page.waitForSelector("#rows > li", { timeout: 15000 });
+await page.waitForSelector('#results[data-state="ready"] #rows > li', { timeout: 15000 });
 const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 chk("mobile: no horizontal scroll", overflow <= 1, `overflow ${overflow}px`);
 await page.screenshot({ path: `${OUT}/mobile.png`, fullPage: false });
