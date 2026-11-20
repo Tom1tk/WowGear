@@ -1,8 +1,8 @@
 # Validation
 
 - gear files: 56
-- distinct scored items: 2770
-- slot entries checked: 49568
+- distinct scored items: 2922
+- slot entries checked: 51660
 - rule violations: 0
 
 

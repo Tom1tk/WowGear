@@ -3,7 +3,10 @@ drop_chances.json -> data/forever/staging/external_drops.json: {item id: {npc id
 vendor_requirements.json -> external_vendors.json: {item id: {vendor id: {"name", "found_in", "copper", "tokens"}}};
 pvp_rank_rewards.json -> external_pvp.json: {item id: price in copper};
 recipe_sources.json -> external_recipes.json: {crafted item id: how the recipe is learned (recipe_info)};
-item_sets.json -> external_sets.json: game-client item sets (client_sets).
+item_sets.json -> external_sets.json: game-client item sets (client_sets);
+external_npc_names.json: {npc id: {"name", "zone"}} for the NPCs in external_drops (merge matches drops by name and
+adds drops for items no other source places);
+quest_rewards.json -> external_quests.json: {item id: [{"id", "name"}]} quests that give the item (quest_items).
 
 Kept: NPC drops with a chance above 0 from Forever sources. Dropped: rows labelled Classic or built from Classic
 emulator tables, sources we already read ourselves (warcraftdb, ForeverDB), and player samples under MIN_SAMPLE
@@ -79,6 +82,13 @@ def sample(r: dict) -> int:
     """Kills behind an observed chance: sample/kills may be 15, "15", "6 / 30" or "1 of 1" (the larger number is the kills)."""
     nums = [int(n) for n in re.findall(r"\d+", f'{r.get("sample") or ""} {r.get("kills") or ""}')]
     return max(nums, default=0)
+
+
+def quest_items(q: dict) -> set[str]:
+    """Item ids a quest gives on the live server. Only EG Link's rows come from it: the other reward lists also
+    carry unreleased content (AQ, ZG quests) and the rest of a chain's rewards (The Videre Elixir lists 16 items)."""
+    eg = q.get("eglink") or {}
+    return {str(x["id"]) for x in (eg.get("reward_items") or []) + (eg.get("choice_items") or [])}
 
 
 def keep(r: dict) -> str | None:
@@ -161,17 +171,28 @@ def main() -> None:
             recipes[str(r["item"])] = info
     write_json(STAGING / "external_recipes.json", recipes, compact=True)
     print(f"{len(recipes)} crafted items with recipe info")
+    quests: dict[str, list] = {}
+    for qid, q in stream("quest_rewards.json", "quests"):
+        for iid in quest_items(q):
+            quests.setdefault(iid, []).append({"id": int(qid), "name": q.get("name")})
+    write_json(STAGING / "external_quests.json", quests, compact=True)
+    print(f"{len(quests)} items given by quests")
     out: dict[str, dict] = {}
+    names: dict[str, dict] = {}
     for iid, rows in stream("drop_chances.json", "items"):
         for r in rows:
             label = keep(r)
             if label:
+                n = names.setdefault(str(r["npc_id"]), {"name": None, "zone": None})
+                n["name"], n["zone"] = n["name"] or r.get("npc"), n["zone"] or r.get("zone") or r.get("instance")
                 by = out.setdefault(iid, {}).setdefault(str(r["npc_id"]), {})
                 by.setdefault(label, round(float(r["chance_pct"]), 4))  # first row per source wins (item page)
     write_json(STAGING / "external_drops.json", out, compact=True)
+    write_json(STAGING / "external_npc_names.json", names, compact=True)
     print(f"{len(out)} items, {sum(len(v) for v in out.values())} item/NPC pairs with a chance")
 
 
+assert quest_items({"guaranteed": [{"item_id": 1}], "eglink": {"reward_items": [{"id": 2}], "choice_items": None}}) == {"2"}
 assert sample({"sample": "6 / 30"}) == 30 and sample({"sample": 15}) == 15 and sample({"kills": 25}) == 25 and sample({}) == 0
 
 if __name__ == "__main__":

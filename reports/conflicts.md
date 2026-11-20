@@ -1,8 +1,8 @@
 # Cross-reference report (warcraftdb / Blizzard / ForeverDB)
 
-Items kept: **6278**; with at least one conflict (Uncertain): **193**.
-Items known to both warcraftdb and Blizzard: 3259.
-Source entries: 12768; confirmed by 2 datasets: 7054; conflicts: 1385.
+Items kept: **7457**; with at least one conflict (Uncertain): **197**.
+Items known to both warcraftdb and Blizzard: 3309.
+Source entries: 18204; confirmed by 2 datasets: 8514; conflicts: 1672.
 
 Missing in a source is not a conflict. ForeverDB sources labelled Classic (k) or clue (c) are ignored.
 Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
@@ -10,7 +10,7 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 ## Items not kept
 
 - not equippable gear: 10566
-- no known source: 3519
+- no known source: 2340
 - ForeverDB only (no stats from Blizzard/warcraftdb yet): 1170
 - poor quality: 993
 - required level above 60: 65
@@ -18,16 +18,16 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 
 ## Item field conflicts by field
 
-- stats: 126
-- weapon: 67
+- stats: 129
+- weapon: 68
 
 ## By source pair
 
-- Blizzard vs warcraftdb: 193
+- Blizzard vs warcraftdb: 197
 
 ## Source conflicts by kind
 
-- drop: 1385
+- drop: 1672
 
 ## Examples (first 50 item conflicts)
 
@@ -51,6 +51,7 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 - Stone Buckler (2900) [stats]: Stats differ: Blizzard none of these, warcraftdb +3 block_value
 - Ironplate Buckler (3160) [stats]: Stats differ: Blizzard none of these, warcraftdb +5 block_value
 - Deathguard Buckler (3276) [stats]: Stats differ: Blizzard none of these, warcraftdb +1 block_value
+- Wispy Cloak (3322) [stats]: Stats differ: Blizzard +10 Armor, +1 Spirit, warcraftdb +8 Armor
 - Darkwood Staff (3446) [weapon]: Weapon differs: Blizzard (17, 26, 3.2); warcraftdb (23, 35, 3.2)
 - Faerleia's Shield (3450) [stats]: Stats differ: Blizzard none of these, warcraftdb +5 block_value
 - Silver Star (3463) [weapon]: Weapon differs: Blizzard (26, 49, 2.3); warcraftdb (38, 71, 2.3)
@@ -62,6 +63,7 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 - Bookmaker's Scepter (4122) [weapon]: Weapon differs: Blizzard (21, 39, 2.3); warcraftdb (31, 59, 2.3)
 - Shrapnel Blaster (4127) [weapon]: Weapon differs: Blizzard (23, 43, 1.9); warcraftdb (38, 72, 1.9)
 - Collection Plate (4129) [stats]: Stats differ: Blizzard none of these, warcraftdb +20 block_value
+- Small Green Dagger (4302) [weapon]: Weapon differs: Blizzard (4, 8, 1.5); warcraftdb (6, 13, 1.5)
 - Icy Cloak (4327) [stats]: Stats differ: Blizzard +8 res_frost, warcraftdb none of these
 - Servomechanic Sledgehammer (4548) [stats]: Stats differ: Blizzard +1 expertise_rating, warcraftdb none of these
 - Ryedol's Lucky Pick (4616) [weapon]: Weapon differs: Blizzard (1, 2, 1.5); warcraftdb (0, 2, 1.5)
@@ -79,8 +81,6 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 - Pitchwood Wand (5238) [weapon]: Weapon differs: Blizzard (41, 77, 1.7); warcraftdb (29, 55, 1.7)
 - Blackbone Wand (5239) [weapon]: Weapon differs: Blizzard (39, 74, 1.6); warcraftdb (29, 54, 1.6)
 - Rod of Sorrow (5247) [weapon]: Weapon differs: Blizzard (43, 81, 1.9); warcraftdb (29, 55, 1.9)
-- Cobalt Buckler (5302) [stats]: Stats differ: Blizzard none of these, warcraftdb +7 block_value
-- Flaring Baton (5326) [weapon]: Weapon differs: Blizzard (18, 34, 1.9); warcraftdb (12, 23, 1.9)
 
 ## Examples (source conflicts)
 
@@ -93,6 +93,7 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 - Notched Shortsword (727): Drop chance for Al'Aketh Spiritcaller: warcraftdb 1.6129%, Icy Veins 0.36% (more than 2x apart).
 - Notched Shortsword (727): Drop chance for Al'Aketh Brawler: warcraftdb 0.847458%, Icy Veins 0.13% (more than 2x apart).
 - Notched Shortsword (727): Drop chance for Riverpaw Outrunner: warcraftdb 0.657895%, Icy Veins 0.21% (more than 2x apart).
+- Dragonmaw Shortsword (753): Drop chance for Dragonmaw Centurion: ForeverQuestLog 0.5%, Icy Veins 0.83%, NorgannonDB 0.46%, stillsixty 1% (more than 2x apart).
 - Tunnel Pick (756): Drop chance for Dark Iron Tunneler: ForeverQuestLog 1.8%, Icy Veins 4.02%, NorgannonDB 1.77%, stillsixty 2% (more than 2x apart).
 - Ice-covered Bracers (763): Drop chance for Hammerspine: ForeverQuestLog 80%, Icy Veins 24.04%, NorgannonDB 80%, stillsixty 75% (more than 2x apart).
 - Flanged Mace (766): Drop chance for Highlands Bandit: warcraftdb 1.7094%, Icy Veins 0.21% (more than 2x apart).
@@ -101,11 +102,10 @@ Value used for scoring on conflict: Blizzard > warcraftdb > ForeverDB.
 - Long Bo Staff (767): Drop chance for Cursed Darkhound: warcraftdb 3.84615%, Icy Veins 0.22% (more than 2x apart).
 - Long Bo Staff (767): Drop chance for Bandit Highwayman: warcraftdb 1.6%, Icy Veins 0.24% (more than 2x apart).
 - Long Bo Staff (767): Drop chance for Al'Aketh Stormcaller: warcraftdb 1.06383%, Icy Veins 0.15% (more than 2x apart).
-- Lumberjack Axe (768): Drop chance for Prairie Wolf Alpha: warcraftdb 6.25%, Icy Veins 0.18%, NorgannonDB 0.3% (more than 2x apart).
-- Lumberjack Axe (768): Drop chance for Thunder Lizard: warcraftdb 3.84615%, Icy Veins 0.22%, NorgannonDB 0.36% (more than 2x apart).
-- Lumberjack Axe (768): Drop chance for Riverpaw Runt: warcraftdb 3.22581%, Icy Veins 0.23%, NorgannonDB 0.28% (more than 2x apart).
+- Lumberjack Axe (768): Drop chance for Prairie Wolf Alpha: warcraftdb 6.25%, ForeverQuestLog 0.3%, Icy Veins 0.18%, NorgannonDB 0.3% (more than 2x apart).
+- Lumberjack Axe (768): Drop chance for Thunder Lizard: warcraftdb 3.84615%, ForeverQuestLog 0.4%, Icy Veins 0.22%, NorgannonDB 0.36% (more than 2x apart).
+- Lumberjack Axe (768): Drop chance for Riverpaw Runt: warcraftdb 3.22581%, ForeverQuestLog 0.3%, Icy Veins 0.23%, NorgannonDB 0.28% (more than 2x apart).
 - Lumberjack Axe (768): Drop chance for Al'Aketh Stormcaller: warcraftdb 1.06383%, Icy Veins 0.08% (more than 2x apart).
 - Lumberjack Axe (768): Drop chance for Al'Aketh Brawler: warcraftdb 0.847458%, Icy Veins 0.15% (more than 2x apart).
-- Stone Gnoll Hammer (781): Drop chance for Riverpaw Runt: warcraftdb 9.67742%, Icy Veins 3.93%, NorgannonDB 7.8%, stillsixty 7.8% (more than 2x apart).
-- Stone Gnoll Hammer (781): Drop chance for Riverpaw Outrunner: warcraftdb 5.26316%, Icy Veins 3.89%, NorgannonDB 7.88%, stillsixty 7.88% (more than 2x apart).
-- Stout Battlehammer (789): warcraftdb lists drop source Blackfathom Sea Witch, Defias Squallshaper, Deviate Faerie Dragon; ForeverDB lists drop source Druid of the Fang, Gilnid; no overlap.
+- Lumberjack Axe (768): Drop chance for Young Forest Bear: ForeverQuestLog 0.3%, Icy Veins 0.14%, NorgannonDB 0.26% (more than 2x apart).
+- Stone Gnoll Hammer (781): Drop chance for Riverpaw Runt: warcraftdb 9.67742%, ForeverQuestLog 7.8%, Icy Veins 3.93%, NorgannonDB 7.8%, stillsixty 7.8% (more than 2x apart).

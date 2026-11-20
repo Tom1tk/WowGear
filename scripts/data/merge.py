@@ -61,6 +61,8 @@ LABEL = {"blizzard": "Blizzard", "warcraftdb": "warcraftdb", "foreverdb": "Forev
 FIELDS = ("name", "required_level", "item_level", "inventory_type", "type", "stats", "weapon", "binding", "classes")
 EQUIP_ONLY = {"bonus_armor", "sp", "heal", "mp5", "ap", "rap"}
 CHANCE_RATIO = 2.0
+CORE_SOURCES = {"warcraftdb", "foreverdb", "questietrace"}
+MAX_DROPPERS = 20  # NPCs; an item more of them drop is a world drop, not a farm target
 OBSERVED = ("Polestar Codex", "foreverdroprate", "EG Link", "Drop Tables", "foreverdb.app", "TheWoWDB", "Zephras")  # player samples: used only as a fallback
 CHANCE_ORDER = ("warcraftdb", "foreverdb", "Icy Veins", "stillsixty", "NorgannonDB", "wowforever.gg", "ForeverQuestLog", "forever-xp") + OBSERVED
 
@@ -139,6 +141,8 @@ class Merger:
         self.ext_pvp = read_json(ep) if ep.exists() else {}
         er = STAGING / "external_recipes.json"
         self.ext_recipes = read_json(er) if er.exists() else {}
+        self.ext_npc_names = read_json(STAGING / "external_npc_names.json") if (STAGING / "external_npc_names.json").exists() else {}
+        self.ext_quests = read_json(STAGING / "external_quests.json") if (STAGING / "external_quests.json").exists() else {}
         cs = STAGING / "external_sets.json"
         self.c_sets = read_json(cs) if cs.exists() else {}
         self.set_of_piece = {p: sid for sid, c in self.c_sets.items() for p in c["pieces"]}
@@ -412,14 +416,18 @@ class Merger:
         for vid, v in self.ext_vendors.get(iid, {}).items():  # every vendor other sites list (ForeverDB has only the first)
             for src in v["found_in"]:
                 add(src, "vendor", int(vid), id=int(vid), name=v.get("name"))
+        if not found:
+            self.external_sources(iid, add)
         out = []
         for (kind, _key), r in found.items():
             r["found_in"] = sorted(r["found_in"])
             r["confirmed"] = len(r["found_in"]) >= 2
             r["conflict"] = False
             ch = r.pop("chance_by")
-            if kind == "drop" and r.get("id"):  # external sites (parse_external.py), keyed by NPC id
-                ch.update(self.ext_drops.get(iid, {}).get(str(r["id"]), {}))
+            if kind == "drop":  # external sites (parse_external.py), keyed by NPC id; else by NPC name
+                ext = self.ext_drops.get(iid, {})
+                ch.update(ext.get(str(r.get("id"))) or next(
+                    (v for n, v in ext.items() if (self.ext_npc_names.get(n, {}).get("name") or "").lower() == _key), {}))
             ch = {s: v for s, v in ch.items() if v > 0}
             if ch:
                 r["chance"] = round(ch[min(ch, key=CHANCE_ORDER.index)], 2)
@@ -435,6 +443,9 @@ class Merger:
             if r["type"] == "drop" and not r.get("instance") and r["found_in"] == ["warcraftdb"]:
                 r["uncertain"] = (f"warcraftdb lists '{r.get('name')}' as a dropper, but no source gives its zone or "
                                   "level or places it in an instance, so it is treated as an open-world drop.")
+            elif r["type"] in ("drop", "quest") and not CORE_SOURCES & set(r["found_in"]):
+                r["uncertain"] = (f"Only {', '.join(r['found_in'])} list this {r['type']}; warcraftdb and ForeverDB "
+                                  "don't, so it may be unreleased or changed in Forever.")
             elif r.get("instance_via"):
                 r["uncertain"] = (f"Placed in {self.instances[r['instance']]['name']} by boss name only: "
                                   "no source maps this NPC id to the instance.")
@@ -445,6 +456,24 @@ class Merger:
                 r.pop("instance", None)
             self.enrich(r, iid)
         return out
+
+    def external_sources(self, iid: str, add) -> None:
+        """For items no core source places: quests EG Link (live server) says give the item, and named drops from
+        published sites (at most MAX_DROPPERS NPCs; more is a world drop). A dropper must be in an instance we know or
+        have an open-world spawn: NPCs in unreleased raids (AQ, Naxx) have neither."""
+        for q in self.ext_quests.get(iid, []):
+            add("EG Link", "quest", q["id"], id=q["id"], name=q["name"])
+        drops = {n: ch for n, ch in self.ext_drops.get(iid, {}).items() if set(ch) - set(OBSERVED)}
+        if len(drops) > MAX_DROPPERS:
+            return
+        for nid, ch in drops.items():
+            ext, npc = self.ext_npc_names.get(nid) or {}, self.npcs.get(nid) or {}
+            inst = self.loot["npc"].get(int(nid)) or self.zone_inst.get((ext.get("zone") or "").lower())
+            if not inst and not npc.get("spot"):
+                continue
+            name = ext.get("name") or npc.get("name") or f"NPC {nid}"
+            for src in ch:
+                add(src, "drop", name.lower(), id=int(nid), name=name, instance=inst)
 
     def enrich(self, r: dict, iid: str) -> None:
         """Quest chain position, NPC names / titles / zones / map spots (QuestieDB Forever) for sources that lack them."""
