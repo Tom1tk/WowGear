@@ -436,6 +436,7 @@ function buildRows() {
       row.effort = effort(row.srcs);
       row.worn = wornFor(row, pick);
       row.gain = row.worn.gain;
+      row.diff = row.gain >= UP ? pick[1] - (row.worn.score > 0 ? row.worn.score : 0) : 0; // score points gained, not percent
     }
     return row;
   });
@@ -443,6 +444,7 @@ function buildRows() {
   const cmp = {
     slot: (a, b) => a.order - b.order,
     gain: (a, b) => gainRank(a) - gainRank(b) || b.gain - a.gain,
+    points: (a, b) => gainRank(a) - gainRank(b) || (b.diff ?? 0) - (a.diff ?? 0),
     easy: (a, b) => !a.pick - !b.pick || (a.pick && (a.effort.rank - b.effort.rank || state.gear.items[a.pick[0]].required_level - state.gear.items[b.pick[0]].required_level || b.effort.chance - a.effort.chance)),
   }[ui.sort];
   return rows.sort((a, b) => cmp(a, b) || a.order - b.order);

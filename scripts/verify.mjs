@@ -186,6 +186,10 @@ chk("P1: worn item at half the score = +100%", (await headRow.locator(".gain").t
 chk("P1: empty slot says new", (await page.locator("#rows .gain", { hasText: "new" }).count()) >= 1);
 await page.selectOption("#sort", "gain");
 chk("P1: biggest-upgrade sort puts 'new' first", (await page.locator("#rows .gain").first().textContent()) === "new");
+await page.selectOption("#sort", "points");
+const diffs = await page.locator("#rows > li", { has: page.locator(".gain") }).evaluateAll((lis) => lis.map((li) => { const s = [...li.querySelectorAll(".score")].map((e) => parseFloat(e.textContent) || 0); return s[0] - (s[1] || 0); }));
+chk("P1: score-gain sort orders by points added", diffs.length > 1 && diffs.every((d, i) => i === 0 || d <= diffs[i - 1] + 0.5), diffs.slice(0, 5).join(" "));
+await page.selectOption("#sort", "gain");
 chk("P1: todo shows percents and an upgrade count", /^\d+ upgrades?$/.test((await page.locator("#todo-list .g-gain").first().textContent()).trim()) && /%|new/.test(await page.locator("#todo-list .g-d").first().textContent()));
 await page.unroute("**/api/character*");
 await page.unroute("**/api/score");
