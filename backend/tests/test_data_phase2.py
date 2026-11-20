@@ -96,3 +96,5 @@ def test_recipe_info_classifies_how_the_recipe_is_learned():
     assert recipe_info({"learned_from_kind": "item"})["kind"] == "unknown"
     assert recipe_info({"learned_from_kind": "guide"})["kind"] == "unknown"
     assert recipe_info({"learned_from_kind": "trainer"}) == {"kind": "trainer"}
+    glued = {"learned_from_kind": "item", "vendors": [{"vendor": "Invented Trader"}, {"vendor": "Invented Mob", "source": "wow-forever.gg item vendor table"}]}
+    assert recipe_info(glued)["vendors"] == ["Invented Trader"]

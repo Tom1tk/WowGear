@@ -50,7 +50,9 @@ RECIPE_KINDS = ["trainer", "automatic", "vendor", "quest", "rep", "favor", "drop
 def recipe_info(r: dict) -> dict:
     """{"kind", "name" (the recipe item), "vendors", "favor" (Merchant's Favor cost), "standing", "rep", "quests",
     "drops"}: how the recipe for a crafted item is learned."""
-    kind, vendors = r.get("learned_from_kind"), r.get("vendors") or []
+    # wow-forever.gg's vendor table is Classic data and lists mobs (Vekniss Soldier) as vendors
+    kind = r.get("learned_from_kind")
+    vendors = [v for v in r.get("vendors") or [] if v.get("source") != "wow-forever.gg item vendor table"]
     psrc = [x for x in r.get("pattern_sources") or [] if isinstance(x, dict) and x.get("n")]
     quests = list(dict.fromkeys(f'{q["quest"]} (level {q["level"]})' if q.get("level") else q["quest"]
                                 for q in r.get("eternadex_quests") or [] if q.get("quest_id")))
