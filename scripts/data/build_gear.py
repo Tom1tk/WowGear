@@ -95,7 +95,7 @@ class Builder:
         if src.get("faction") and src["faction"] != faction:
             return None
         if kind == "quest":
-            level = max(req, (src.get("level") or 1) - QUEST_EARLY)
+            level = max(req, src.get("min_level") or 1, (src.get("level") or 1) - QUEST_EARLY)
             inst = self.instances.get(src.get("instance") or "")
             return max(level, inst["levels"][0]) if inst else level, (inst or {}).get("tier", 0)
         inst_key = src.get("instance")

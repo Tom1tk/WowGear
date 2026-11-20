@@ -6,7 +6,8 @@ recipe_sources.json -> external_recipes.json: {crafted item id: how the recipe i
 item_sets.json -> external_sets.json: game-client item sets (client_sets);
 external_npc_names.json: {npc id: {"name", "zone"}} for the NPCs in external_drops (merge matches drops by name and
 adds drops for items no other source places);
-quest_rewards.json -> external_quests.json: {item id: [{"id", "name"}]} quests that give the item (quest_items).
+quest_rewards.json -> external_quests.json: {item id: [{"id", "name"}]} quests that give the item (quest_items),
+  and external_quest_levels.json: {quest id: {"level", "min_level"}} for quests QuestieDB lacks (Forever-only ones).
 
 Kept: NPC drops with a chance above 0 from Forever sources. Dropped: rows labelled Classic or built from Classic
 emulator tables, sources we already read ourselves (warcraftdb, ForeverDB), and player samples under MIN_SAMPLE
@@ -172,10 +173,15 @@ def main() -> None:
     write_json(STAGING / "external_recipes.json", recipes, compact=True)
     print(f"{len(recipes)} crafted items with recipe info")
     quests: dict[str, list] = {}
+    levels: dict[str, dict] = {}
     for qid, q in stream("quest_rewards.json", "quests"):
         for iid in quest_items(q):
             quests.setdefault(iid, []).append({"id": int(qid), "name": q.get("name")})
+        lv = {k: int(q[k]) for k in ("level", "min_level") if str(q.get(k) or "").isdigit() and int(q[k]) > 0}
+        if lv:
+            levels[qid] = lv
     write_json(STAGING / "external_quests.json", quests, compact=True)
+    write_json(STAGING / "external_quest_levels.json", levels, compact=True)
     print(f"{len(quests)} items given by quests")
     out: dict[str, dict] = {}
     names: dict[str, dict] = {}

@@ -142,6 +142,7 @@ class Merger:
         er = STAGING / "external_recipes.json"
         self.ext_recipes = read_json(er) if er.exists() else {}
         self.ext_npc_names = read_json(STAGING / "external_npc_names.json") if (STAGING / "external_npc_names.json").exists() else {}
+        self.ext_quest_levels = read_json(STAGING / "external_quest_levels.json") if (STAGING / "external_quest_levels.json").exists() else {}
         self.ext_quests = read_json(STAGING / "external_quests.json") if (STAGING / "external_quests.json").exists() else {}
         cs = STAGING / "external_sets.json"
         self.c_sets = read_json(cs) if cs.exists() else {}
@@ -485,6 +486,10 @@ class Merger:
         npc = None
         if r["type"] == "quest" and r.get("id") is not None:
             q = self.quests.get(str(r["id"]))
+            ext = self.ext_quest_levels.get(str(r["id"]), {})
+            for k in ("level", "min_level"):  # the reward quest's own levels, not the chain start's
+                if not r.get(k) and ((q or {}).get(k) or ext.get(k)):
+                    r[k] = (q or {}).get(k) or ext[k]
             if q:
                 if q.get("chain"):
                     r["chain"] = q["chain"]

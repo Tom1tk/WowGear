@@ -130,13 +130,14 @@ def main() -> None:
     quests = {}
     for qid, row in read_rows(DB / "foreverQuestDB.lua").items():
         pre = (field(row, Q_PRE_SINGLE) or []) or (field(row, Q_PRE_GROUP) or [])
-        quests[qid] = {"name": field(row, Q_NAME), "level": field(row, Q_LEVEL) or field(row, Q_REQ),
+        quests[qid] = {"name": field(row, Q_NAME), "level": field(row, Q_LEVEL) or field(row, Q_REQ), "min_level": field(row, Q_REQ),
                        "zone": field(row, Q_ZONE), "pre": pre, "next": field(row, Q_NEXT),
                        "giver": ((field(row, Q_START) or [None])[0] or [None])[0]}
     chains = build_chains(quests)
     out_q = {}
     for qid, q in quests.items():
-        rec = {"name": q["name"], "level": q["level"], "zone": q["zone"] if (q["zone"] or 0) > 0 else None}
+        rec = {"name": q["name"], "level": q["level"], "min_level": q["min_level"],
+               "zone": q["zone"] if (q["zone"] or 0) > 0 else None}
         if q.get("giver"):
             rec["giver"] = q["giver"]
         if qid in chains:

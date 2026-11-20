@@ -61,7 +61,7 @@ function describeBase(meta, src) {
       const from = src.start_npc ? ` from ${src.start_npc}` : "";
       const lvl = src.level ? ` (level ${src.level})` : "";
       const label = inst && meta.instances[inst]?.tier ? `Quest: ${src.name} — needs ${instanceName(inst)}` : `Quest: ${src.name}${lvl}`;
-      return { key: `quest:${src.id}`, label, text: `Quest reward${where}${from}. Can be picked up at level ${src.min_level || 1}.` };
+      return { key: `quest:${src.id}`, label, text: `Quest reward${where}${from}.${src.min_level ? ` Needs level ${src.min_level} to accept.` : ""}` };
     }
     case "pvp_rank": {
       const name = PVP_RANKS[src.rank - 1]?.[src.faction === "H" ? 1 : 0] || "";
